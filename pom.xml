@@ -24,6 +24,8 @@
     <version.lombok>1.18.16</version.lombok>
     <version.slf4j>1.7.30</version.slf4j>
 
+    <version.plugin.test>3.0.0-M5</version.plugin.test>
+
     <outputDirectory>
       ${project.build.outputDirectory}/dependency
     </outputDirectory>
@@ -49,6 +51,71 @@
             </path>
           </annotationProcessorPaths>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok-maven-plugin</artifactId>
+        <version>1.18.16.0</version>
+        <executions>
+          <execution>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>delombok</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- Testing -->
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${version.plugin.test}</version>
+      </plugin>
+      <plugin>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>${version.plugin.test}</version>
+      </plugin>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>0.8.6</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>report</id>
+            <phase>test</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>check</id>
+            <phase>test</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <rule>
+                  <element>CLASS</element>
+                  <limits>
+                    <limit>
+                      <counter>LINE</counter>
+                      <value>COVEREDRATIO</value>
+                      <minimum>0.70</minimum>
+                    </limit>
+                  </limits>
+                  <excludes>
+                    <exclude>${exec.mainClass}</exclude>
+                  </excludes>
+                </rule>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
       <!-- Packaging -->
       <plugin>
@@ -86,6 +153,18 @@
     </plugins>
   </build>
 
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>5.7.0</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <dependencies>
     <!-- Compiling -->
     <dependency>
@@ -99,6 +178,23 @@
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
       <version>${version.slf4j}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>${version.slf4j}</version>
+    </dependency>
+    <!-- Testing -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-junit-jupiter</artifactId>
+      <version>3.6.28</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
