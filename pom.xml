@@ -24,6 +24,7 @@
 
     <version.lombok>1.18.16</version.lombok>
     <version.slf4j>1.7.30</version.slf4j>
+    <version.javalin>3.12.0</version.javalin>
 
     <version.plugin.test>3.0.0-M5</version.plugin.test>
 
@@ -60,19 +61,6 @@
             </path>
           </annotationProcessorPaths>
         </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.projectlombok</groupId>
-        <artifactId>lombok-maven-plugin</artifactId>
-        <version>1.18.16.0</version>
-        <executions>
-          <execution>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>delombok</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
       <!-- Static analysis -->
       <plugin>
@@ -261,6 +249,24 @@
       <artifactId>mockito-junit-jupiter</artifactId>
       <version>3.6.28</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.konghq</groupId>
+      <artifactId>unirest-java</artifactId>
+      <version>3.11.04</version>
+      <classifier>standalone</classifier>
+      <scope>test</scope>
+    </dependency>
+    <!-- Project -->
+    <dependency>
+      <groupId>io.javalin</groupId>
+      <artifactId>javalin</artifactId>
+      <version>${version.javalin}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.javalin</groupId>
+      <artifactId>javalin-openapi</artifactId>
+      <version>${version.javalin}</version>
     </dependency>
   </dependencies>
 
