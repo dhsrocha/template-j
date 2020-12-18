@@ -7,7 +7,7 @@
   <groupId>dhsrocha</groupId>
   <artifactId>template-maven-javalin</artifactId>
   <version>0.1.0</version>
-  <packaging>jar</packaging>
+  <packaging>pom</packaging>
 
   <name>Template project for Maven and Javalin</name>
   <description>
@@ -34,6 +34,10 @@
 
     <exec.mainClass>dhsrocha.Application</exec.mainClass>
   </properties>
+
+  <modules>
+    <module>mods/app</module>
+  </modules>
 
   <build>
     <plugins>
@@ -209,12 +213,24 @@
 
   <dependencyManagement>
     <dependencies>
+      <!-- Testing -->
       <dependency>
         <groupId>org.junit</groupId>
         <artifactId>junit-bom</artifactId>
         <version>5.7.0</version>
         <type>pom</type>
         <scope>import</scope>
+      </dependency>
+      <!-- Project -->
+      <dependency>
+        <groupId>io.javalin</groupId>
+        <artifactId>javalin</artifactId>
+        <version>${version.javalin}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.javalin</groupId>
+        <artifactId>javalin-openapi</artifactId>
+        <version>${version.javalin}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -256,17 +272,6 @@
       <version>3.11.04</version>
       <classifier>standalone</classifier>
       <scope>test</scope>
-    </dependency>
-    <!-- Project -->
-    <dependency>
-      <groupId>io.javalin</groupId>
-      <artifactId>javalin</artifactId>
-      <version>${version.javalin}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.javalin</groupId>
-      <artifactId>javalin-openapi</artifactId>
-      <version>${version.javalin}</version>
     </dependency>
   </dependencies>
 
