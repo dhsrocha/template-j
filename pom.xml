@@ -41,6 +41,34 @@
 
   <build>
     <plugins>
+      <!-- Project -->
+      <plugin>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>3.0.0-M3</version>
+        <executions>
+          <execution>
+            <id>enforce-versions</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>enforce</goal>
+              <goal>display-info</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireMavenVersion>
+                  <version>3.6.3</version>
+                </requireMavenVersion>
+                <requireJavaVersion>
+                  <version>11</version>
+                </requireJavaVersion>
+                <requireOS>
+                  <family>unix</family>
+                </requireOS>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <!-- Compiling -->
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -204,7 +232,6 @@
   <reporting>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jxr-plugin</artifactId>
         <version>3.0.0</version>
       </plugin>
