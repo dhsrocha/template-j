@@ -16,9 +16,11 @@ public class Application {
 
   /**
    * Application's entry point. Design purpose is just exposing a method for
-   * maven-exec-plugin from terminal.
+   * {@code maven-exec-plugin} from terminal.
    *
-   * @param args Method's arguments. No use for while.
+   * @param args Key-value arguments written in {@code k=v} or {@code k:v}
+   *             format in order to configure {@link Javalin server}'s
+   *             initialization, under {@link Props pre-defined keys}.
    */
   public static void main(final String... args) {
     val props = new EnumMap<Props, String>(Props.class);
