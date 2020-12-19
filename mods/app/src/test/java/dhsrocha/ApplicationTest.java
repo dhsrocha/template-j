@@ -28,7 +28,7 @@ final class ApplicationTest {
       // Arrange
       val now = Instant.now();
       // Act
-      Application.main();
+      Application.main("IS_TESTING=true");
       // Assert
       Assertions.assertTrue(Duration
           .between(now, Instant.now())

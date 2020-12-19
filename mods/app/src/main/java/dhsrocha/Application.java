@@ -2,7 +2,9 @@ package dhsrocha;
 
 import io.javalin.Javalin;
 import io.javalin.plugin.openapi.annotations.ContentType;
-import java.util.Properties;
+import java.util.Arrays;
+import java.util.EnumMap;
+import java.util.Map;
 import lombok.Value;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
@@ -12,8 +14,6 @@ import lombok.val;
 @UtilityClass
 public class Application {
 
-  private static final String IS_TESTING = "isTesting";
-
   /**
    * Application's entry point. Design purpose is just exposing a method for
    * maven-exec-plugin from terminal.
@@ -21,10 +21,16 @@ public class Application {
    * @param args Method's arguments. No use for while.
    */
   public static void main(final String... args) {
+    val props = new EnumMap<Props, String>(Props.class);
+    Arrays.stream(args)
+        .map(s -> s.split("[=:]"))
+        .forEach(ss -> props.put(Props.valueOf(ss[0]), ss[1]));
+    Inner.bootstrap(props);
     log.info("Application running.");
-    val props = new Properties();
-    props.put(IS_TESTING, Boolean.FALSE);
-    Inner.bootstrap(props).getServer().start(7000);
+  }
+
+  private enum Props {
+    IS_TESTING, PORT
   }
 
   @Value
@@ -32,17 +38,15 @@ public class Application {
 
     Javalin server;
 
-    static Inner bootstrap(final Properties props) {
-      val server = Javalin.create(cfg -> {
-        cfg.showJavalinBanner = !Boolean
-            .parseBoolean(props.getProperty(IS_TESTING));
-        cfg.defaultContentType = ContentType.JSON;
-        cfg.autogenerateEtags = Boolean.TRUE;
-      });
-      if (Boolean.parseBoolean(props.getProperty(IS_TESTING))) {
-        server.start(Integer.parseInt(props.getProperty("port", "9999")));
-      }
-      return new Inner(server);
+    static Inner bootstrap(final Map<Props, String> props) {
+      return new Inner(Javalin
+          .create(cfg -> {
+            cfg.showJavalinBanner = !Boolean.parseBoolean(props
+                .getOrDefault(Props.IS_TESTING, "false"));
+            cfg.defaultContentType = ContentType.JSON;
+            cfg.autogenerateEtags = Boolean.TRUE;
+          })
+          .start(Integer.parseInt(props.getOrDefault(Props.PORT, "9999"))));
     }
   }
 }
