@@ -20,11 +20,14 @@ public class Application {
    *
    * @param args Key-value arguments written in {@code k=v} or {@code k:v}
    *             format in order to configure {@link Javalin server}'s
-   *             initialization, under {@link Props pre-defined keys}.
+   *             initialization, under {@link Props pre-defined keys}. Any
+   *             string that does not follow that pattern is going to be
+   *             discarded.
    */
   public static void main(final String... args) {
     val props = new EnumMap<Props, String>(Props.class);
     Arrays.stream(args)
+        .filter(s -> s.contains("[=:]"))
         .map(s -> s.split("[=:]"))
         .forEach(ss -> props.put(Props.valueOf(ss[0]), ss[1]));
     Inner.bootstrap(props);
