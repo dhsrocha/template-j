@@ -1,4 +1,4 @@
-package dhsrocha;
+package template;
 
 import io.javalin.Javalin;
 import io.javalin.plugin.openapi.annotations.ContentType;

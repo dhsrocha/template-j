@@ -1,4 +1,4 @@
-package dhsrocha.feature.user;
+package template.feature.user;
 
 import lombok.val;
 import org.junit.jupiter.api.Assertions;

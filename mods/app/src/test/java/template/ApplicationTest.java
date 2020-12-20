@@ -1,4 +1,4 @@
-package dhsrocha;
+package template;
 
 import java.time.Duration;
 import java.time.Instant;

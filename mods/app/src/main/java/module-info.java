@@ -1,4 +1,4 @@
-open module dhsrocha {
+open module template.app {
 
   requires lombok;
   requires org.slf4j;

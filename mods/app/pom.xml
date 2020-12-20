@@ -24,7 +24,7 @@
       ${project.build.outputDirectory}/dependency
     </outputDirectory>
 
-    <exec.mainClass>dhsrocha.Application</exec.mainClass>
+    <exec.mainClass>template.Application</exec.mainClass>
   </properties>
 
   <dependencies>
