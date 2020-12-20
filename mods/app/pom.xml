@@ -18,6 +18,15 @@
   <name>Template Web Application</name>
   <description>Web application template using Javalin as basis</description>
 
+  <properties>
+
+    <outputDirectory>
+      ${project.build.outputDirectory}/dependency
+    </outputDirectory>
+
+    <exec.mainClass>dhsrocha.Application</exec.mainClass>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>io.javalin</groupId>
@@ -28,5 +37,41 @@
       <artifactId>javalin-openapi</artifactId>
     </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <!-- Packaging -->
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest>
+              <addClasspath>true</addClasspath>
+              <!-- https://maven.apache.org/plugins/maven-dependency-plugin/copy-dependencies-mojo.html#outputDirectory -->
+              <classpathPrefix>${outputDirectory}</classpathPrefix>
+              <mainClass>${exec.mainClass}</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <!-- To run from project root:
+                  ./mvnw clean compile exec:java -pl mods/app
+               -->
+              <goal>java</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>

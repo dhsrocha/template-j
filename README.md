@@ -33,11 +33,3 @@
 ## Objective
 
 ## Contents
-
-## Execution
-
-## Run locally
-
-```bash
-./mvnw clean package exec:java
-```

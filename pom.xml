@@ -27,19 +27,40 @@
     <version.javalin>3.12.0</version.javalin>
 
     <version.plugin.test>3.0.0-M5</version.plugin.test>
-
-    <outputDirectory>
-      ${project.build.outputDirectory}/dependency
-    </outputDirectory>
-
-    <exec.mainClass>dhsrocha.Application</exec.mainClass>
   </properties>
 
   <modules>
     <module>mods/app</module>
   </modules>
 
+  <reporting>
+    <plugins>
+      <plugin>
+        <artifactId>maven-jxr-plugin</artifactId>
+        <version>3.0.0</version>
+      </plugin>
+    </plugins>
+  </reporting>
+
   <build>
+    <pluginManagement>
+      <plugins>
+        <!-- Packaging -->
+        <plugin>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>3.1.2</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>3.2.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>exec-maven-plugin</artifactId>
+          <version>3.0.0</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
     <plugins>
       <!-- Project -->
       <plugin>
@@ -185,58 +206,14 @@
                       <minimum>0.70</minimum>
                     </limit>
                   </limits>
-                  <excludes>
-                    <exclude>${exec.mainClass}</exclude>
-                  </excludes>
                 </rule>
               </rules>
             </configuration>
           </execution>
         </executions>
       </plugin>
-      <!-- Packaging -->
-      <plugin>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <version>3.1.2</version>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <version>3.2.0</version>
-        <configuration>
-          <archive>
-            <manifest>
-              <addClasspath>true</addClasspath>
-              <!-- https://maven.apache.org/plugins/maven-dependency-plugin/copy-dependencies-mojo.html#outputDirectory -->
-              <classpathPrefix>${outputDirectory}</classpathPrefix>
-              <mainClass>${exec.mainClass}</mainClass>
-            </manifest>
-          </archive>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <version>3.0.0</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>java</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
     </plugins>
   </build>
-
-  <reporting>
-    <plugins>
-      <plugin>
-        <artifactId>maven-jxr-plugin</artifactId>
-        <version>3.0.0</version>
-      </plugin>
-    </plugins>
-  </reporting>
 
   <dependencyManagement>
     <dependencies>
