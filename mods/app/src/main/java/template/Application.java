@@ -27,8 +27,8 @@ public class Application {
   public static void main(final String... args) {
     val props = new EnumMap<Props, String>(Props.class);
     Arrays.stream(args)
-        .filter(s -> s.contains("[=:]"))
         .map(s -> s.split("[=:]"))
+        .filter(s -> s.length == 2)
         .forEach(ss -> props.put(Props.valueOf(ss[0]), ss[1]));
     Inner.bootstrap(props);
     log.info("Application running.");
