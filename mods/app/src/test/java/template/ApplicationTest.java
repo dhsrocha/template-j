@@ -15,6 +15,12 @@ final class ApplicationTest {
 
   /**
    * Performs a sanity test with a reasonable startup time.
+   *
+   * <pre>{@code
+   * GIVEN instant before startup
+   * WHEN run sanity startup
+   * THEN startup time is lesser than one second.
+   * }</pre>
    */
   @Test
   @Order(1)
