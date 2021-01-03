@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>dhsrocha</groupId>
+    <artifactId>template-maven-javalin</artifactId>
+    <version>0.1.0</version>
+    <relativePath>../../pom.xml</relativePath>
+  </parent>
+
+  <artifactId>middleware</artifactId>
+  <packaging>jar</packaging>
+
+  <name>Template for Middleware Controlling Point</name>
+  <description>
+    Control point for handling the required middleware for supporting end-user
+    applications.
+  </description>
+
+  <properties>
+    <version.docker.java>3.2.7</version.docker.java>
+    <exec.mainClass>template.Main</exec.mainClass>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.github.docker-java</groupId>
+      <artifactId>docker-java</artifactId>
+      <version>${version.docker.java}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.github.docker-java</groupId>
+          <artifactId>docker-java-transport-netty</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.github.docker-java</groupId>
+          <artifactId>docker-java-transport-jersey</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.github.docker-java</groupId>
+      <artifactId>docker-java-transport-zerodep</artifactId>
+      <version>${version.docker.java}</version>
+    </dependency>
+  </dependencies>
+
+</project>
