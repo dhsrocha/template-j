@@ -30,8 +30,8 @@ public class Application {
         .map(s -> s.split("[=:]"))
         .filter(s -> s.length == 2)
         .forEach(ss -> props.put(Props.valueOf(ss[0]), ss[1]));
-    Inner.bootstrap(props);
-    log.info("Application running.");
+    val app = Inner.bootstrap(props);
+    log.info("Application running at port: {}", app.server.port());
   }
 
   private enum Props {
