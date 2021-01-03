@@ -35,9 +35,8 @@ public class Main {
     val http = new ZerodepDockerHttpClient.Builder()
         .dockerHost(URI.create("unix:///var/run/docker.sock"))
         .build();
-    Arrays.stream(Props.values())
-        .forEach(p -> log.info("{}: [{}]", p, props.get(p)));
     val client = DockerClientImpl.getInstance(cfg, http);
+    props.entrySet().forEach(p -> log.info(p.toString()));
     log.info("Docker auth status: [{}].", client.authCmd().exec().getStatus());
   }
 
