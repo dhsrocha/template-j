@@ -35,6 +35,9 @@
     <checkstyle.header.file>${project.basedir}/LICENSE</checkstyle.header.file>
     <checkstyle.failOnViolation>true</checkstyle.failOnViolation>
     <checkstyle.violationSeverity>info</checkstyle.violationSeverity>
+
+    <!-- https://maven.apache.org/plugins-archives/maven-pmd-plugin-LATEST/cpd-check-mojo.html -->
+    <pmd.printFailingErrors>true</pmd.printFailingErrors>
   </properties>
 
   <modules>
@@ -59,16 +62,6 @@
         <artifactId>maven-jxr-plugin</artifactId>
       </plugin>
       <plugin>
-        <artifactId>maven-checkstyle-plugin</artifactId>
-        <reportSets>
-          <reportSet>
-            <reports>
-              <report>checkstyle</report>
-            </reports>
-          </reportSet>
-        </reportSets>
-      </plugin>
-      <plugin>
         <artifactId>maven-project-info-reports-plugin</artifactId>
         <reportSets>
           <reportSet>
@@ -80,6 +73,12 @@
           </reportSet>
         </reportSets>
       </plugin>
+      <plugin>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <artifactId>maven-pmd-plugin</artifactId>
+      </plugin>
     </plugins>
   </reporting>
 
@@ -90,10 +89,6 @@
         <plugin>
           <artifactId>maven-jxr-plugin</artifactId>
           <version>3.0.0</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-checkstyle-plugin</artifactId>
-          <version>3.1.1</version>
         </plugin>
         <plugin>
           <artifactId>maven-site-plugin</artifactId>
@@ -116,6 +111,15 @@
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>exec-maven-plugin</artifactId>
           <version>3.0.0</version>
+        </plugin>
+        <!-- Static Analysis -->
+        <plugin>
+          <artifactId>maven-pmd-plugin</artifactId>
+          <version>3.14.0</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-checkstyle-plugin</artifactId>
+          <version>3.1.1</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -190,18 +194,15 @@
       </plugin>
       <plugin>
         <artifactId>maven-pmd-plugin</artifactId>
-        <version>3.14.0</version>
         <executions>
           <execution>
             <phase>validate</phase>
             <goals>
               <goal>check</goal>
+              <goal>cpd-check</goal>
             </goals>
           </execution>
         </executions>
-        <configuration>
-          <targetJdk>${maven.compiler.release}</targetJdk>
-        </configuration>
       </plugin>
       <plugin>
         <groupId>com.github.spotbugs</groupId>
