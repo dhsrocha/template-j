@@ -13,6 +13,8 @@
   <description>
     Project template based on Maven and Javalin technology stack
   </description>
+  <!-- TODO: Need to change accordingly -->
+  <url>http://github.com/dhsrocha/template-maven-javalin</url>
 
   <properties>
     <!-- Maven -->
@@ -27,11 +29,29 @@
     <version.javalin>3.12.0</version.javalin>
 
     <version.plugin.test>3.0.0-M5</version.plugin.test>
+
+    <!-- https://maven.apache.org/plugins/maven-checkstyle-plugin/check-mojo.html-->
+    <checkstyle.config.location>google_checks.xml</checkstyle.config.location>
+    <checkstyle.header.file>${project.basedir}/LICENSE</checkstyle.header.file>
+    <checkstyle.failOnViolation>true</checkstyle.failOnViolation>
+    <checkstyle.violationSeverity>info</checkstyle.violationSeverity>
   </properties>
 
   <modules>
     <module>mods/app</module>
   </modules>
+
+  <issueManagement>
+    <system>github</system>
+    <url>${project.url}/issues</url>
+  </issueManagement>
+
+  <distributionManagement>
+    <site>
+      <id>github.com</id>
+      <url>gitsite:git@github.com/dhsrocha/template-maven-javalin.git</url>
+    </site>
+  </distributionManagement>
 
   <reporting>
     <plugins>
@@ -48,6 +68,18 @@
           </reportSet>
         </reportSets>
       </plugin>
+      <plugin>
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>index</report>
+              <report>licenses</report>
+              <report>dependency-info</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
     </plugins>
   </reporting>
 
@@ -58,6 +90,18 @@
         <plugin>
           <artifactId>maven-jxr-plugin</artifactId>
           <version>3.0.0</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-checkstyle-plugin</artifactId>
+          <version>3.1.1</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>3.9.1</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-project-info-reports-plugin</artifactId>
+          <version>3.1.1</version>
         </plugin>
         <!-- Packaging -->
         <plugin>
@@ -132,13 +176,8 @@
       <!-- Static analysis -->
       <plugin>
         <artifactId>maven-checkstyle-plugin</artifactId>
-        <version>3.1.1</version>
         <configuration>
           <includeTestSourceDirectory>true</includeTestSourceDirectory>
-          <failOnViolation>true</failOnViolation>
-          <violationSeverity>warning</violationSeverity>
-          <consoleOutput>true</consoleOutput>
-          <configLocation>google_checks.xml</configLocation>
         </configuration>
         <executions>
           <execution>
