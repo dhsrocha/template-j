@@ -4,8 +4,10 @@ import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.zerodep.ZerodepDockerHttpClient;
 import java.net.URI;
-import java.util.Arrays;
+import java.nio.file.Paths;
 import java.util.EnumMap;
+import java.util.stream.Stream;
+import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +28,7 @@ public class Main {
   public static void main(final String[] args) {
     // Properties
     val props = new EnumMap<Props, String>(Props.class);
-    Arrays.stream(args)
+    Stream.of(args)
         .map(s -> s.split("[=:]"))
         .filter(s -> s.length == 2)
         .forEach(ss -> props.put(Props.valueOf(ss[0]), ss[1]));
@@ -37,19 +39,23 @@ public class Main {
         .build();
     val client = DockerClientImpl.getInstance(cfg, http);
     props.entrySet().forEach(p -> log.info(p.toString()));
+    Stream.of(Props.values()).forEach(p ->
+        log.info("Property {}:[{}]", p, props.getOrDefault(p, p.fallback)));
     log.info("Docker auth status: [{}].", client.authCmd().exec().getStatus());
   }
 
+  @AllArgsConstructor
   private enum Props {
     /**
      * Indicates if the build is going to work in a development environment.
-     * Typed as {@link Boolean} and defaults to {@code false}.
+     * Defaults to {@code false}.
      */
-    DEV_MODE,
+    DEV_MODE("false"),
     /**
-     * Indicates the pod's name. Typed as {@link String} and defaults to
-     * project's root folder ({@code Path.get("").toAbsolutePath().toString()}).
+     * Indicates the pod's name. Defaults to  project's root folder.
      */
-    POD_NAME
+    POD_NAME(Paths.get("").toAbsolutePath().getFileName().toString()),
+    ;
+    private final String fallback;
   }
 }
