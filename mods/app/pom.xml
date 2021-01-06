@@ -19,11 +19,6 @@
   <description>Web application template using Javalin as basis</description>
 
   <properties>
-
-    <outputDirectory>
-      ${project.build.outputDirectory}/dependency
-    </outputDirectory>
-
     <exec.mainClass>template.Application</exec.mainClass>
   </properties>
 
@@ -37,27 +32,5 @@
       <artifactId>javalin-openapi</artifactId>
     </dependency>
   </dependencies>
-
-  <build>
-    <plugins>
-      <!-- Packaging -->
-      <plugin>
-        <artifactId>maven-dependency-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <artifactId>maven-jar-plugin</artifactId>
-        <configuration>
-          <archive>
-            <manifest>
-              <addClasspath>true</addClasspath>
-              <!-- https://maven.apache.org/plugins/maven-dependency-plugin/copy-dependencies-mojo.html#outputDirectory -->
-              <classpathPrefix>${outputDirectory}</classpathPrefix>
-              <mainClass>${exec.mainClass}</mainClass>
-            </manifest>
-          </archive>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
 
 </project>
