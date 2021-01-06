@@ -1,6 +1,7 @@
 package template;
 
 import com.github.dockerjava.api.model.Bind;
+import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.RestartPolicy;
@@ -9,6 +10,7 @@ import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.zerodep.ZerodepDockerHttpClient;
 import java.net.URI;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.stream.Stream;
@@ -46,18 +48,17 @@ public class Main {
         .dockerHost(URI.create("unix://" + LINUX_SOCKET))
         .build();
     val client = DockerClientImpl.getInstance(cfg, http);
-    props.entrySet().forEach(p -> log.info(p.toString()));
     Stream.of(Props.values()).forEach(p ->
-        log.info("Property {}:[{}]", p, props.getOrDefault(p, p.fallback)));
+        log.info("Property {}: [{}]", p, props.getOrDefault(p, p.fallback)));
     val isDevMode = Boolean.parseBoolean(
         props.getOrDefault(Props.DEV_MODE, Props.DEV_MODE.fallback));
     // Prune
-    client.listContainersCmd().exec()
-        .forEach(p -> log.info(p.labels.toString()));
     val containers = client.listContainersCmd()
         .withShowAll(Boolean.TRUE)
         .withNameFilter(Collections.singletonList(DOCKER_MANAGER))
         .exec();
+    containers.stream().map(Container::getNames).map(Arrays::toString)
+        .forEach(c -> log.info("Listed container: {}", c));
     if (isDevMode && containers.isEmpty()) {
       // docker-manager
       val id = client.createContainerCmd("portainer/portainer-ce")
