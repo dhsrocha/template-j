@@ -46,13 +46,10 @@ public class Application {
     static Inner bootstrap(final Map<Props, String> props) {
       return new Inner(Javalin.create(cfg -> {
         cfg.showJavalinBanner = !Boolean.parseBoolean(props.getOrDefault(
-            Props.IS_TESTING,
-            "false"));
+            Props.IS_TESTING, "false"));
         cfg.defaultContentType = ContentType.JSON;
         cfg.autogenerateEtags = Boolean.TRUE;
-      })
-                              .start(Integer.parseInt(
-                                  props.getOrDefault(Props.PORT, "9999"))));
+      }).start(Integer.parseInt(props.getOrDefault(Props.PORT, "9999"))));
     }
   }
 }

@@ -11,8 +11,10 @@ import com.github.dockerjava.zerodep.ZerodepDockerHttpClient;
 import java.net.URI;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
@@ -25,7 +27,7 @@ import lombok.val;
 public class Main {
 
   private static final String DOCKER_MANAGER = "docker-manager";
-  private static final String LINUX_SOCKET = "/var/run/docker.sock";
+  private static final String SOCKET = "/var/run/docker.sock";
 
   /**
    * Builds middleware assets according to a given environment.
@@ -36,43 +38,33 @@ public class Main {
    */
   @SneakyThrows
   public static void main(final String[] args) {
-    // Properties
-    val props = new EnumMap<Props, String>(Props.class);
-    Stream.of(args)
-          .map(s -> s.split("[=:]"))
-          .filter(s -> s.length == 2)
-          .forEach(ss -> props.put(Props.valueOf(ss[0]), ss[1]));
+    Props.parse(args);
     // Client
     val cfg = DefaultDockerClientConfig.createDefaultConfigBuilder().build();
     val http = new ZerodepDockerHttpClient.Builder()
-        .dockerHost(URI.create("unix://" + LINUX_SOCKET))
+        .dockerHost(URI.create("unix://" + SOCKET))
         .build();
     val client = DockerClientImpl.getInstance(cfg, http);
-    Stream.of(Props.values())
-          .forEach(p -> log.info("Property {}: [{}]", p,
-                                 props.getOrDefault(p, p.fallback)));
-    val isDevMode = Boolean.parseBoolean(
-        props.getOrDefault(Props.DEV_MODE, Props.DEV_MODE.fallback));
+    Stream.of(Props.values()).forEach(p -> log
+        .info("Property {}: [{}]", p, p.get(String::valueOf)));
     // Prune
     val containers = client.listContainersCmd()
                            .withShowAll(Boolean.TRUE)
-                           .withNameFilter(
-                               Collections.singletonList(DOCKER_MANAGER))
+                           .withNameFilter(List.of(DOCKER_MANAGER))
                            .exec();
     containers.stream()
               .map(Container::getNames).map(Arrays::toString)
               .forEach(c -> log.info("Listed container: {}", c));
-    if (isDevMode && containers.isEmpty()) {
+    if (Props.DEV_MODE.get(Boolean::valueOf) && containers.isEmpty()) {
       // docker-manager
       val hostCfg = HostConfig.newHostConfig()
                               .withRestartPolicy(RestartPolicy.alwaysRestart())
                               .withPortBindings(
                                   PortBinding.parse("9000:9000:9000"),
                                   PortBinding.parse("8000:8000:8000"))
-                              // Volume for standalone content (aka.
-                              // portainer_data) is created on the fly
-                              .withBinds(Bind.parse(
-                                  LINUX_SOCKET + ":" + LINUX_SOCKET));
+                              // Standalone mode volume (aka portainer_data) is
+                              // created on the fly.
+                              .withBinds(Bind.parse(SOCKET + ":" + SOCKET));
       val id = client.createContainerCmd("portainer/portainer-ce")
                      .withDomainName("dev")
                      .withName(DOCKER_MANAGER)
@@ -97,6 +89,18 @@ public class Main {
      */
     POD_NAME(Paths.get("").toAbsolutePath().getFileName().toString()),
     ;
+    private static final Map<Props, String> MAP = new EnumMap<>(Props.class);
     private final String fallback;
+
+    static void parse(final String... args) {
+      Stream.of(args)
+            .map(s -> s.split("[=:]"))
+            .filter(s -> s.length == 2)
+            .forEach(ss -> MAP.put(Props.valueOf(ss[0]), ss[1]));
+    }
+
+    final <T> T get(final Function<String, T> fun) {
+      return fun.apply(MAP.getOrDefault(this, fallback));
+    }
   }
 }
