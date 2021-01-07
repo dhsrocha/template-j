@@ -27,9 +27,9 @@ public class Application {
   public static void main(final String... args) {
     val props = new EnumMap<Props, String>(Props.class);
     Arrays.stream(args)
-        .map(s -> s.split("[=:]"))
-        .filter(s -> s.length == 2)
-        .forEach(ss -> props.put(Props.valueOf(ss[0]), ss[1]));
+          .map(s -> s.split("[=:]"))
+          .filter(s -> s.length == 2)
+          .forEach(ss -> props.put(Props.valueOf(ss[0]), ss[1]));
     val app = Inner.bootstrap(props);
     log.info("Application running at port: {}", app.server.port());
   }
@@ -44,14 +44,15 @@ public class Application {
     Javalin server;
 
     static Inner bootstrap(final Map<Props, String> props) {
-      return new Inner(Javalin
-          .create(cfg -> {
-            cfg.showJavalinBanner = !Boolean.parseBoolean(props
-                .getOrDefault(Props.IS_TESTING, "false"));
-            cfg.defaultContentType = ContentType.JSON;
-            cfg.autogenerateEtags = Boolean.TRUE;
-          })
-          .start(Integer.parseInt(props.getOrDefault(Props.PORT, "9999"))));
+      return new Inner(Javalin.create(cfg -> {
+        cfg.showJavalinBanner = !Boolean.parseBoolean(props.getOrDefault(
+            Props.IS_TESTING,
+            "false"));
+        cfg.defaultContentType = ContentType.JSON;
+        cfg.autogenerateEtags = Boolean.TRUE;
+      })
+                              .start(Integer.parseInt(
+                                  props.getOrDefault(Props.PORT, "9999"))));
     }
   }
 }

@@ -1,7 +1,9 @@
 package template.feature.user;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import lombok.val;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -17,7 +19,7 @@ final class UserTest {
   @DisplayName("Should throw IllegalArgumentException due to invalid values.")
   final void shouldThrow_dueToInvalidValues(final String name, final int age) {
     // Assert / Act
-    Assertions.assertThrows(IllegalArgumentException.class, () -> User.of(name, age));
+    assertThrows(IllegalArgumentException.class, () -> User.of(name, age));
   }
 
   @Test
@@ -29,8 +31,8 @@ final class UserTest {
     // Assert
     val result = User.of(name, age);
     // Act
-    Assertions.assertEquals(name, result.getName());
-    Assertions.assertEquals(age, result.getAge());
+    assertEquals(name, result.getName());
+    assertEquals(age, result.getAge());
   }
 }
 

@@ -39,39 +39,45 @@ public class Main {
     // Properties
     val props = new EnumMap<Props, String>(Props.class);
     Stream.of(args)
-        .map(s -> s.split("[=:]"))
-        .filter(s -> s.length == 2)
-        .forEach(ss -> props.put(Props.valueOf(ss[0]), ss[1]));
+          .map(s -> s.split("[=:]"))
+          .filter(s -> s.length == 2)
+          .forEach(ss -> props.put(Props.valueOf(ss[0]), ss[1]));
     // Client
     val cfg = DefaultDockerClientConfig.createDefaultConfigBuilder().build();
     val http = new ZerodepDockerHttpClient.Builder()
         .dockerHost(URI.create("unix://" + LINUX_SOCKET))
         .build();
     val client = DockerClientImpl.getInstance(cfg, http);
-    Stream.of(Props.values()).forEach(p ->
-        log.info("Property {}: [{}]", p, props.getOrDefault(p, p.fallback)));
+    Stream.of(Props.values())
+          .forEach(p -> log.info("Property {}: [{}]", p,
+                                 props.getOrDefault(p, p.fallback)));
     val isDevMode = Boolean.parseBoolean(
         props.getOrDefault(Props.DEV_MODE, Props.DEV_MODE.fallback));
     // Prune
     val containers = client.listContainersCmd()
-        .withShowAll(Boolean.TRUE)
-        .withNameFilter(Collections.singletonList(DOCKER_MANAGER))
-        .exec();
-    containers.stream().map(Container::getNames).map(Arrays::toString)
-        .forEach(c -> log.info("Listed container: {}", c));
+                           .withShowAll(Boolean.TRUE)
+                           .withNameFilter(
+                               Collections.singletonList(DOCKER_MANAGER))
+                           .exec();
+    containers.stream()
+              .map(Container::getNames).map(Arrays::toString)
+              .forEach(c -> log.info("Listed container: {}", c));
     if (isDevMode && containers.isEmpty()) {
       // docker-manager
+      val hostCfg = HostConfig.newHostConfig()
+                              .withRestartPolicy(RestartPolicy.alwaysRestart())
+                              .withPortBindings(
+                                  PortBinding.parse("9000:9000:9000"),
+                                  PortBinding.parse("8000:8000:8000"))
+                              // Volume for standalone content (aka.
+                              // portainer_data) is created on the fly
+                              .withBinds(Bind.parse(
+                                  LINUX_SOCKET + ":" + LINUX_SOCKET));
       val id = client.createContainerCmd("portainer/portainer-ce")
-          .withDomainName("dev")
-          .withName(DOCKER_MANAGER)
-          .withHostConfig(HostConfig.newHostConfig()
-              .withRestartPolicy(RestartPolicy.alwaysRestart())
-              .withPortBindings(
-                  PortBinding.parse("9000:9000:9000"),
-                  PortBinding.parse("8000:8000:8000"))
-              // Volume for standalone content (aka. portainer_data) is created on the fly
-              .withBinds(Bind.parse(LINUX_SOCKET + ":" + LINUX_SOCKET)))
-          .exec().getId();
+                     .withDomainName("dev")
+                     .withName(DOCKER_MANAGER)
+                     .withHostConfig(hostCfg)
+                     .exec().getId();
       client.startContainerCmd(id).exec();
       val i = client.inspectContainerCmd(id).exec();
       log.info("Service [{}]: [{}]", i.getName(), i.getState().getStatus());

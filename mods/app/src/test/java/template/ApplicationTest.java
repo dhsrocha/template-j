@@ -1,5 +1,7 @@
 package template;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.time.Duration;
 import java.time.Instant;
 import lombok.val;
@@ -36,9 +38,7 @@ final class ApplicationTest {
       // Act
       Application.main("IS_TESTING=true");
       // Assert
-      Assertions.assertTrue(Duration
-          .between(now, Instant.now())
-          .toMillis() <= 1000);
+      assertTrue(Duration.between(now, Instant.now()).toMillis() <= 1000);
     });
   }
 }
