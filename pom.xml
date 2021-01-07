@@ -288,6 +288,17 @@
         </configuration>
       </plugin>
     </plugins>
+    <resources>
+      <!-- Standard slf4j/log4j2 configuration file -->
+      <resource>
+        <directory>
+          ${maven.multiModuleProjectDirectory}${file.separator}src/main/resources
+        </directory>
+        <includes>
+          <include>log4j2.properties</include>
+        </includes>
+      </resource>
+    </resources>
   </build>
 
   <dependencyManagement>
