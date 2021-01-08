@@ -1,24 +1,30 @@
 package template;
 
-import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.model.Bind;
-import com.github.dockerjava.api.model.Container;
-import com.github.dockerjava.api.model.HostConfig;
-import com.github.dockerjava.api.model.PortBinding;
-import com.github.dockerjava.api.model.RestartPolicy;
+import com.github.dockerjava.api.model.ContainerSpec;
+import com.github.dockerjava.api.model.EndpointSpec;
+import com.github.dockerjava.api.model.LocalNodeState;
+import com.github.dockerjava.api.model.Mount;
+import com.github.dockerjava.api.model.MountType;
+import com.github.dockerjava.api.model.PortConfig;
+import com.github.dockerjava.api.model.PortConfig.PublishMode;
+import com.github.dockerjava.api.model.Service;
+import com.github.dockerjava.api.model.ServiceGlobalModeOptions;
+import com.github.dockerjava.api.model.ServiceModeConfig;
+import com.github.dockerjava.api.model.ServiceSpec;
+import com.github.dockerjava.api.model.SwarmSpec;
+import com.github.dockerjava.api.model.TaskSpec;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.zerodep.ZerodepDockerHttpClient;
 import java.net.URI;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -36,7 +42,6 @@ public class Main {
    *             {@link Props pre-defined keys}. Any string that does not follow
    *             that pattern is going to be discarded.
    */
-  @SneakyThrows
   public static void main(final String[] args) {
     Props.parse(args);
     // Client
@@ -46,45 +51,47 @@ public class Main {
         .build();
     val client = DockerClientImpl.getInstance(cfg, http);
     Stream.of(Props.values()).forEach(p -> log
-        .info("Property {}: [{}]", p, p.get(String::valueOf)));
-    // Prune
-    val names = Stream.of(Service.values()).map(s -> s.contName)
-                      .collect(Collectors.toList());
-    val containers = client.listContainersCmd()
-                           .withShowAll(Boolean.TRUE)
-                           .withNameFilter(names)
-                           .exec();
-    containers.stream()
-              .map(Container::getNames).map(Arrays::toString)
-              .forEach(c -> log.info("Listed container: {}", c));
-    if (Props.DEV_MODE.get(Boolean::valueOf) && containers.isEmpty()) {
-      Service.DOCKER_MANAGER.create(client, HostConfig
-          .newHostConfig()
-          .withRestartPolicy(RestartPolicy.alwaysRestart())
-          .withPortBindings(
-              PortBinding.parse("9000:9000:9000"),
-              PortBinding.parse("8000:8000:8000"))
-          // Standalone mode volume (aka portainer_data) is created on the fly.
-          .withBinds(Bind.parse(SOCKET + ":" + SOCKET)));
-    }
-    log.info("Docker auth status: [{}].", client.authCmd().exec().getStatus());
-  }
-
-  @AllArgsConstructor
-  enum Service {
-    DOCKER_MANAGER("portainer/portainer-ce", "docker-manager"),
-    ;
-    private final String imgName;
-    private final String contName;
-
-    void create(final DockerClient cli, final HostConfig cfg) {
-      try (val created = cli.createContainerCmd(imgName)) {
-        val id = created.withName(contName).withHostConfig(cfg).exec().getId();
-        cli.startContainerCmd(id).exec();
-        val i = cli.inspectContainerCmd(id).exec();
-        log.info("Service [{}]: [{}]", i.getName(), i.getState().getStatus());
+        .info("Property {}: [{}]", p, p.getAs(String::valueOf)));
+    // Swarm / Stack
+    val isDev = Props.DEV_MODE.getAs(Boolean::parseBoolean);
+    if (isDev) {
+      val swarm = client.infoCmd().exec().getSwarm();
+      if (null != swarm && swarm.getLocalNodeState() == LocalNodeState.ACTIVE) {
+        client.leaveSwarmCmd().withForceEnabled(Boolean.TRUE).exec();
+        log.info("Swarm left.");
       }
+      client.initializeSwarmCmd(new SwarmSpec()).exec();
+      log.info("Swarm joined.");
     }
+    val vol = client.createVolumeCmd().withName("portainer_data").exec();
+    log.info("Volume created: [{}]", vol.getName());
+    val container = new ContainerSpec()
+        .withImage("portainer/portainer-ce")
+        .withMounts(List.of(new Mount().withSource(SOCKET)
+                                       .withTarget(SOCKET),
+                            new Mount().withType(MountType.VOLUME)
+                                       .withSource(vol.getName())
+                                       .withTarget("/data")));
+    val task = new TaskSpec().withContainerSpec(container);
+    val endpoint = new EndpointSpec().withPorts(
+        List.of(new PortConfig().withTargetPort(9000)
+                                .withPublishedPort(9000)
+                                .withPublishMode(PublishMode.host)));
+    val svc = new ServiceSpec()
+        .withName("docker-manager")
+        .withTaskTemplate(task)
+        .withEndpointSpec(endpoint)
+        .withMode(new ServiceModeConfig()
+                      .withGlobal(new ServiceGlobalModeOptions()));
+    val id = client.createServiceCmd(svc).exec().getId();
+    log.info("Services created:");
+    client.listServicesCmd()
+          .withIdFilter(List.of(id)).exec().stream()
+          .map(Service::getSpec)
+          .filter(Objects::nonNull)
+          .map(ServiceSpec::getName)
+          .forEach(log::info);
+    log.info("Docker auth status: [{}].", client.authCmd().exec().getStatus());
   }
 
   @AllArgsConstructor
@@ -109,7 +116,7 @@ public class Main {
             .forEach(ss -> MAP.put(Props.valueOf(ss[0]), ss[1]));
     }
 
-    final <T> T get(final Function<String, T> fun) {
+    final <T> T getAs(final Function<String, T> fun) {
       return fun.apply(MAP.getOrDefault(this, fallback));
     }
   }
