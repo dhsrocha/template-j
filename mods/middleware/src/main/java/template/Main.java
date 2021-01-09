@@ -1,30 +1,20 @@
 package template;
 
-import com.github.dockerjava.api.model.ContainerSpec;
-import com.github.dockerjava.api.model.EndpointSpec;
 import com.github.dockerjava.api.model.LocalNodeState;
-import com.github.dockerjava.api.model.Mount;
-import com.github.dockerjava.api.model.MountType;
-import com.github.dockerjava.api.model.PortConfig;
-import com.github.dockerjava.api.model.PortConfig.PublishMode;
 import com.github.dockerjava.api.model.Service;
-import com.github.dockerjava.api.model.ServiceGlobalModeOptions;
-import com.github.dockerjava.api.model.ServiceModeConfig;
 import com.github.dockerjava.api.model.ServiceSpec;
 import com.github.dockerjava.api.model.SwarmSpec;
-import com.github.dockerjava.api.model.TaskSpec;
-import com.github.dockerjava.api.model.UpdateConfig;
-import com.github.dockerjava.api.model.UpdateFailureAction;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.zerodep.ZerodepDockerHttpClient;
 import java.net.URI;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.EnumMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import lombok.experimental.UtilityClass;
@@ -34,11 +24,6 @@ import lombok.val;
 @Slf4j
 @UtilityClass
 public class Main {
-
-  private static final String SOCKET = "/var/run/docker.sock";
-  private static final Mount MOUNT = new Mount().withSource(SOCKET)
-                                                .withTarget(SOCKET)
-                                                .withReadOnly(Boolean.TRUE);
 
   /**
    * Builds middleware assets according to a given environment.
@@ -52,7 +37,7 @@ public class Main {
     // Client
     val cfg = DefaultDockerClientConfig.createDefaultConfigBuilder().build();
     val http = new ZerodepDockerHttpClient.Builder()
-        .dockerHost(URI.create("unix://" + SOCKET))
+        .dockerHost(URI.create("unix://" + Middleware.Constants.SOCKET))
         .build();
     val client = DockerClientImpl.getInstance(cfg, http);
     Stream.of(Props.values()).forEach(p -> log
@@ -68,30 +53,14 @@ public class Main {
       client.initializeSwarmCmd(new SwarmSpec()).exec();
       log.info("Swarm joined.");
     }
-    val vol = client.createVolumeCmd().withName("portainer_data").exec();
-    log.info("Volume created: [{}]", vol.getName());
-    val container = new ContainerSpec()
-        .withImage("portainer/portainer-ce")
-        .withMounts(List.of(MOUNT, new Mount().withType(MountType.VOLUME)
-                                              .withSource(vol.getName())
-                                              .withTarget("/data")));
-    val task = new TaskSpec().withContainerSpec(container);
-    val endpoint = new EndpointSpec().withPorts(
-        List.of(new PortConfig().withTargetPort(9000)
-                                .withPublishedPort(9000)
-                                .withPublishMode(PublishMode.host)));
-    val svc = new ServiceSpec()
-        .withName("docker-manager")
-        .withTaskTemplate(task)
-        .withEndpointSpec(endpoint)
-        .withMode(new ServiceModeConfig()
-                      .withGlobal(new ServiceGlobalModeOptions()))
-        .withRollbackConfig(
-            new UpdateConfig().withFailureAction(UpdateFailureAction.ROLLBACK));
-    val id = client.createServiceCmd(svc).exec().getId();
     log.info("Services created:");
     client.listServicesCmd()
-          .withIdFilter(List.of(id)).exec().stream()
+          .withIdFilter(Arrays.stream(Middleware.values())
+                              .map(m -> m.build(client))
+                              .map(client::createServiceCmd)
+                              .map(cmd -> cmd.exec().getId())
+                              .collect(Collectors.toList()))
+          .exec().stream()
           .map(Service::getSpec)
           .filter(Objects::nonNull)
           .map(ServiceSpec::getName)
