@@ -13,6 +13,8 @@ import com.github.dockerjava.api.model.ServiceModeConfig;
 import com.github.dockerjava.api.model.ServiceSpec;
 import com.github.dockerjava.api.model.SwarmSpec;
 import com.github.dockerjava.api.model.TaskSpec;
+import com.github.dockerjava.api.model.UpdateConfig;
+import com.github.dockerjava.api.model.UpdateFailureAction;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.zerodep.ZerodepDockerHttpClient;
@@ -34,6 +36,9 @@ import lombok.val;
 public class Main {
 
   private static final String SOCKET = "/var/run/docker.sock";
+  private static final Mount MOUNT = new Mount().withSource(SOCKET)
+                                                .withTarget(SOCKET)
+                                                .withReadOnly(Boolean.TRUE);
 
   /**
    * Builds middleware assets according to a given environment.
@@ -67,11 +72,9 @@ public class Main {
     log.info("Volume created: [{}]", vol.getName());
     val container = new ContainerSpec()
         .withImage("portainer/portainer-ce")
-        .withMounts(List.of(new Mount().withSource(SOCKET)
-                                       .withTarget(SOCKET),
-                            new Mount().withType(MountType.VOLUME)
-                                       .withSource(vol.getName())
-                                       .withTarget("/data")));
+        .withMounts(List.of(MOUNT, new Mount().withType(MountType.VOLUME)
+                                              .withSource(vol.getName())
+                                              .withTarget("/data")));
     val task = new TaskSpec().withContainerSpec(container);
     val endpoint = new EndpointSpec().withPorts(
         List.of(new PortConfig().withTargetPort(9000)
@@ -82,7 +85,9 @@ public class Main {
         .withTaskTemplate(task)
         .withEndpointSpec(endpoint)
         .withMode(new ServiceModeConfig()
-                      .withGlobal(new ServiceGlobalModeOptions()));
+                      .withGlobal(new ServiceGlobalModeOptions()))
+        .withRollbackConfig(
+            new UpdateConfig().withFailureAction(UpdateFailureAction.ROLLBACK));
     val id = client.createServiceCmd(svc).exec().getId();
     log.info("Services created:");
     client.listServicesCmd()
