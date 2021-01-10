@@ -1,6 +1,5 @@
 package template;
 
-import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.ContainerSpec;
 import com.github.dockerjava.api.model.EndpointSpec;
 import com.github.dockerjava.api.model.Mount;
@@ -16,30 +15,20 @@ import com.github.dockerjava.api.model.TaskSpec;
 import com.github.dockerjava.api.model.UpdateConfig;
 import com.github.dockerjava.api.model.UpdateFailureAction;
 import java.util.List;
-import lombok.Cleanup;
 import lombok.experimental.UtilityClass;
-import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 
-@Slf4j
 enum Middleware {
   RDS {
     @Override
-    ServiceSpec build(final DockerClient client) {
-      // Resources
-      @Cleanup val volCmd = client.createVolumeCmd();
-      val v = volCmd.withName(name() + "_data").exec();
-      log.info("Volume created: [{}]", v.getName());
-      val n = client.createNetworkCmd().withName(name())
-                    .withAttachable(Boolean.TRUE).withDriver("overlay").exec();
-      log.info("Network created: [{}]", n.getId());
+    ServiceSpec spec() {
       // Build
       val mount = "/var/lib/postgresql/data";
       val c = new ContainerSpec()
           .withImage("postgres")
           .withMounts(List.of(Config.MOUNT,
                               new Mount().withType(MountType.VOLUME)
-                                         .withSource(v.getName())
+                                         .withSource(name())
                                          .withTarget(mount)))
           .withEnv(List.of("POSTGRES_DB=5432",
                            "POSTGRES_DB=" + Credentials.DB_NAME,
@@ -58,12 +47,12 @@ enum Middleware {
           .withEndpointSpec(e)
           .withMode(Config.GLOBAL)
           .withUpdateConfig(Config.ROLLBACK)
-          .withNetworks(List.of(Config.NETWORK_RDS));
+          .withNetworks(List.of(Config.NETWORK_DB));
     }
   },
-  DB_CLIENT {
+  RDS_CLIENT {
     @Override
-    ServiceSpec build(final DockerClient client) {
+    ServiceSpec spec() {
       val c = new ContainerSpec()
           .withImage("adminer")
           .withMounts(List.of(Config.MOUNT))
@@ -80,20 +69,17 @@ enum Middleware {
           .withEndpointSpec(e)
           .withMode(Config.GLOBAL)
           .withUpdateConfig(Config.ROLLBACK)
-          .withNetworks(List.of(Config.NETWORK_RDS));
+          .withNetworks(List.of(Config.NETWORK_DB));
     }
   },
-  DOCKER_MANAGER {
+  AGENT {
     @Override
-    ServiceSpec build(final DockerClient client) {
-      @Cleanup val cmd = client.createVolumeCmd();
-      val v = cmd.withName("portainer_data").exec();
-      log.info("Volume created for {}: [{}]", name(), v.getName());
+    ServiceSpec spec() {
       val c = new ContainerSpec()
           .withImage("portainer/portainer-ce")
           .withMounts(List.of(Config.MOUNT,
                               new Mount().withType(MountType.VOLUME)
-                                         .withSource(v.getName())
+                                         .withSource(name())
                                          .withTarget("/data")));
       val t = new TaskSpec().withContainerSpec(c);
       val e = new EndpointSpec().withPorts(
@@ -110,7 +96,11 @@ enum Middleware {
   },
   ;
 
-  abstract ServiceSpec build(final DockerClient client);
+  abstract ServiceSpec spec();
+
+  enum Network {
+    PRIVATE
+  }
 
   @UtilityClass
   static class Constants {
@@ -120,8 +110,8 @@ enum Middleware {
   @UtilityClass
   private static class Config {
 
-    private static final NetworkAttachmentConfig NETWORK_RDS =
-        new NetworkAttachmentConfig().withTarget(Middleware.RDS.name());
+    private static final NetworkAttachmentConfig NETWORK_DB =
+        new NetworkAttachmentConfig().withTarget(Network.PRIVATE.name());
 
     private static final Mount MOUNT = new Mount().withSource(Constants.SOCKET)
                                                   .withTarget(Constants.SOCKET)

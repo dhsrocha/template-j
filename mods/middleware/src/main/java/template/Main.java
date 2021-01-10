@@ -18,6 +18,7 @@ import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import lombok.val;
 import org.slf4j.LoggerFactory;
+import template.Middleware.Network;
 
 public interface Main {
 
@@ -50,11 +51,19 @@ public interface Main {
       client.initializeSwarmCmd(new SwarmSpec()).exec();
       log.info("Swarm init.");
     }
+    // Resources
+    val n = client.createNetworkCmd()
+                  .withName(Network.PRIVATE.name())
+                  .withAttachable(Boolean.TRUE).withDriver("overlay").exec();
+    log.info("Network created: [{}]", n.getId());
+    Stream.of(Middleware.values()).filter(m -> !m.name().contains("CLIENT"))
+          .forEach(m -> client.createVolumeCmd().withName(m.name()).exec());
+    // Middleware
     client.listServicesCmd()
           .withIdFilter(Arrays.stream(Middleware.values())
-                              .map(m -> m.build(client))
+                              .map(Middleware::spec)
                               .map(client::createServiceCmd)
-                              .map(cmd -> cmd.exec().getId())
+                              .map(c -> c.exec().getId())
                               .collect(Collectors.toList()))
           .exec().stream()
           .map(Service::getSpec)
