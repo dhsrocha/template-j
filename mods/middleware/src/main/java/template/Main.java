@@ -16,13 +16,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
-import lombok.experimental.UtilityClass;
-import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.slf4j.LoggerFactory;
 
-@Slf4j
-@UtilityClass
-public class Main {
+public interface Main {
 
   /**
    * Builds middleware assets according to a given environment.
@@ -31,7 +28,8 @@ public class Main {
    *             {@link Props pre-defined keys}. Any string that does not follow
    *             that pattern is going to be discarded.
    */
-  public static void main(final String[] args) {
+  static void main(final String[] args) {
+    val log = LoggerFactory.getLogger(Main.class);
     Props.parse(args);
     // Client
     val cfg = DefaultDockerClientConfig.createDefaultConfigBuilder().build();
@@ -66,7 +64,7 @@ public class Main {
   }
 
   @AllArgsConstructor
-  private enum Props {
+  enum Props {
     /**
      * Indicates if the build is going to work in a development environment.
      * Defaults to {@code false}.
