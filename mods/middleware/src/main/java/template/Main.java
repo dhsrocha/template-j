@@ -2,7 +2,6 @@ package template;
 
 import com.github.dockerjava.api.model.LocalNodeState;
 import com.github.dockerjava.api.model.Service;
-import com.github.dockerjava.api.model.ServiceSpec;
 import com.github.dockerjava.api.model.SwarmSpec;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
@@ -51,9 +50,8 @@ public class Main {
         log.info("Swarm left.");
       }
       client.initializeSwarmCmd(new SwarmSpec()).exec();
-      log.info("Swarm joined.");
+      log.info("Swarm init.");
     }
-    log.info("Services created:");
     client.listServicesCmd()
           .withIdFilter(Arrays.stream(Middleware.values())
                               .map(m -> m.build(client))
@@ -63,8 +61,7 @@ public class Main {
           .exec().stream()
           .map(Service::getSpec)
           .filter(Objects::nonNull)
-          .map(ServiceSpec::getName)
-          .forEach(log::info);
+          .forEach(s -> log.info("Service created: [{}]", s.getName()));
     log.info("Docker auth status: [{}].", client.authCmd().exec().getStatus());
   }
 
