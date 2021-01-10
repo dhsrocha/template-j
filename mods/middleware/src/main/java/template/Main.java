@@ -1,6 +1,7 @@
 package template;
 
 import com.github.dockerjava.api.model.LocalNodeState;
+import com.github.dockerjava.api.model.PruneType;
 import com.github.dockerjava.api.model.Service;
 import com.github.dockerjava.api.model.SwarmSpec;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
@@ -18,7 +19,6 @@ import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import lombok.val;
 import org.slf4j.LoggerFactory;
-import template.Middleware.Network;
 
 public interface Main {
 
@@ -47,17 +47,22 @@ public interface Main {
       if (null != swarm && swarm.getLocalNodeState() == LocalNodeState.ACTIVE) {
         client.leaveSwarmCmd().withForceEnabled(Boolean.TRUE).exec();
         log.info("Swarm left.");
+        log.info("Pruned: [{}]",
+                 client.pruneCmd(PruneType.VOLUMES).exec().getSpaceReclaimed());
       }
       client.initializeSwarmCmd(new SwarmSpec()).exec();
       log.info("Swarm init.");
     }
     // Resources
-    val n = client.createNetworkCmd()
-                  .withName(Network.PRIVATE.name())
-                  .withAttachable(Boolean.TRUE).withDriver("overlay").exec();
-    log.info("Network created: [{}]", n.getId());
+    Stream.of(Middleware.NOSQL, Middleware.RDS, Middleware.MSG)
+          .forEach(m -> client.createNetworkCmd()
+                              .withName(m.name())
+                              .withAttachable(Boolean.TRUE)
+                              .withDriver("overlay").exec());
+    log.info("Networks created.");
     Stream.of(Middleware.values()).filter(m -> !m.name().contains("CLIENT"))
           .forEach(m -> client.createVolumeCmd().withName(m.name()).exec());
+    log.info("Volumes created.");
     // Middleware
     client.listServicesCmd()
           .withIdFilter(Arrays.stream(Middleware.values())
