@@ -72,6 +72,64 @@ enum Middleware {
           .withNetworks(List.of(Config.NETWORK_DB));
     }
   },
+  NOSQL {
+    @Override
+    ServiceSpec spec() {
+      val c = new ContainerSpec()
+          .withImage("mongo")
+          .withMounts(List.of(Config.MOUNT,
+                              new Mount().withType(MountType.VOLUME)
+                                         .withSource(name())
+                                         .withTarget("/data/db"),
+                              new Mount().withType(MountType.VOLUME)
+                                         .withSource(name() + "_CONFIG")
+                                         .withTarget("/data/configdb")))
+          .withEnv(List.of("POSTGRES_DB=5432",
+                           "MONGO_INITDB_ROOT_USERNAME=" + Credentials.DB_USER,
+                           "MONGO_INITDB_ROOT_PASSWORD=" + Credentials.DB_PASS));
+      val e = new EndpointSpec().withPorts(
+          List.of(new PortConfig().withTargetPort(27001)
+                                  .withPublishedPort(27001)
+                                  .withPublishMode(PublishMode.host)));
+      val t = new TaskSpec().withContainerSpec(c);
+      return new ServiceSpec()
+          .withName(name())
+          .withTaskTemplate(t)
+          .withEndpointSpec(e)
+          .withMode(Config.GLOBAL)
+          .withUpdateConfig(Config.ROLLBACK)
+          .withNetworks(List.of(Config.NETWORK_DB));
+    }
+  },
+  NOSQL_CLIENT {
+    @Override
+    ServiceSpec spec() {
+      val c = new ContainerSpec()
+          .withImage("mongo-express")
+          .withMounts(List.of(Config.MOUNT))
+          .withEnv(List.of("ME_CONFIG_MONGODB_ENABLE_ADMIN=true",
+                           "ME_CONFIG_OPTIONS_EDITORTHEME=rubyblue",
+                           "ME_CONFIG_MONGODB_SERVER="
+                               + Middleware.NOSQL.name(),
+                           "ME_CONFIG_MONGODB_AUTH_DATABASE=" + Credentials.DB_NAME,
+                           "ME_CONFIG_MONGODB_AUTH_USERNAME=" + Credentials.DB_USER,
+                           "ME_CONFIG_MONGODB_AUTH_PASSWORD=" + Credentials.DB_PASS,
+                           "ME_CONFIG_MONGODB_ADMINUSERNAME=" + Credentials.DB_USER,
+                           "ME_CONFIG_MONGODB_ADMINPASSWORD=" + Credentials.DB_PASS));
+      val e = new EndpointSpec().withPorts(
+          List.of(new PortConfig().withTargetPort(27018)
+                                  .withPublishedPort(8081)
+                                  .withPublishMode(PublishMode.host)));
+      val t = new TaskSpec().withContainerSpec(c);
+      return new ServiceSpec()
+          .withName(name())
+          .withTaskTemplate(t)
+          .withEndpointSpec(e)
+          .withMode(Config.GLOBAL)
+          .withUpdateConfig(Config.ROLLBACK)
+          .withNetworks(List.of(Config.NETWORK_DB));
+    }
+  },
   AGENT {
     @Override
     ServiceSpec spec() {
