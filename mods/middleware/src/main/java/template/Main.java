@@ -1,5 +1,6 @@
 package template;
 
+import com.github.dockerjava.api.command.InspectVolumeResponse;
 import com.github.dockerjava.api.model.LocalNodeState;
 import com.github.dockerjava.api.model.PruneType;
 import com.github.dockerjava.api.model.Service;
@@ -14,6 +15,7 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
@@ -42,25 +44,39 @@ public interface Main {
         .info("Property {}: [{}]", p, p.getAs(String::valueOf)));
     // Swarm / Stack
     val isDev = Props.DEV_MODE.getAs(Boolean::parseBoolean);
+    val middlewareNames = Predicate.<String>isEqual("AGENT")
+        .or(Predicate.isEqual("CLIENT")).negate();
     if (isDev) {
       val swarm = client.infoCmd().exec().getSwarm();
       if (null != swarm && swarm.getLocalNodeState() == LocalNodeState.ACTIVE) {
         client.leaveSwarmCmd().withForceEnabled(Boolean.TRUE).exec();
         log.info("Swarm left.");
-        log.info("Pruned: [{}]",
-                 client.pruneCmd(PruneType.VOLUMES).exec().getSpaceReclaimed());
+        // Prune
+        val names = client.listVolumesCmd().exec().getVolumes().stream()
+                          .map(InspectVolumeResponse::getName)
+                          .filter(middlewareNames)
+                          .collect(Collectors.joining(","));
+        val build = client.pruneCmd(PruneType.VOLUMES)
+                          .withLabelFilter("name=" + names)
+                          .exec();
+        log.info("Volumes pruned. Reclaimed: [{}]", build.getSpaceReclaimed());
+        client.pruneCmd(PruneType.NETWORKS).exec();
+        log.info("Networks pruned.");
       }
       client.initializeSwarmCmd(new SwarmSpec()).exec();
       log.info("Swarm init.");
     }
     // Resources
-    Stream.of(Middleware.NOSQL, Middleware.RDS, Middleware.MSG)
+    Stream.of(Middleware.values())
+          .map(Enum::name)
+          .filter(middlewareNames)
           .forEach(m -> client.createNetworkCmd()
-                              .withName(m.name())
+                              .withName(m)
                               .withAttachable(Boolean.TRUE)
                               .withDriver("overlay").exec());
     log.info("Networks created.");
-    Stream.of(Middleware.values()).filter(m -> !m.name().contains("CLIENT"))
+    Stream.of(Middleware.values())
+          .filter(m -> !m.name().contains("CLIENT"))
           .forEach(m -> client.createVolumeCmd().withName(m.name()).exec());
     log.info("Volumes created.");
     // Middleware

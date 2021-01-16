@@ -17,6 +17,7 @@ import com.github.dockerjava.api.model.UpdateFailureAction;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import lombok.AllArgsConstructor;
 import lombok.experimental.UtilityClass;
 import lombok.val;
 
@@ -34,7 +35,7 @@ enum Middleware {
                            "POSTGRES_USER=" + Credentials.DB_USER,
                            "POSTGRES_PASSWORD=" + Credentials.DB_PASS));
       val e = new EndpointSpec()
-          .withPorts(List.of(self().portOf(5432, 5432)));
+          .withPorts(List.of(self().portOf(5432, Port.RDS.main)));
       val t = new TaskSpec()
           .withContainerSpec(c)
           .withPlacement(new ServicePlacement().withMaxReplicas(2));
@@ -49,7 +50,7 @@ enum Middleware {
           .withMounts(List.of(Middleware.MOUNT))
           .withEnv(List.of("ADMINER_DEFAULT_SERVER=" + RDS.name()));
       val e = new EndpointSpec()
-          .withPorts(List.of(self().portOf(8080, 9001)));
+          .withPorts(List.of(self().portOf(8080, Port.RDS.client)));
       val t = new TaskSpec().withContainerSpec(c);
       return self().specWith(t, e, RDS);
     }
@@ -66,7 +67,7 @@ enum Middleware {
                            "MONGO_INITDB_ROOT_USERNAME=" + Credentials.DB_USER,
                            "MONGO_INITDB_ROOT_PASSWORD=" + Credentials.DB_PASS));
       val e = new EndpointSpec()
-          .withPorts(List.of(self().portOf(27001, 27001)));
+          .withPorts(List.of(self().portOf(27001, Port.NOSQL.main)));
       val t = new TaskSpec().withContainerSpec(c);
       return self().specWith(t, e, this);
     }
@@ -87,7 +88,7 @@ enum Middleware {
                            "ME_CONFIG_MONGODB_ADMINUSERNAME=" + Credentials.DB_USER,
                            "ME_CONFIG_MONGODB_ADMINPASSWORD=" + Credentials.DB_PASS));
       val e = new EndpointSpec()
-          .withPorts(List.of(self().portOf(8081, 9002)));
+          .withPorts(List.of(self().portOf(8081, Port.NOSQL.client)));
       val t = new TaskSpec().withContainerSpec(c);
       return self().specWith(t, e, NOSQL);
     }
@@ -102,8 +103,8 @@ enum Middleware {
           .withEnv(List.of("RABBITMQ_DEFAULT_USER=" + Credentials.DB_USER,
                            "RABBITMQ_DEFAULT_PASS=" + Credentials.DB_PASS));
       val e = new EndpointSpec()
-          .withPorts(List.of(self().portOf(5672, 5672),
-                             self().portOf(15672, 9003)));
+          .withPorts(List.of(self().portOf(5672, Port.MSG.main),
+                             self().portOf(15672, Port.MSG.client)));
       val t = new TaskSpec().withContainerSpec(c);
       return self().specWith(t, e, this);
     }
@@ -117,7 +118,7 @@ enum Middleware {
                               self().volumeOf("/data")));
       val t = new TaskSpec().withContainerSpec(c);
       val e = new EndpointSpec()
-          .withPorts(List.of(self().portOf(9000, 9000)));
+          .withPorts(List.of(self().portOf(9000, Port.AGENT.main)));
       return self().specWith(t, e);
     }
   },
@@ -159,6 +160,17 @@ enum Middleware {
     return new PortConfig().withTargetPort(source)
                            .withPublishedPort(target)
                            .withPublishMode(PublishMode.host);
+  }
+
+  @AllArgsConstructor
+  private enum Port {
+    MSG(9003, 9013),
+    NOSQL(9002, 9012),
+    RDS(9001, 9011),
+    AGENT(9000, 9010),
+    ;
+    private final int main;
+    private final int client;
   }
 
   @UtilityClass
