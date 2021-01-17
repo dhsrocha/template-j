@@ -58,6 +58,7 @@
       <id>github.com</id>
       <url>gitsite:git@github.com/dhsrocha/template-maven-javalin.git</url>
     </site>
+    <!-- TODO: Needs to declare a repository -->
   </distributionManagement>
 
   <reporting>
@@ -111,6 +112,11 @@
         <plugin>
           <artifactId>maven-jar-plugin</artifactId>
           <version>3.2.0</version>
+        </plugin>
+        <plugin>
+          <groupId>com.google.cloud.tools</groupId>
+          <artifactId>jib-maven-plugin</artifactId>
+          <version>2.7.1</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
@@ -359,5 +365,41 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <profiles>
+    <profile>
+      <id>docker</id>
+      <activation>
+        <property>
+          <name>docker.img.port</name>
+        </property>
+      </activation>
+      <properties>
+        <docker.img>openjdk:${maven.compiler.release}-jre-slim</docker.img>
+        <!-- https://github.com/GoogleContainerTools/jib/tree/master/jib-maven-plugin#extended-usage -->
+        <jib.from.image>${docker.img}</jib.from.image>
+        <jib.to.image>${project.groupId}.${project.artifactId}</jib.to.image>
+        <jib.container.ports.port>${docker.img.port}</jib.container.ports.port>
+        <jib.jvmArgs.jvmArg>-DPORT=${docker.img.port}</jib.jvmArgs.jvmArg>
+      </properties>
+      <build>
+        <defaultGoal>clean compile test package</defaultGoal>
+        <plugins>
+          <plugin>
+            <groupId>com.google.cloud.tools</groupId>
+            <artifactId>jib-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <phase>package</phase>
+                <goals>
+                  <goal>dockerBuild</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 
 </project>

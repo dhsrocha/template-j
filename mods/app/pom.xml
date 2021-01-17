@@ -33,4 +33,16 @@
     </dependency>
   </dependencies>
 
+  <profiles>
+    <profile>
+      <id>docker</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+        <docker.img.port>9900</docker.img.port>
+      </properties>
+    </profile>
+  </profiles>
+
 </project>

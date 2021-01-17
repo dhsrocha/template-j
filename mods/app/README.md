@@ -7,3 +7,9 @@
 ```bash
 ./mvnw -pl mods/app
 ```
+
+## Deploy
+
+```bash
+./mvnw -pl mods/app -Pdocker package
+```
