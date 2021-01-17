@@ -46,23 +46,19 @@ public interface Main {
     val isDev = Props.DEV_MODE.getAs(Boolean::parseBoolean);
     val middlewareNames = Predicate.<String>isEqual("AGENT")
         .or(Predicate.isEqual("CLIENT")).negate();
-    if (isDev) {
-      val swarm = client.infoCmd().exec().getSwarm();
-      if (null != swarm && swarm.getLocalNodeState() == LocalNodeState.ACTIVE) {
-        client.leaveSwarmCmd().withForceEnabled(Boolean.TRUE).exec();
-        log.info("Swarm left.");
-        // Prune
-        val names = client.listVolumesCmd().exec().getVolumes().stream()
-                          .map(InspectVolumeResponse::getName)
-                          .filter(middlewareNames)
-                          .collect(Collectors.joining(","));
-        val build = client.pruneCmd(PruneType.VOLUMES)
-                          .withLabelFilter("name=" + names)
-                          .exec();
-        log.info("Volumes pruned. Reclaimed: [{}]", build.getSpaceReclaimed());
-        client.pruneCmd(PruneType.NETWORKS).exec();
-        log.info("Networks pruned.");
-      }
+    val swarm = client.infoCmd().exec().getSwarm();
+    if (isDev && null != swarm && swarm
+        .getLocalNodeState() == LocalNodeState.ACTIVE) {
+      client.leaveSwarmCmd().withForceEnabled(Boolean.TRUE).exec();
+      log.info("Swarm left.");
+      // Prune
+      client.listVolumesCmd().exec().getVolumes().stream()
+            .map(InspectVolumeResponse::getName)
+            .filter(middlewareNames)
+            .forEach(s -> client.removeVolumeCmd(s).exec());
+      log.info("Volumes pruned.");
+      client.pruneCmd(PruneType.NETWORKS).exec();
+      log.info("Networks pruned.");
       client.initializeSwarmCmd(new SwarmSpec()).exec();
       log.info("Swarm init.");
     }
