@@ -14,8 +14,8 @@ import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
@@ -33,21 +33,20 @@ public interface Main {
    */
   static void main(final String[] args) {
     val log = LoggerFactory.getLogger(Main.class);
-    Props.parse(args);
+    val props = Props.from(args);
     // Client
     val cfg = DefaultDockerClientConfig.createDefaultConfigBuilder().build();
     val http = new ZerodepDockerHttpClient.Builder()
         .dockerHost(URI.create("unix://" + Middleware.Constants.SOCKET))
         .build();
     val client = DockerClientImpl.getInstance(cfg, http);
-    log.info("Properties: {}", Props.MAP.toString());
+    log.info("Properties: {}", props.toString());
     // Swarm / Stack
-    val isDev = Props.DEV_MODE.getAs(Boolean::parseBoolean);
     val middlewareNames = Predicate.<String>isEqual("AGENT")
         .or(Predicate.isEqual("CLIENT")).negate();
     val swarm = client.infoCmd().exec().getSwarm();
-    if (isDev && null != swarm && swarm
-        .getLocalNodeState() == LocalNodeState.ACTIVE) {
+    if (Boolean.parseBoolean(props.get(Props.DEV_MODE)) && null != swarm
+        && swarm.getLocalNodeState() == LocalNodeState.ACTIVE) {
       client.leaveSwarmCmd().withForceEnabled(Boolean.TRUE).exec();
       log.info("Swarm left.");
       // Prune
@@ -100,18 +99,19 @@ public interface Main {
      */
     POD_NAME(Path.of("").toAbsolutePath().toFile().getName()),
     ;
-    private static final Map<Props, String> MAP = new EnumMap<>(Props.class);
-    private final String fallback;
+    private static final Pattern SPLIT = Pattern.compile("[:=]");
+    private final String val;
 
-    static void parse(final String... args) {
-      Stream.of(args)
-            .map(s -> s.split("[=:]"))
-            .filter(s -> s.length == 2)
-            .forEach(ss -> MAP.put(Props.valueOf(ss[0]), ss[1]));
-    }
-
-    final <T> T getAs(final Function<String, T> fun) {
-      return fun.apply(MAP.getOrDefault(this, fallback));
+    static Map<Props, String> from(final String... args) {
+      val m = new EnumMap<Props, String>(Props.class);
+      for (val p : values()) {
+        m.put(p, p.val);
+      }
+      for (val s : args) {
+        val ss = SPLIT.split(s, -1);
+        m.put(Props.valueOf(ss[0]), ss[1]);
+      }
+      return m;
     }
   }
 }
