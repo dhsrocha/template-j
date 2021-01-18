@@ -40,8 +40,7 @@ public interface Main {
         .dockerHost(URI.create("unix://" + Middleware.Constants.SOCKET))
         .build();
     val client = DockerClientImpl.getInstance(cfg, http);
-    Stream.of(Props.values()).forEach(p -> log
-        .info("Property {}: [{}]", p, p.getAs(String::valueOf)));
+    log.info("Properties: {}", Props.MAP.toString());
     // Swarm / Stack
     val isDev = Props.DEV_MODE.getAs(Boolean::parseBoolean);
     val middlewareNames = Predicate.<String>isEqual("AGENT")
