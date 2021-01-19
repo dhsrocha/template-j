@@ -9,168 +9,136 @@ import com.github.dockerjava.api.model.PortConfig;
 import com.github.dockerjava.api.model.PortConfig.PublishMode;
 import com.github.dockerjava.api.model.ServiceGlobalModeOptions;
 import com.github.dockerjava.api.model.ServiceModeConfig;
-import com.github.dockerjava.api.model.ServicePlacement;
 import com.github.dockerjava.api.model.ServiceSpec;
 import com.github.dockerjava.api.model.TaskSpec;
 import com.github.dockerjava.api.model.UpdateConfig;
 import com.github.dockerjava.api.model.UpdateFailureAction;
-import java.util.Arrays;
-import java.util.List;
+import com.google.common.collect.ImmutableList;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.experimental.UtilityClass;
 import lombok.val;
 
+@AllArgsConstructor
 enum Middleware {
-  RDS {
-    @Override
-    ServiceSpec spec() {
-      // Build
-      val c = new ContainerSpec()
-          .withImage("postgres")
-          .withMounts(List.of(Middleware.MOUNT,
-                              self().volumeOf("/var/lib/postgresql/data")))
-          .withEnv(List.of("POSTGRES_DB=5432",
-                           "POSTGRES_DB=" + Credentials.DB_NAME,
-                           "POSTGRES_USER=" + Credentials.DB_USER,
-                           "POSTGRES_PASSWORD=" + Credentials.DB_PASS));
-      val e = new EndpointSpec()
-          .withPorts(List.of(self().portOf(5432, Port.RDS.main)));
-      val t = new TaskSpec()
-          .withContainerSpec(c)
-          .withPlacement(new ServicePlacement().withMaxReplicas(2));
-      return self().specWith(t, e, this);
-    }
-  },
-  RDS_CLIENT {
-    @Override
-    ServiceSpec spec() {
-      val c = new ContainerSpec()
-          .withImage("adminer")
-          .withMounts(List.of(Middleware.MOUNT))
-          .withEnv(List.of("ADMINER_DEFAULT_SERVER=" + RDS.name()));
-      val e = new EndpointSpec()
-          .withPorts(List.of(self().portOf(8080, Port.RDS.client)));
-      val t = new TaskSpec().withContainerSpec(c);
-      return self().specWith(t, e, RDS);
-    }
-  },
-  NOSQL {
-    @Override
-    ServiceSpec spec() {
-      val c = new ContainerSpec()
-          .withImage("mongo")
-          .withMounts(List.of(Middleware.MOUNT,
-                              self().volumeOf("/data/db"),
-                              self().volumeOf("/data/configdb")))
-          .withEnv(List.of("POSTGRES_DB=5432",
-                           "MONGO_INITDB_ROOT_USERNAME=" + Credentials.DB_USER,
-                           "MONGO_INITDB_ROOT_PASSWORD=" + Credentials.DB_PASS));
-      val e = new EndpointSpec()
-          .withPorts(List.of(self().portOf(27001, Port.NOSQL.main)));
-      val t = new TaskSpec().withContainerSpec(c);
-      return self().specWith(t, e, this);
-    }
-  },
-  NOSQL_CLIENT {
-    @Override
-    ServiceSpec spec() {
-      val c = new ContainerSpec()
-          .withImage("mongo-express")
-          .withMounts(List.of(Middleware.MOUNT))
-          .withEnv(List.of("ME_CONFIG_MONGODB_ENABLE_ADMIN=true",
-                           "ME_CONFIG_OPTIONS_EDITORTHEME=rubyblue",
-                           "ME_CONFIG_MONGODB_SERVER="
-                               + Middleware.NOSQL.name(),
-                           "ME_CONFIG_MONGODB_AUTH_DATABASE=" + Credentials.DB_NAME,
-                           "ME_CONFIG_MONGODB_AUTH_USERNAME=" + Credentials.DB_USER,
-                           "ME_CONFIG_MONGODB_AUTH_PASSWORD=" + Credentials.DB_PASS,
-                           "ME_CONFIG_MONGODB_ADMINUSERNAME=" + Credentials.DB_USER,
-                           "ME_CONFIG_MONGODB_ADMINPASSWORD=" + Credentials.DB_PASS));
-      val e = new EndpointSpec()
-          .withPorts(List.of(self().portOf(8081, Port.NOSQL.client)));
-      val t = new TaskSpec().withContainerSpec(c);
-      return self().specWith(t, e, NOSQL);
-    }
-  },
-  MSG {
-    @Override
-    ServiceSpec spec() {
-      val c = new ContainerSpec()
-          .withImage("rabbitmq:management")
-          .withMounts(List.of(Middleware.MOUNT,
-                              self().volumeOf("/var/lib/rabbitmq")))
-          .withEnv(List.of("RABBITMQ_DEFAULT_USER=" + Credentials.DB_USER,
-                           "RABBITMQ_DEFAULT_PASS=" + Credentials.DB_PASS));
-      val e = new EndpointSpec()
-          .withPorts(List.of(self().portOf(5672, Port.MSG.main),
-                             self().portOf(15672, Port.MSG.client)));
-      val t = new TaskSpec().withContainerSpec(c);
-      return self().specWith(t, e, this);
-    }
-  },
-  AGENT {
-    @Override
-    ServiceSpec spec() {
-      val c = new ContainerSpec()
-          .withImage("portainer/portainer-ce")
-          .withMounts(List.of(Middleware.MOUNT,
-                              self().volumeOf("/data")));
-      val t = new TaskSpec().withContainerSpec(c);
-      val e = new EndpointSpec()
-          .withPorts(List.of(self().portOf(9000, Port.AGENT.main)));
-      return self().specWith(t, e);
-    }
-  },
+  RDB("postgres",
+      ImmutableList.of(Mounts.SOCKET, Mounts.RDB),
+      ImmutableList.of(Port.RDB),
+      ImmutableList.of(Network.RDB),
+      ImmutableList.of("POSTGRES_DB=" + Credentials.DB_NAME,
+                       "POSTGRES_USER=" + Credentials.DB_USER,
+                       "POSTGRES_PASSWORD=" + Credentials.DB_PASS)),
+  RDB_CLIENT("adminer",
+             ImmutableList.of(Mounts.SOCKET),
+             ImmutableList.of(Port.RDB_CLIENT),
+             ImmutableList.of(Network.RDB),
+             ImmutableList.of("ADMINER_DEFAULT_SERVER=" + RDB)),
+  NDB("mongo",
+      ImmutableList.of(Mounts.SOCKET, Mounts.NDB, Mounts.NDB_CFG),
+      ImmutableList.of(Port.NDB),
+      ImmutableList.of(Network.NDB),
+      ImmutableList.of("MONGO_INITDB_ROOT_USERNAME=" + Credentials.DB_USER,
+                       "MONGO_INITDB_ROOT_PASSWORD=" + Credentials.DB_PASS)),
+  NDB_CLIENT("mongo-express",
+             ImmutableList.of(Mounts.SOCKET),
+             ImmutableList.of(Port.NDB_CLIENT),
+             ImmutableList.of(Network.NDB),
+             ImmutableList.of("ME_CONFIG_MONGODB_ENABLE_ADMIN=true",
+                              "ME_CONFIG_OPTIONS_EDITORTHEME=rubyblue",
+                              "ME_CONFIG_MONGODB_SERVER=" + Middleware.NDB,
+                              "ME_CONFIG_MONGODB_PORT=" + Port.NDB.exposed,
+                              "ME_CONFIG_MONGODB_AUTH_DATABASE=" + Credentials.DB_NAME,
+                              "ME_CONFIG_MONGODB_AUTH_USERNAME=" + Credentials.DB_USER,
+                              "ME_CONFIG_MONGODB_AUTH_PASSWORD=" + Credentials.DB_PASS,
+                              "ME_CONFIG_MONGODB_ADMINUSERNAME=" + Credentials.DB_USER,
+                              "ME_CONFIG_MONGODB_ADMINPASSWORD=" + Credentials.DB_PASS)),
+  MSG("rabbitmq:management",
+      ImmutableList.of(Mounts.SOCKET, Mounts.MSG),
+      ImmutableList.of(Port.MSG, Port.MSG_CLIENT),
+      ImmutableList.of(Network.MSG),
+      ImmutableList.of("RABBITMQ_DEFAULT_USER=" + Credentials.DB_USER,
+                       "RABBITMQ_DEFAULT_PASS=" + Credentials.DB_PASS)),
+  AGENT("portainer/portainer-ce",
+        ImmutableList.of(Mounts.SOCKET, Mounts.AGENT),
+        ImmutableList.of(Port.AGENT),
+        ImmutableList.of(),
+        ImmutableList.of()),
   ;
 
-  private static final Mount MOUNT = new Mount().withSource(Constants.SOCKET)
-                                                .withTarget(Constants.SOCKET)
-                                                .withReadOnly(Boolean.TRUE);
+  private final String image;
+  private final ImmutableList<Mounts> mounts;
+  private final ImmutableList<Port> ports;
+  private final ImmutableList<Network> refs;
+  private final ImmutableList<String> entries;
 
-  abstract ServiceSpec spec();
-
-  Middleware self() {
-    return this;
-  }
-
-  private ServiceSpec specWith(final TaskSpec task, final EndpointSpec endpoint,
-                               final Middleware... networksRefs) {
+  ServiceSpec spec() {
+    val pp = ports.stream().map(Supplier::get).collect(Collectors.toList());
+    val mm = mounts.stream().map(Supplier::get).collect(Collectors.toList());
     val u = new UpdateConfig()
         .withFailureAction(UpdateFailureAction.ROLLBACK);
+    val n = refs.stream().map(Enum::name)
+                .map(new NetworkAttachmentConfig()::withTarget)
+                .collect(Collectors.toList());
     val s = new ServiceModeConfig()
         .withGlobal(new ServiceGlobalModeOptions());
-    val nn = Arrays.stream(networksRefs).map(Enum::name)
-                   .map(new NetworkAttachmentConfig()::withTarget)
-                   .collect(Collectors.toList());
-    return new ServiceSpec().withName(name())
-                            .withTaskTemplate(task)
-                            .withEndpointSpec(endpoint)
-                            .withRollbackConfig(u)
-                            .withMode(s)
-                            .withNetworks(nn);
-  }
-
-  private Mount volumeOf(final String target) {
-    return new Mount().withSource(name()).withTarget(target)
-                      .withType(MountType.VOLUME);
-  }
-
-  private PortConfig portOf(final int source, final int target) {
-    return new PortConfig().withTargetPort(source)
-                           .withPublishedPort(target)
-                           .withPublishMode(PublishMode.host);
+    val c = new ContainerSpec().withMounts(mm)
+                               .withImage(image).withEnv(entries);
+    val t = new TaskSpec().withContainerSpec(c);
+    val e = new EndpointSpec().withPorts(pp);
+    return new ServiceSpec().withName(name()).withTaskTemplate(t)
+                            .withNetworks(n).withEndpointSpec(e)
+                            .withMode(s).withRollbackConfig(u);
   }
 
   @AllArgsConstructor
-  private enum Port {
-    MSG(9003, 9013),
-    NOSQL(9002, 9012),
-    RDS(9001, 9011),
-    AGENT(9000, 9010),
+  private enum Port implements Supplier<PortConfig> {
+    RDB(9011, 5432),
+    NDB(9012, 27017),
+    MSG(9013, 5672),
+    AGENT(9000, 9000),
+    RDB_CLIENT(9001, 8080),
+    NDB_CLIENT(9002, 8081),
+    MSG_CLIENT(9003, 15672),
     ;
-    private final int main;
-    private final int client;
+    private final int published;
+    private final int exposed;
+
+    @Override
+    public PortConfig get() {
+      return new PortConfig().withTargetPort(exposed)
+                             .withPublishedPort(published)
+                             .withPublishMode(PublishMode.host);
+    }
+  }
+
+  private enum Network {
+    RDB, NDB, MSG
+  }
+
+  @AllArgsConstructor
+  private enum Mounts implements Supplier<Mount> {
+    MSG("/var/lib/rabbitmq"),
+    RDB("/var/lib/postgresql/data"),
+    NDB("/data/db"),
+    NDB_CFG("/data/configdb"),
+    AGENT("/data"),
+    SOCKET("") {
+      @Override
+      public Mount get() {
+        return new Mount().withSource(Constants.SOCKET)
+                          .withTarget(Constants.SOCKET)
+                          .withReadOnly(Boolean.TRUE);
+      }
+    },
+    ;
+    private final String val;
+
+    @Override
+    public Mount get() {
+      return new Mount().withType(MountType.VOLUME)
+                        .withSource(name()).withTarget(val);
+    }
   }
 
   @UtilityClass
