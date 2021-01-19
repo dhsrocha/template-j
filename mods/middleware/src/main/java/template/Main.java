@@ -9,7 +9,7 @@ import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.zerodep.ZerodepDockerHttpClient;
 import java.net.URI;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.Map;
@@ -99,7 +99,7 @@ public interface Main {
     /**
      * Indicates the pod's name. Defaults to project's root folder.
      */
-    POD_NAME(Paths.get("").toAbsolutePath().getFileName().toString()),
+    POD_NAME(Path.of("").toAbsolutePath().toFile().getName()),
     ;
     private static final Map<Props, String> MAP = new EnumMap<>(Props.class);
     private final String fallback;
