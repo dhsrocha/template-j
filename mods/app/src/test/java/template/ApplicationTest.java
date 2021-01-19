@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Duration;
 import java.time.Instant;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Application test case.
  */
+@Slf4j
 final class ApplicationTest {
 
   /**
@@ -38,7 +40,9 @@ final class ApplicationTest {
       // Act
       Application.main("IS_TESTING=true");
       // Assert
-      assertTrue(Duration.between(now, Instant.now()).toMillis() <= 1000);
+      val elapsed = Duration.between(now, Instant.now()).toMillis();
+      log.info("Startup time: [{}]", elapsed);
+      assertTrue(elapsed <= 1000);
     });
   }
 }

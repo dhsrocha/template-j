@@ -87,7 +87,7 @@
   </reporting>
 
   <build>
-    <defaultGoal>clean compile exec:java</defaultGoal>
+    <defaultGoal>clean compile test exec:java</defaultGoal>
     <pluginManagement>
       <plugins>
         <!-- Project -->

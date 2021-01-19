@@ -31,7 +31,7 @@ public class Application {
           .filter(s -> s.length == 2)
           .forEach(ss -> props.put(Props.valueOf(ss[0]), ss[1]));
     val app = Inner.bootstrap(props);
-    log.info("Application running at port: {}", app.server.port());
+    log.info("Application running. [port={}]", app.server.port());
   }
 
   private enum Props {
