@@ -10,17 +10,16 @@ import lombok.Value;
 import lombok.val;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Application main class.
+ */
 public interface Application {
 
   /**
    * Application's entry point. Design purpose is just exposing a method for
    * {@code maven-exec-plugin} from terminal.
    *
-   * @param args Key-value arguments written in {@code k=v} or {@code k:v}
-   *             format in order to configure {@link Javalin server}'s
-   *             initialization, under {@link Props pre-defined keys}. Any
-   *             string that does not follow that pattern is going to be
-   *             discarded.
+   * @param args key-value entries treated by {@link Props#from(String...)}.
    */
   static void main(final String... args) {
     val log = LoggerFactory.getLogger(Application.class);
@@ -44,6 +43,15 @@ public interface Application {
     private static final Pattern SPLIT = Pattern.compile("[:=]");
     private final String val;
 
+    /**
+     * Serialize input entries according to the enumerated items.
+     *
+     * @param args Key-value entries written in {@code k=v} or {@code k:v} under
+     *             {@link Props pre-defined keys}. Any string that does not
+     *             follow that pattern is going to be discarded.
+     * @return Map of properties with their corresponding captured or default
+     *     values if not found.
+     */
     static Map<Props, String> from(final String... args) {
       val m = new EnumMap<Props, String>(Props.class);
       for (val p : values()) {

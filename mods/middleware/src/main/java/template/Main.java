@@ -25,11 +25,10 @@ import org.slf4j.LoggerFactory;
 public interface Main {
 
   /**
-   * Builds middleware assets according to a given environment.
+   * Builds middleware assets according to a given environment. Main purpose is
+   * to create or refresh all required resources for running an application.
    *
-   * @param args Key-value arguments written in {@code k=v} or {@code k:v} under
-   *             {@link Props pre-defined keys}. Any string that does not follow
-   *             that pattern is going to be discarded.
+   * @param args key-value entries treated by {@link Props#from(String...)}.
    */
   static void main(final String[] args) {
     val log = LoggerFactory.getLogger(Main.class);
@@ -102,6 +101,15 @@ public interface Main {
     private static final Pattern SPLIT = Pattern.compile("[:=]");
     private final String val;
 
+    /**
+     * Serialize input entries according to the enumerated items.
+     *
+     * @param args Key-value entries written in {@code k=v} or {@code k:v} under
+     *             {@link Props pre-defined keys}. Any string that does not
+     *             follow that pattern is going to be discarded.
+     * @return Map of properties with their corresponding captured or default
+     *     values if not found.
+     */
     static Map<Props, String> from(final String... args) {
       val m = new EnumMap<Props, String>(Props.class);
       for (val p : values()) {
