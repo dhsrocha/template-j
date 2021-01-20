@@ -9,6 +9,7 @@ import com.github.dockerjava.api.model.PortConfig;
 import com.github.dockerjava.api.model.PortConfig.PublishMode;
 import com.github.dockerjava.api.model.ServiceGlobalModeOptions;
 import com.github.dockerjava.api.model.ServiceModeConfig;
+import com.github.dockerjava.api.model.ServiceReplicatedModeOptions;
 import com.github.dockerjava.api.model.ServiceSpec;
 import com.github.dockerjava.api.model.TaskSpec;
 import com.github.dockerjava.api.model.UpdateConfig;
@@ -23,6 +24,7 @@ import lombok.val;
 @AllArgsConstructor
 enum Middleware {
   RDB("postgres",
+      ServiceMode.GLOBAL,
       ImmutableList.of(Mounts.SOCKET, Mounts.RDB),
       ImmutableList.of(Port.RDB),
       ImmutableList.of(Network.RDB),
@@ -30,17 +32,20 @@ enum Middleware {
                        "POSTGRES_USER=" + Credentials.DB_USER,
                        "POSTGRES_PASSWORD=" + Credentials.DB_PASS)),
   RDB_CLIENT("adminer",
+             ServiceMode.GLOBAL,
              ImmutableList.of(Mounts.SOCKET),
              ImmutableList.of(Port.RDB_CLIENT),
              ImmutableList.of(Network.RDB),
              ImmutableList.of("ADMINER_DEFAULT_SERVER=" + RDB)),
   NDB("mongo",
+      ServiceMode.GLOBAL,
       ImmutableList.of(Mounts.SOCKET, Mounts.NDB, Mounts.NDB_CFG),
       ImmutableList.of(Port.NDB),
       ImmutableList.of(Network.NDB),
       ImmutableList.of("MONGO_INITDB_ROOT_USERNAME=" + Credentials.DB_USER,
                        "MONGO_INITDB_ROOT_PASSWORD=" + Credentials.DB_PASS)),
   NDB_CLIENT("mongo-express",
+             ServiceMode.GLOBAL,
              ImmutableList.of(Mounts.SOCKET),
              ImmutableList.of(Port.NDB_CLIENT),
              ImmutableList.of(Network.NDB),
@@ -54,12 +59,14 @@ enum Middleware {
                               "ME_CONFIG_MONGODB_ADMINUSERNAME=" + Credentials.DB_USER,
                               "ME_CONFIG_MONGODB_ADMINPASSWORD=" + Credentials.DB_PASS)),
   MSG("rabbitmq:management",
+      ServiceMode.GLOBAL,
       ImmutableList.of(Mounts.SOCKET, Mounts.MSG),
       ImmutableList.of(Port.MSG, Port.MSG_CLIENT),
       ImmutableList.of(Network.MSG),
       ImmutableList.of("RABBITMQ_DEFAULT_USER=" + Credentials.DB_USER,
                        "RABBITMQ_DEFAULT_PASS=" + Credentials.DB_PASS)),
   AGENT("portainer/portainer-ce",
+        ServiceMode.GLOBAL,
         ImmutableList.of(Mounts.SOCKET, Mounts.AGENT),
         ImmutableList.of(Port.AGENT),
         ImmutableList.of(),
@@ -67,6 +74,7 @@ enum Middleware {
   ;
 
   private final String image;
+  private final ServiceMode mode;
   private final ImmutableList<Mounts> mounts;
   private final ImmutableList<Port> ports;
   private final ImmutableList<Network> refs;
@@ -80,15 +88,13 @@ enum Middleware {
     val n = refs.stream().map(Enum::name)
                 .map(new NetworkAttachmentConfig()::withTarget)
                 .collect(Collectors.toList());
-    val s = new ServiceModeConfig()
-        .withGlobal(new ServiceGlobalModeOptions());
     val c = new ContainerSpec().withMounts(mm)
                                .withImage(image).withEnv(entries);
     val t = new TaskSpec().withContainerSpec(c);
     val e = new EndpointSpec().withPorts(pp);
     return new ServiceSpec().withName(name()).withTaskTemplate(t)
                             .withNetworks(n).withEndpointSpec(e)
-                            .withMode(s).withRollbackConfig(u);
+                            .withMode(mode.mode()).withRollbackConfig(u);
   }
 
   @AllArgsConstructor
@@ -138,6 +144,21 @@ enum Middleware {
     public Mount get() {
       return new Mount().withType(MountType.VOLUME)
                         .withSource(name()).withTarget(val);
+    }
+  }
+
+  @AllArgsConstructor
+  private enum ServiceMode {
+    GLOBAL(0),
+    // REPLICA(1),
+    ;
+    private final int scale;
+
+    ServiceModeConfig mode() {
+      return scale == 0
+          ? new ServiceModeConfig().withGlobal(new ServiceGlobalModeOptions())
+          : new ServiceModeConfig().withReplicated(
+          new ServiceReplicatedModeOptions().withReplicas(scale));
     }
   }
 
