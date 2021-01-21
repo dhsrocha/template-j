@@ -16,7 +16,6 @@ import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -42,13 +41,11 @@ public interface Main {
         .build();
     val client = DockerClientImpl.getInstance(cfg, http);
     log.info("Properties: {}", props.toString());
-    // Swarm / Stack
     client.listImagesCmd().withDanglingFilter(Boolean.TRUE).exec().stream()
           .map(Image::getId).map(client::removeImageCmd)
           .map(RemoveImageCmd::exec)
-          .forEach(v -> log.info("Image removed."));
-    val middlewareNames = Predicate.<String>isEqual("AGENT")
-        .or(Predicate.isEqual("CLIENT")).negate();
+          .forEach(v -> log.info("Dangling image removed."));
+    // Swarm / Stack
     val swarm = client.infoCmd().exec().getSwarm();
     if (Boolean.parseBoolean(props.get(Props.DEV_MODE)) && null != swarm
         && swarm.getLocalNodeState() == LocalNodeState.ACTIVE) {
@@ -57,7 +54,7 @@ public interface Main {
       // Prune
       client.listVolumesCmd().exec().getVolumes().stream()
             .map(InspectVolumeResponse::getName)
-            .filter(middlewareNames)
+            .filter(Middleware.Constants.FILTER)
             .forEach(s -> client.removeVolumeCmd(s).exec());
       log.info("Volumes pruned.");
       client.pruneCmd(PruneType.NETWORKS).exec();
@@ -68,7 +65,7 @@ public interface Main {
     // Resources
     Stream.of(Middleware.values())
           .map(Enum::name)
-          .filter(middlewareNames)
+          .filter(Middleware.Constants.FILTER)
           .forEach(m -> client.createNetworkCmd()
                               .withName(m)
                               .withAttachable(Boolean.TRUE)

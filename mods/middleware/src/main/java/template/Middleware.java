@@ -15,6 +15,7 @@ import com.github.dockerjava.api.model.TaskSpec;
 import com.github.dockerjava.api.model.UpdateConfig;
 import com.github.dockerjava.api.model.UpdateFailureAction;
 import com.google.common.collect.ImmutableList;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
@@ -165,6 +166,8 @@ enum Middleware {
   @UtilityClass
   static class Constants {
     static final String SOCKET = "/var/run/docker.sock";
+    static final Predicate<String> FILTER = Predicate
+        .not(Predicate.isEqual("AGENT").or(Predicate.isEqual("CLIENT")));
   }
 
   @UtilityClass
