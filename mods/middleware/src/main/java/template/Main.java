@@ -1,6 +1,8 @@
 package template;
 
 import com.github.dockerjava.api.command.InspectVolumeResponse;
+import com.github.dockerjava.api.command.RemoveImageCmd;
+import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.api.model.LocalNodeState;
 import com.github.dockerjava.api.model.PruneType;
 import com.github.dockerjava.api.model.Service;
@@ -41,6 +43,10 @@ public interface Main {
     val client = DockerClientImpl.getInstance(cfg, http);
     log.info("Properties: {}", props.toString());
     // Swarm / Stack
+    client.listImagesCmd().withDanglingFilter(Boolean.TRUE).exec().stream()
+          .map(Image::getId).map(client::removeImageCmd)
+          .map(RemoveImageCmd::exec)
+          .forEach(v -> log.info("Image removed."));
     val middlewareNames = Predicate.<String>isEqual("AGENT")
         .or(Predicate.isEqual("CLIENT")).negate();
     val swarm = client.infoCmd().exec().getSwarm();
