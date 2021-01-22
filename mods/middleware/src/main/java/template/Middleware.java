@@ -36,14 +36,16 @@ enum Middleware {
       List.of(Network.RDB),
       List.of("POSTGRES_DB=" + Credentials.DB_NAME,
               "POSTGRES_USER=" + Credentials.DB_USER,
-              "POSTGRES_PASSWORD=" + Credentials.DB_PASS)),
+              "POSTGRES_PASSWORD=" + Credentials.DB_PASS),
+      List.of()),
   RDB_CLIENT("adminer",
              List.of(RDB),
              ServiceMode.GLOBAL,
              List.of(Mounts.SOCKET),
              List.of(Port.RDB_CLIENT),
              List.of(Network.RDB),
-             List.of("ADMINER_DEFAULT_SERVER=" + RDB)),
+             List.of("ADMINER_DEFAULT_SERVER=" + RDB),
+             List.of()),
   NDB("mongo",
       List.of(),
       ServiceMode.GLOBAL,
@@ -51,7 +53,8 @@ enum Middleware {
       List.of(Port.NDB),
       List.of(Network.NDB),
       List.of("MONGO_INITDB_ROOT_USERNAME=" + Credentials.DB_USER,
-              "MONGO_INITDB_ROOT_PASSWORD=" + Credentials.DB_PASS)),
+              "MONGO_INITDB_ROOT_PASSWORD=" + Credentials.DB_PASS),
+      List.of()),
   NDB_CLIENT("mongo-express",
              List.of(NDB),
              ServiceMode.GLOBAL,
@@ -66,7 +69,8 @@ enum Middleware {
                      "ME_CONFIG_MONGODB_AUTH_USERNAME=" + Credentials.DB_USER,
                      "ME_CONFIG_MONGODB_AUTH_PASSWORD=" + Credentials.DB_PASS,
                      "ME_CONFIG_MONGODB_ADMINUSERNAME=" + Credentials.DB_USER,
-                     "ME_CONFIG_MONGODB_ADMINPASSWORD=" + Credentials.DB_PASS)),
+                     "ME_CONFIG_MONGODB_ADMINPASSWORD=" + Credentials.DB_PASS),
+             List.of()),
   MSG("rabbitmq:management",
       List.of(),
       ServiceMode.GLOBAL,
@@ -74,16 +78,51 @@ enum Middleware {
       List.of(Port.MSG, Port.MSG_CLIENT),
       List.of(Network.MSG),
       List.of("RABBITMQ_DEFAULT_USER=" + Credentials.DB_USER,
-              "RABBITMQ_DEFAULT_PASS=" + Credentials.DB_PASS)),
+              "RABBITMQ_DEFAULT_PASS=" + Credentials.DB_PASS),
+      List.of()),
   AGENT("portainer/portainer-ce",
         List.of(),
         ServiceMode.GLOBAL,
         List.of(Mounts.SOCKET, Mounts.AGENT),
         List.of(Port.AGENT),
         List.of(),
+        List.of(),
         List.of()),
+  SCRAPPER("prom/prometheus",
+           List.of(),
+           ServiceMode.REPLICA,
+           List.of(),
+           List.of(Port.SCRAPPER),
+           List.of(Network.SCRAPPER),
+           List.of(),
+           List.of()),
+  SCRAPPER_RDB("prom/mysqld-exporter",
+               List.of(SCRAPPER, RDB),
+               ServiceMode.GLOBAL,
+               List.of(),
+               List.of(Port.SCRAPPER_RDB),
+               List.of(Network.RDB, Network.SCRAPPER),
+               List.of("DATA_SOURCE_NAME="
+                           + Credentials.DB_USER + ":" + Credentials.DB_PASS
+                           + "@(" + RDB + ":" + Port.RDB.published + ")"),
+               List.of("/bin/mysqld_exporter",
+                       "--collect.info_schema.processlist",
+                       "--collect.info_schema.innodb_metrics",
+                       "--collect.info_schema.tablestats",
+                       "--collect.info_schema.tables",
+                       "--collect.info_schema.userstats",
+                       "--collect.engine_innodb_status",
+                       "--web.listen-address=:" + Port.RDB.published)),
+  //  MONITOR("grafana/grafana",
+  //          List.of(SCRAPPER),
+  //          ServiceMode.GLOBAL,
+  //          List.of(),
+  //          List.of(Port.MONITOR),
+  //          List.of(Network.MONITOR),
+  //          List.of("GF_SECURITY_ADMIN_USER=" + Credentials.DB_USER,
+  //                  "GF_SECURITY_ADMIN_PASSWORD=" + Credentials.DB_PASS),
+  //          List.of()),
   ;
-
   private final String image;
   private final List<Middleware> dependOn;
   private final ServiceMode mode;
@@ -91,6 +130,7 @@ enum Middleware {
   private final List<Port> ports;
   private final List<Network> refs;
   private final List<String> entries;
+  private final List<String> commands;
 
   /**
    * Extracts middleware profile items from a string input.
@@ -111,8 +151,8 @@ enum Middleware {
     val n = refs.stream().map(Enum::name)
                 .map(new NetworkAttachmentConfig()::withTarget)
                 .collect(Collectors.toList());
-    val c = new ContainerSpec().withMounts(mm)
-                               .withImage(image).withEnv(entries);
+    val c = new ContainerSpec().withMounts(mm).withImage(image)
+                               .withEnv(entries).withCommand(commands);
     val t = new TaskSpec().withContainerSpec(c);
     val e = new EndpointSpec().withPorts(pp);
     return new ServiceSpec().withName(name()).withTaskTemplate(t)
@@ -129,10 +169,15 @@ enum Middleware {
     RDB(9011, 5432),
     NDB(9012, 27017),
     MSG(9013, 5672),
+    // Clients
     AGENT(9000, 9000),
-    RDB_CLIENT(9001, 8080),
-    NDB_CLIENT(9002, 8081),
-    MSG_CLIENT(9003, 15672),
+    MONITOR(9001, 3000),
+    RDB_CLIENT(9003, 8080),
+    NDB_CLIENT(9004, 8081),
+    MSG_CLIENT(9005, 15672),
+    // Monitoring
+    SCRAPPER(9021, 9090),
+    SCRAPPER_RDB(9022, 9104),
     ;
     private final int published;
     private final int exposed;
@@ -146,7 +191,7 @@ enum Middleware {
   }
 
   private enum Network {
-    RDB, NDB, MSG
+    RDB, NDB, MSG, SCRAPPER
   }
 
   @lombok.AllArgsConstructor
@@ -177,7 +222,7 @@ enum Middleware {
   @lombok.AllArgsConstructor
   private enum ServiceMode {
     GLOBAL(0),
-    // REPLICA(1),
+    REPLICA(1),
     ;
     private final int scale;
 
