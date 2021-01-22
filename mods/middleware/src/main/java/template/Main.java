@@ -109,18 +109,23 @@ public interface Main {
      *
      * @param args Key-value entries written in {@code k=v} or {@code k:v} under
      *             {@link Props pre-defined keys}. Any string that does not
-     *             follow that pattern is going to be discarded.
-     * @return Map of properties with their corresponding captured or default
-     *     values if not found.
+     *             follow that pattern is going to be discarded. Main purpose is
+     *             to be used in test context.
+     * @return Map of properties with the following values:
+     *     <ul>
+     *       <li>Corresponding captured value;</li>
+     *       <li>Input from system/command-line; or</li>
+     *       <li>Pre-defined values.</li>
+     *     </ul>
      */
     static Map<Props, String> from(final String... args) {
       val m = new EnumMap<Props, String>(Props.class);
       for (val p : values()) {
-        m.put(p, p.val);
+        m.put(p, System.getProperty(p.name(), p.val));
       }
-      for (val s : args) {
-        val ss = SPLIT.split(s, -1);
-        m.put(Props.valueOf(ss[0]), ss[1]);
+      for (val ss : args) {
+        val s = SPLIT.split(ss, -1);
+        m.put(Props.valueOf(s[0]), s[1]);
       }
       return m;
     }
