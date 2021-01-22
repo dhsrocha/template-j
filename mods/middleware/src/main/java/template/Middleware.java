@@ -18,6 +18,7 @@ import com.google.common.collect.ImmutableList;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import lombok.experimental.UtilityClass;
 import lombok.val;
@@ -25,6 +26,7 @@ import lombok.val;
 @AllArgsConstructor
 enum Middleware {
   RDB("postgres",
+      ImmutableList.of(),
       ServiceMode.GLOBAL,
       ImmutableList.of(Mounts.SOCKET, Mounts.RDB),
       ImmutableList.of(Port.RDB),
@@ -33,12 +35,14 @@ enum Middleware {
                        "POSTGRES_USER=" + Credentials.DB_USER,
                        "POSTGRES_PASSWORD=" + Credentials.DB_PASS)),
   RDB_CLIENT("adminer",
+             ImmutableList.of(RDB),
              ServiceMode.GLOBAL,
              ImmutableList.of(Mounts.SOCKET),
              ImmutableList.of(Port.RDB_CLIENT),
              ImmutableList.of(Network.RDB),
              ImmutableList.of("ADMINER_DEFAULT_SERVER=" + RDB)),
   NDB("mongo",
+      ImmutableList.of(),
       ServiceMode.GLOBAL,
       ImmutableList.of(Mounts.SOCKET, Mounts.NDB, Mounts.NDB_CFG),
       ImmutableList.of(Port.NDB),
@@ -46,6 +50,7 @@ enum Middleware {
       ImmutableList.of("MONGO_INITDB_ROOT_USERNAME=" + Credentials.DB_USER,
                        "MONGO_INITDB_ROOT_PASSWORD=" + Credentials.DB_PASS)),
   NDB_CLIENT("mongo-express",
+             ImmutableList.of(NDB),
              ServiceMode.GLOBAL,
              ImmutableList.of(Mounts.SOCKET),
              ImmutableList.of(Port.NDB_CLIENT),
@@ -60,6 +65,7 @@ enum Middleware {
                               "ME_CONFIG_MONGODB_ADMINUSERNAME=" + Credentials.DB_USER,
                               "ME_CONFIG_MONGODB_ADMINPASSWORD=" + Credentials.DB_PASS)),
   MSG("rabbitmq:management",
+      ImmutableList.of(),
       ServiceMode.GLOBAL,
       ImmutableList.of(Mounts.SOCKET, Mounts.MSG),
       ImmutableList.of(Port.MSG, Port.MSG_CLIENT),
@@ -67,6 +73,7 @@ enum Middleware {
       ImmutableList.of("RABBITMQ_DEFAULT_USER=" + Credentials.DB_USER,
                        "RABBITMQ_DEFAULT_PASS=" + Credentials.DB_PASS)),
   AGENT("portainer/portainer-ce",
+        ImmutableList.of(),
         ServiceMode.GLOBAL,
         ImmutableList.of(Mounts.SOCKET, Mounts.AGENT),
         ImmutableList.of(Port.AGENT),
@@ -75,11 +82,16 @@ enum Middleware {
   ;
 
   private final String image;
+  private final ImmutableList<Middleware> dependOn;
   private final ServiceMode mode;
   private final ImmutableList<Mounts> mounts;
   private final ImmutableList<Port> ports;
   private final ImmutableList<Network> refs;
   private final ImmutableList<String> entries;
+
+  static Stream<Middleware> stream(final String ss) {
+    return Stream.of(ss.split(",")).map(Middleware::valueOf);
+  }
 
   ServiceSpec spec() {
     val pp = ports.stream().map(Supplier::get).collect(Collectors.toList());
@@ -96,6 +108,10 @@ enum Middleware {
     return new ServiceSpec().withName(name()).withTaskTemplate(t)
                             .withNetworks(n).withEndpointSpec(e)
                             .withMode(mode.mode()).withRollbackConfig(u);
+  }
+
+  final ImmutableList<Middleware> dependOn() {
+    return dependOn;
   }
 
   @AllArgsConstructor

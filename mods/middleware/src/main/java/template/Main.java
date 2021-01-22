@@ -12,7 +12,7 @@ import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.zerodep.ZerodepDockerHttpClient;
 import java.net.URI;
 import java.nio.file.Path;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Objects;
@@ -40,7 +40,9 @@ public interface Main {
         .dockerHost(URI.create("unix://" + Middleware.Constants.SOCKET))
         .build();
     val client = DockerClientImpl.getInstance(cfg, http);
-    log.info("Properties: {}", props.toString());
+    log.info("Properties:");
+    props.entrySet().forEach(e -> log.info("* {}", e));
+    // Prune
     client.listImagesCmd().withDanglingFilter(Boolean.TRUE).exec().stream()
           .map(Image::getId).map(client::removeImageCmd)
           .map(RemoveImageCmd::exec)
@@ -59,6 +61,7 @@ public interface Main {
       log.info("Volumes pruned.");
       client.pruneCmd(PruneType.NETWORKS).exec();
       log.info("Networks pruned.");
+      // Init
       client.initializeSwarmCmd(new SwarmSpec()).exec();
       log.info("Swarm init.");
     }
@@ -71,13 +74,16 @@ public interface Main {
                               .withAttachable(Boolean.TRUE)
                               .withDriver("overlay").exec());
     log.info("Networks created.");
-    Stream.of(Middleware.values())
-          .filter(m -> !m.name().contains("CLIENT"))
-          .forEach(m -> client.createVolumeCmd().withName(m.name()).exec());
+    Stream.of(Middleware.values()).map(Enum::name)
+          .forEach(n -> client.createVolumeCmd().withName(n).exec());
     log.info("Volumes created.");
     // Middleware
+    val mm = Middleware.stream(props.get(Props.SERVICES))
+                       .collect(Collectors.toSet());
+    val dd = mm.stream().map(Middleware::dependOn).flatMap(Collection::stream);
     client.listServicesCmd()
-          .withIdFilter(Arrays.stream(Middleware.values())
+          .withIdFilter(Stream.concat(mm.stream(), dd)
+                              .distinct()
                               .map(Middleware::spec)
                               .map(client::createServiceCmd)
                               .map(c -> c.exec().getId())
@@ -100,6 +106,11 @@ public interface Main {
      * Indicates the pod's name. Defaults to project's root folder.
      */
     POD_NAME(Path.of("").toAbsolutePath().toFile().getName()),
+    /**
+     * All middlewares should be activated if any is not sent.
+     */
+    SERVICES(Stream.of(Middleware.values()).map(Enum::name)
+                   .collect(Collectors.joining(","))),
     ;
     private static final Pattern SPLIT = Pattern.compile("[:=]");
     private final String val;
