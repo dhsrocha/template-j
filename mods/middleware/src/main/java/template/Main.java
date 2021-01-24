@@ -34,14 +34,14 @@ public interface Main {
   static void main(final String[] args) {
     val log = LoggerFactory.getLogger(Main.class);
     val props = Props.from(args);
+    log.info("Properties:");
+    props.entrySet().forEach(e -> log.info("* {}", e));
     // Client
     val cfg = DefaultDockerClientConfig.createDefaultConfigBuilder().build();
     val http = new ZerodepDockerHttpClient.Builder()
         .dockerHost(URI.create("unix://" + Middleware.Constants.SOCKET))
         .build();
     val client = DockerClientImpl.getInstance(cfg, http);
-    log.info("Properties:");
-    props.entrySet().forEach(e -> log.info("* {}", e));
     // Prune
     client.listImagesCmd().withDanglingFilter(Boolean.TRUE).exec().stream()
           .map(Image::getId).map(client::removeImageCmd)
@@ -128,15 +128,22 @@ public interface Main {
      *       <li>Input from system/command-line; or</li>
      *       <li>Pre-defined values.</li>
      *     </ul>
+     * @throws IllegalArgumentException if number of arguments is grater than
+     *                                  the enum {@link #values()}.
      */
     static Map<Props, String> from(final String... args) {
       val m = new EnumMap<Props, String>(Props.class);
-      for (val p : values()) {
+      val values = values();
+      for (val p : values) {
         m.put(p, System.getProperty(p.name(), p.val));
+      }
+      if (args.length > values.length) {
+        throw new IllegalArgumentException(
+            "Arguments given amount is greater than the ones can be afforded!");
       }
       for (val ss : args) {
         val s = SPLIT.split(ss, -1);
-        m.put(Props.valueOf(s[0]), s[1]);
+        m.putIfAbsent(Props.valueOf(s[0]), s[1]);
       }
       return m;
     }
