@@ -5,7 +5,6 @@ import com.github.dockerjava.api.command.RemoveImageCmd;
 import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.api.model.LocalNodeState;
 import com.github.dockerjava.api.model.PruneType;
-import com.github.dockerjava.api.model.Service;
 import com.github.dockerjava.api.model.SwarmSpec;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
@@ -14,11 +13,10 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.Map;
-import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import lombok.val;
 import org.slf4j.LoggerFactory;
@@ -66,33 +64,25 @@ public interface Main {
       client.pruneCmd(PruneType.NETWORKS).exec();
       log.info("Networks pruned.");
     }
-    // Resources
-    Stream.of(Middleware.values())
-          .map(Enum::name)
-          .filter(Middleware.Constants.FILTER)
-          .forEach(m -> client.createNetworkCmd()
-                              .withName(m)
-                              .withAttachable(Boolean.TRUE)
-                              .withDriver("overlay").exec());
-    log.info("Networks created.");
-    Stream.of(Middleware.values()).map(Enum::name)
-          .forEach(n -> client.createVolumeCmd().withName(n).exec());
-    log.info("Volumes created.");
-    // Middleware
-    val mm = Middleware.stream(props.get(Props.SERVICES))
-                       .collect(Collectors.toSet());
-    val dd = mm.stream().map(Middleware::dependOn).flatMap(Collection::stream);
-    client.listServicesCmd()
-          .withIdFilter(Stream.concat(mm.stream(), dd)
-                              .distinct()
-                              .map(Middleware::spec)
-                              .map(client::createServiceCmd)
-                              .map(c -> c.exec().getId())
-                              .collect(Collectors.toList()))
-          .exec().stream()
-          .map(Service::getSpec)
-          .filter(Objects::nonNull)
-          .forEach(s -> log.info("Service created: [{}]", s.getName()));
+    // Services and resources
+    Middleware.stream(props.get(Props.SERVICES))
+              .map(m -> EnumSet.of(m, m.dependOn().toArray(Middleware[]::new)))
+              .flatMap(Collection::stream)
+              .distinct()
+              .forEach(m -> {
+                log.info("Service [{}]:", m);
+                if (Middleware.Constants.FILTER.test(m.name())) {
+                  client.createNetworkCmd()
+                        .withName(m.name())
+                        .withAttachable(Boolean.TRUE)
+                        .withDriver("overlay").exec();
+                  log.info("* Network created.");
+                }
+                client.createVolumeCmd().withName(m.name()).exec();
+                log.info("* Volume created.");
+                client.createServiceCmd(m.spec()).exec();
+                log.info("* Service created.");
+              });
     log.info("Docker auth status: [{}].", client.authCmd().exec().getStatus());
   }
 
@@ -110,8 +100,8 @@ public interface Main {
     /**
      * All middlewares should be activated if any is not sent.
      */
-    SERVICES(Stream.of(Middleware.values()).map(Enum::name)
-                   .collect(Collectors.joining(","))),
+    SERVICES(EnumSet.allOf(Middleware.class).stream().map(Enum::name)
+                    .collect(Collectors.joining(","))),
     ;
     private static final Pattern SPLIT = Pattern.compile("[:=]");
     private final String val;

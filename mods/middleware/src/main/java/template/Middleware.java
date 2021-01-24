@@ -90,7 +90,7 @@ enum Middleware {
   private final ImmutableList<String> entries;
 
   static Stream<Middleware> stream(final String ss) {
-    return Stream.of(ss.split(",")).map(Middleware::valueOf);
+    return Stream.of(ss.split(",")).map(Middleware::valueOf).distinct();
   }
 
   ServiceSpec spec() {
