@@ -61,14 +61,14 @@ public interface Application {
      *                                  the enum {@link #values()}.
      */
     static Map<Props, String> from(final String... args) {
-      val m = new EnumMap<Props, String>(Props.class);
       val values = values();
-      for (val p : values) {
-        m.put(p, System.getProperty(p.name(), p.val));
-      }
       if (args.length > values.length) {
         throw new IllegalArgumentException(
             "Arguments given amount is greater than the ones can be afforded!");
+      }
+      val m = new EnumMap<Props, String>(Props.class);
+      for (val p : values) {
+        m.put(p, System.getProperty(p.name(), p.val));
       }
       for (val ss : args) {
         val s = SPLIT.split(ss, -1);
