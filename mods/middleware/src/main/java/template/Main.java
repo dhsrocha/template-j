@@ -48,15 +48,12 @@ public interface Main {
         .forEach(v -> log.info("Dangling image removed."));
     // Swarm
     val swarm = HOST.infoCmd().exec().getSwarm();
-    // TODO create distinct manager and workers through docker-based containers.
-    if (null != swarm && swarm.getLocalNodeState() == LocalNodeState.ACTIVE) {
-      HOST.leaveSwarmCmd().withForceEnabled(Boolean.TRUE).exec();
-      log.info("Swarm left.");
-    }
-    HOST.initializeSwarmCmd(new SwarmSpec()).exec();
-    log.info("Swarm init.");
-    // Refresh resources
+    // Prune resources
     if (Boolean.parseBoolean(props.get(Props.DEV_MODE))) {
+      if (null != swarm && swarm.getLocalNodeState() == LocalNodeState.ACTIVE) {
+        HOST.leaveSwarmCmd().withForceEnabled(Boolean.TRUE).exec();
+        log.info("Swarm left.");
+      }
       HOST.listVolumesCmd().exec().getVolumes().stream()
           .map(InspectVolumeResponse::getName)
           .filter(Constants.FILTER)
@@ -65,6 +62,9 @@ public interface Main {
       HOST.pruneCmd(PruneType.NETWORKS).exec();
       log.info("Networks pruned.");
     }
+    // TODO create distinct manager and workers through docker-based containers.
+    HOST.initializeSwarmCmd(new SwarmSpec()).exec();
+    log.info("Swarm init.");
     // Services and resources
     Middleware.stream(props.get(Props.SERVICES))
               .map(m -> EnumSet.of(m, m.dependOn().toArray(Middleware[]::new)))
