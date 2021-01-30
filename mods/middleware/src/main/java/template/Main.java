@@ -1,5 +1,6 @@
 package template;
 
+import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.InspectVolumeResponse;
 import com.github.dockerjava.api.command.RemoveImageCmd;
 import com.github.dockerjava.api.model.Image;
@@ -20,8 +21,14 @@ import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.val;
 import org.slf4j.LoggerFactory;
+import template.Middleware.Constants;
 
 public interface Main {
+
+  DockerClient HOST = DockerClientImpl.getInstance(
+      DefaultDockerClientConfig.createDefaultConfigBuilder().build(),
+      new ZerodepDockerHttpClient.Builder().dockerHost(
+          URI.create("unix://" + Middleware.Constants.SOCKET)).build());
 
   /**
    * Builds middleware assets according to a given environment. Main purpose is
@@ -34,34 +41,28 @@ public interface Main {
     val props = Props.from(args);
     log.info("Properties:");
     props.entrySet().forEach(e -> log.info("* {}", e));
-    // Client
-    val cfg = DefaultDockerClientConfig.createDefaultConfigBuilder().build();
-    val http = new ZerodepDockerHttpClient.Builder()
-        .dockerHost(URI.create("unix://" + Middleware.Constants.SOCKET))
-        .build();
-    val client = DockerClientImpl.getInstance(cfg, http);
     // Prune
-    client.listImagesCmd().withDanglingFilter(Boolean.TRUE).exec().stream()
-          .map(Image::getId).map(client::removeImageCmd)
-          .map(RemoveImageCmd::exec)
-          .forEach(v -> log.info("Dangling image removed."));
+    HOST.listImagesCmd().withDanglingFilter(Boolean.TRUE).exec().stream()
+        .map(Image::getId).map(HOST::removeImageCmd)
+        .map(RemoveImageCmd::exec)
+        .forEach(v -> log.info("Dangling image removed."));
     // Swarm
-    val swarm = client.infoCmd().exec().getSwarm();
+    val swarm = HOST.infoCmd().exec().getSwarm();
     // TODO create distinct manager and workers through docker-based containers.
     if (null != swarm && swarm.getLocalNodeState() == LocalNodeState.ACTIVE) {
-      client.leaveSwarmCmd().withForceEnabled(Boolean.TRUE).exec();
+      HOST.leaveSwarmCmd().withForceEnabled(Boolean.TRUE).exec();
       log.info("Swarm left.");
     }
-    client.initializeSwarmCmd(new SwarmSpec()).exec();
+    HOST.initializeSwarmCmd(new SwarmSpec()).exec();
     log.info("Swarm init.");
     // Refresh resources
     if (Boolean.parseBoolean(props.get(Props.DEV_MODE))) {
-      client.listVolumesCmd().exec().getVolumes().stream()
-            .map(InspectVolumeResponse::getName)
-            .filter(Middleware.Constants.FILTER)
-            .forEach(s -> client.removeVolumeCmd(s).exec());
+      HOST.listVolumesCmd().exec().getVolumes().stream()
+          .map(InspectVolumeResponse::getName)
+          .filter(Constants.FILTER)
+          .forEach(s -> HOST.removeVolumeCmd(s).exec());
       log.info("Volumes pruned.");
-      client.pruneCmd(PruneType.NETWORKS).exec();
+      HOST.pruneCmd(PruneType.NETWORKS).exec();
       log.info("Networks pruned.");
     }
     // Services and resources
@@ -71,19 +72,19 @@ public interface Main {
               .distinct()
               .forEach(m -> {
                 log.info("Service [{}]:", m);
-                if (Middleware.Constants.FILTER.test(m.name())) {
-                  client.createNetworkCmd()
-                        .withName(m.name())
-                        .withAttachable(Boolean.TRUE)
-                        .withDriver("overlay").exec();
+                if (Constants.FILTER.test(m.name())) {
+                  HOST.createNetworkCmd()
+                      .withName(m.name())
+                      .withAttachable(Boolean.TRUE)
+                      .withDriver("overlay").exec();
                   log.info("* Network created.");
                 }
-                client.createVolumeCmd().withName(m.name()).exec();
+                HOST.createVolumeCmd().withName(m.name()).exec();
                 log.info("* Volume created.");
-                client.createServiceCmd(m.spec()).exec();
+                HOST.createServiceCmd(m.spec()).exec();
                 log.info("* Service created.");
               });
-    log.info("Docker auth status: [{}].", client.authCmd().exec().getStatus());
+    log.info("Docker auth status: [{}].", HOST.authCmd().exec().getStatus());
   }
 
   @AllArgsConstructor
