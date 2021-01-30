@@ -3,6 +3,7 @@ package template;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.InspectVolumeResponse;
 import com.github.dockerjava.api.command.RemoveImageCmd;
+import com.github.dockerjava.api.command.RemoveVolumeCmd;
 import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.api.model.LocalNodeState;
 import com.github.dockerjava.api.model.PruneType;
@@ -21,7 +22,6 @@ import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.val;
 import org.slf4j.LoggerFactory;
-import template.Middleware.Constants;
 
 public interface Main {
 
@@ -55,9 +55,8 @@ public interface Main {
         log.info("Swarm left.");
       }
       HOST.listVolumesCmd().exec().getVolumes().stream()
-          .map(InspectVolumeResponse::getName)
-          .filter(Constants.FILTER)
-          .forEach(s -> HOST.removeVolumeCmd(s).exec());
+          .map(InspectVolumeResponse::getName).filter(n -> !n.equals("AGENT"))
+          .map(HOST::removeVolumeCmd).forEach(RemoveVolumeCmd::exec);
       log.info("Volumes pruned.");
       HOST.pruneCmd(PruneType.NETWORKS).exec();
       log.info("Networks pruned.");
@@ -72,15 +71,17 @@ public interface Main {
               .distinct()
               .forEach(m -> {
                 log.info("Service [{}]:", m);
-                if (Constants.FILTER.test(m.name())) {
-                  HOST.createNetworkCmd()
-                      .withName(m.name())
-                      .withAttachable(Boolean.TRUE)
-                      .withDriver("overlay").exec();
-                  log.info("* Network created.");
+                if (!m.name().contains("CLIENT")) {
+                  if (!m.name().contains("AGENT")) {
+                    HOST.createNetworkCmd()
+                        .withName(m.name())
+                        .withAttachable(Boolean.TRUE)
+                        .withDriver("overlay").exec();
+                    log.info("* Network created.");
+                  }
+                  HOST.createVolumeCmd().withName(m.name()).exec();
+                  log.info("* Volume created.");
                 }
-                HOST.createVolumeCmd().withName(m.name()).exec();
-                log.info("* Volume created.");
                 HOST.createServiceCmd(m.spec()).exec();
                 log.info("* Service created.");
               });
