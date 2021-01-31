@@ -55,7 +55,8 @@ public interface Main {
         log.info("Swarm left.");
       }
       HOST.listVolumesCmd().exec().getVolumes().stream()
-          .map(InspectVolumeResponse::getName).filter(n -> !n.equals("AGENT"))
+          .map(InspectVolumeResponse::getName)
+          .filter(n -> !n.equals(Middleware.AGENT.name()))
           .map(HOST::removeVolumeCmd).forEach(RemoveVolumeCmd::exec);
       log.info("Volumes pruned.");
       HOST.pruneCmd(PruneType.NETWORKS).exec();
@@ -72,7 +73,7 @@ public interface Main {
               .forEach(m -> {
                 log.info("Service [{}]:", m);
                 if (!m.name().contains("CLIENT")) {
-                  if (!m.name().contains("AGENT")) {
+                  if (m != Middleware.AGENT) {
                     HOST.createNetworkCmd()
                         .withName(m.name())
                         .withAttachable(Boolean.TRUE)
