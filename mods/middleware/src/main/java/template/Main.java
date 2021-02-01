@@ -7,6 +7,8 @@ import com.github.dockerjava.api.command.RemoveVolumeCmd;
 import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.api.model.LocalNodeState;
 import com.github.dockerjava.api.model.PruneType;
+import com.github.dockerjava.api.model.Service;
+import com.github.dockerjava.api.model.ServiceSpec;
 import com.github.dockerjava.api.model.SwarmSpec;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
@@ -16,7 +18,9 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
@@ -47,13 +51,16 @@ public interface Main {
         .map(RemoveImageCmd::exec)
         .forEach(v -> log.info("Dangling image removed."));
     // Swarm
-    val swarm = HOST.infoCmd().exec().getSwarm();
-    // Prune resources
-    if (Boolean.parseBoolean(props.get(Props.DEV_MODE))) {
-      if (null != swarm && swarm.getLocalNodeState() == LocalNodeState.ACTIVE) {
-        HOST.leaveSwarmCmd().withForceEnabled(Boolean.TRUE).exec();
-        log.info("Swarm left.");
-      }
+    val s = HOST.infoCmd().exec().getSwarm();
+    val toRefresh = null != s && s.getLocalNodeState() == LocalNodeState.ACTIVE;
+    if (!toRefresh) {
+      // TODO create distinct manager and workers through dind containers.
+      HOST.initializeSwarmCmd(new SwarmSpec()).exec();
+      log.info("Swarm started.");
+    } else if (Boolean.parseBoolean(props.get(Props.DEV_MODE))) {
+      HOST.leaveSwarmCmd().withForceEnabled(Boolean.TRUE).exec();
+      log.info("Swarm left.");
+      // Prune resources
       HOST.listVolumesCmd().exec().getVolumes().stream()
           .map(InspectVolumeResponse::getName)
           .filter(n -> !n.equals(Middleware.AGENT.name()))
@@ -62,26 +69,34 @@ public interface Main {
       HOST.pruneCmd(PruneType.NETWORKS).exec();
       log.info("Networks pruned.");
     }
-    // TODO create distinct manager and workers through docker-based containers.
-    HOST.initializeSwarmCmd(new SwarmSpec()).exec();
-    log.info("Swarm init.");
     // Services and resources
+    val none = EnumSet.noneOf(Middleware.class);
+    val running = !toRefresh ? none : HOST
+        .listServicesCmd().exec().stream().map(Service::getSpec)
+        .filter(Objects::nonNull).map(ServiceSpec::getName)
+        .map(Middleware::valueOf).collect(Collectors.toCollection(() -> none));
     Middleware.stream(props.get(Props.SERVICES))
               .map(m -> EnumSet.of(m, m.dependOn().toArray(Middleware[]::new)))
               .flatMap(Collection::stream)
               .distinct()
+              .filter(f -> !running.contains(f))
               .forEach(m -> {
                 log.info("Service [{}]:", m);
                 if (!m.name().contains("CLIENT")) {
-                  if (m != Middleware.AGENT) {
+                  if (m != Middleware.AGENT
+                      && HOST.listNetworksCmd()
+                             .withNameFilter(m.name()).exec().isEmpty()) {
                     HOST.createNetworkCmd()
                         .withName(m.name())
                         .withAttachable(Boolean.TRUE)
                         .withDriver("overlay").exec();
                     log.info("* Network created.");
                   }
-                  HOST.createVolumeCmd().withName(m.name()).exec();
-                  log.info("* Volume created.");
+                  if (HOST.listVolumesCmd().withFilter("name", List.of(m.name()))
+                          .exec().getVolumes().isEmpty()) {
+                    HOST.createVolumeCmd().withName(m.name()).exec();
+                    log.info("* Volume created.");
+                  }
                 }
                 HOST.createServiceCmd(m.spec()).exec();
                 log.info("* Service created.");
