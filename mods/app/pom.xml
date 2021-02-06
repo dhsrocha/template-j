@@ -20,7 +20,12 @@
 
   <properties>
     <exec.mainClass>template.Application</exec.mainClass>
+    <docker.img.port>9900</docker.img.port>
   </properties>
+
+  <build>
+    <defaultGoal>${exec.defaultGoal}</defaultGoal>
+  </build>
 
   <dependencies>
     <dependency>
@@ -39,9 +44,6 @@
       <activation>
         <activeByDefault>true</activeByDefault>
       </activation>
-      <properties>
-        <docker.img.port>9900</docker.img.port>
-      </properties>
     </profile>
   </profiles>
 

@@ -32,6 +32,16 @@
     <exec.mainClass>
       ${project.groupId}.${project.artifactId}.Main
     </exec.mainClass>
+    <exec.defaultGoal>clean test compile exec:java</exec.defaultGoal>
+
+    <!-- https://maven.apache.org/plugins/maven-checkstyle-plugin/check-mojo.html-->
+    <checkstyle.config.location>google_checks.xml</checkstyle.config.location>
+    <checkstyle.header.file>${project.basedir}/LICENSE</checkstyle.header.file>
+    <checkstyle.failOnViolation>true</checkstyle.failOnViolation>
+    <checkstyle.violationSeverity>info</checkstyle.violationSeverity>
+
+    <!-- https://maven.apache.org/plugins-archives/maven-pmd-plugin-LATEST/cpd-check-mojo.html -->
+    <pmd.printFailingErrors>true</pmd.printFailingErrors>
   </properties>
 
   <modules>
@@ -79,7 +89,9 @@
   </reporting>
 
   <build>
-    <defaultGoal>clean compile test exec:java</defaultGoal>
+    <defaultGoal>
+      clean checkstyle:check pmd:check pmd:cpd-check spotbugs:check install
+    </defaultGoal>
     <pluginManagement>
       <plugins>
         <!-- Project -->
@@ -325,16 +337,6 @@
   <profiles>
     <profile>
       <id>static-analysis</id>
-      <properties>
-        <!-- https://maven.apache.org/plugins/maven-checkstyle-plugin/check-mojo.html-->
-        <checkstyle.config.location>google_checks.xml</checkstyle.config.location>
-        <checkstyle.header.file>${project.basedir}/LICENSE</checkstyle.header.file>
-        <checkstyle.failOnViolation>true</checkstyle.failOnViolation>
-        <checkstyle.violationSeverity>info</checkstyle.violationSeverity>
-
-        <!-- https://maven.apache.org/plugins-archives/maven-pmd-plugin-LATEST/cpd-check-mojo.html -->
-        <pmd.printFailingErrors>true</pmd.printFailingErrors>
-      </properties>
       <build>
         <defaultGoal>validate</defaultGoal>
         <plugins>
