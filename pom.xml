@@ -32,7 +32,7 @@
     <exec.mainClass>
       ${project.groupId}.${project.artifactId}.Main
     </exec.mainClass>
-    <exec.defaultGoal>clean test compile exec:java</exec.defaultGoal>
+    <exec.defaultGoal>clean package</exec.defaultGoal>
 
     <!-- https://maven.apache.org/plugins/maven-checkstyle-plugin/check-mojo.html-->
     <checkstyle.config.location>google_checks.xml</checkstyle.config.location>

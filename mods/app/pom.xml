@@ -13,7 +13,6 @@
 
   <artifactId>app</artifactId>
   <version>0.1.0</version>
-  <packaging>jar</packaging>
 
   <name>Template Web Application</name>
   <description>Web application template using Javalin as basis</description>
@@ -24,7 +23,7 @@
   </properties>
 
   <build>
-    <defaultGoal>${exec.defaultGoal}</defaultGoal>
+    <defaultGoal>${exec.defaultGoal} exec:java</defaultGoal>
   </build>
 
   <dependencies>
