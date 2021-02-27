@@ -3,6 +3,7 @@ package template;
 import io.javalin.Javalin;
 import io.javalin.plugin.openapi.annotations.ContentType;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 import lombok.AllArgsConstructor;
@@ -25,7 +26,7 @@ public interface Application {
     val log = LoggerFactory.getLogger(Application.class);
     val props = Props.from(args);
     log.info("Properties:");
-    props.entrySet().forEach(e -> log.info("* {}", e));
+    props.forEach((p, v) -> log.info("* {}: {}", p.key, v));
     val app = Inner.bootstrap(props);
     log.info("Application running. [port={}]", app.server.port());
   }
@@ -35,13 +36,14 @@ public interface Application {
     /**
      * Determines if the execution is under testing.
      */
-    IS_TESTING("true"),
+    IS_TESTING("app.test", "true"),
     /**
      * Application's running port.
      */
-    PORT("9999"),
+    PORT("app.port", "9999"),
     ;
     private static final Pattern SPLIT = Pattern.compile("[:=]");
+    private final String key;
     private final String val;
 
     /**
@@ -66,13 +68,14 @@ public interface Application {
         throw new IllegalArgumentException(
             "Arguments given amount is greater than the ones can be afforded!");
       }
-      val m = new EnumMap<Props, String>(Props.class);
-      for (val p : values) {
-        m.put(p, System.getProperty(p.name(), p.val));
-      }
+      val a = new HashMap<String, String>();
       for (val ss : args) {
         val s = SPLIT.split(ss, -1);
-        m.putIfAbsent(Props.valueOf(s[0]), s[1]);
+        a.putIfAbsent(s[0], s[1]);
+      }
+      val m = new EnumMap<Props, String>(Props.class);
+      for (val p : values) {
+        m.put(p, System.getProperty(p.key, a.getOrDefault(p.key, p.val)));
       }
       return m;
     }

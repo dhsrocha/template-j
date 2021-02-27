@@ -18,6 +18,7 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -44,7 +45,7 @@ public interface Main {
     val log = LoggerFactory.getLogger(Main.class);
     val props = Props.from(args);
     log.info("Properties:");
-    props.entrySet().forEach(e -> log.info("* {}", e));
+    props.forEach((p, v) -> log.info("* {}: {}", p.key, v));
     // Prune
     HOST.listImagesCmd().withDanglingFilter(Boolean.TRUE).exec().stream()
         .map(Image::getId).map(HOST::removeImageCmd)
@@ -92,7 +93,8 @@ public interface Main {
                         .withDriver("overlay").exec();
                     log.info("* Network created.");
                   }
-                  if (HOST.listVolumesCmd().withFilter("name", List.of(m.name()))
+                  if (HOST.listVolumesCmd()
+                          .withFilter("name", List.of(m.name()))
                           .exec().getVolumes().isEmpty()) {
                     HOST.createVolumeCmd().withName(m.name()).exec();
                     log.info("* Volume created.");
@@ -110,18 +112,21 @@ public interface Main {
      * Indicates if the build is going to work in a development environment.
      * Defaults to {@code false}.
      */
-    DEV_MODE("false"),
+    DEV_MODE("middleware.dev", "false"),
     /**
      * Indicates the pod's name. Defaults to project's root folder.
      */
-    POD_NAME(Path.of("").toAbsolutePath().toFile().getName()),
+    POD_NAME("middleware.pod",
+             Path.of("").toAbsolutePath().toFile().getName()),
     /**
      * All middlewares should be activated if any is not sent.
      */
-    SERVICES(EnumSet.allOf(Middleware.class).stream().map(Enum::name)
-                    .collect(Collectors.joining(","))),
+    SERVICES("middleware.services", EnumSet
+        .allOf(Middleware.class).stream().map(Enum::name)
+        .collect(Collectors.joining(","))),
     ;
     private static final Pattern SPLIT = Pattern.compile("[:=]");
+    private final String key;
     private final String val;
 
     /**
@@ -146,13 +151,14 @@ public interface Main {
         throw new IllegalArgumentException(
             "Arguments given amount is greater than the ones can be afforded!");
       }
-      val m = new EnumMap<Props, String>(Props.class);
-      for (val p : values) {
-        m.put(p, System.getProperty(p.name(), p.val));
-      }
+      val a = new HashMap<String, String>();
       for (val ss : args) {
         val s = SPLIT.split(ss, -1);
-        m.putIfAbsent(Props.valueOf(s[0]), s[1]);
+        a.putIfAbsent(s[0], s[1]);
+      }
+      val m = new EnumMap<Props, String>(Props.class);
+      for (val p : values) {
+        m.put(p, System.getProperty(p.key, a.getOrDefault(p.key, p.val)));
       }
       return m;
     }
