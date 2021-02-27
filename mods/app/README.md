@@ -5,11 +5,5 @@
 ### Locally
 
 ```bash
-./mvnw -pl mods/app
-```
-
-## Deploy
-
-```bash
-./mvnw -pl mods/app -Pdocker package
+./mvnw -pl mods/middleware,mods/app
 ```

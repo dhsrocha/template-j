@@ -12,7 +12,6 @@
   </parent>
 
   <artifactId>middleware</artifactId>
-  <packaging>jar</packaging>
 
   <name>Template for Middleware Controlling Point</name>
   <description>
@@ -24,6 +23,10 @@
     <version.docker.java>3.2.7</version.docker.java>
     <exec.mainClass>template.Main</exec.mainClass>
   </properties>
+
+  <build>
+    <defaultGoal>${exec.goals.run}</defaultGoal>
+  </build>
 
   <dependencies>
     <dependency>

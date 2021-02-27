@@ -32,7 +32,8 @@
     <exec.mainClass>
       ${project.groupId}.${project.artifactId}.Main
     </exec.mainClass>
-    <exec.defaultGoal>clean package</exec.defaultGoal>
+
+    <exec.goals.run>clean compile exec:java</exec.goals.run>
 
     <!-- https://maven.apache.org/plugins/maven-checkstyle-plugin/check-mojo.html-->
     <checkstyle.config.location>google_checks.xml</checkstyle.config.location>
@@ -90,7 +91,7 @@
 
   <build>
     <defaultGoal>
-      clean checkstyle:check pmd:check pmd:cpd-check spotbugs:check install
+      clean checkstyle:check pmd:check pmd:cpd-check spotbugs:check
     </defaultGoal>
     <pluginManagement>
       <plugins>
@@ -338,7 +339,7 @@
     <profile>
       <id>static-analysis</id>
       <build>
-        <defaultGoal>validate</defaultGoal>
+        <defaultGoal>clean validate</defaultGoal>
         <plugins>
           <!-- Static analysis -->
           <plugin>
@@ -375,39 +376,6 @@
                 <phase>validate</phase>
                 <goals>
                   <goal>check</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
-      <id>docker</id>
-      <activation>
-        <property>
-          <name>docker.img.port</name>
-        </property>
-      </activation>
-      <properties>
-        <docker.img>openjdk:${maven.compiler.release}-jre-slim</docker.img>
-        <!-- https://github.com/GoogleContainerTools/jib/tree/master/jib-maven-plugin#extended-usage -->
-        <jib.from.image>${docker.img}</jib.from.image>
-        <jib.to.image>${project.groupId}.${project.artifactId}</jib.to.image>
-        <jib.container.ports.port>${docker.img.port}</jib.container.ports.port>
-        <jib.jvmArgs.jvmArg>-DPORT=${docker.img.port}</jib.jvmArgs.jvmArg>
-      </properties>
-      <build>
-        <defaultGoal>clean compile test package</defaultGoal>
-        <plugins>
-          <plugin>
-            <groupId>com.google.cloud.tools</groupId>
-            <artifactId>jib-maven-plugin</artifactId>
-            <executions>
-              <execution>
-                <phase>package</phase>
-                <goals>
-                  <goal>dockerBuild</goal>
                 </goals>
               </execution>
             </executions>
