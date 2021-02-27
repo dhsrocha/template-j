@@ -53,12 +53,8 @@ public interface Main {
         .forEach(v -> log.info("Dangling image removed."));
     // Swarm
     val s = HOST.infoCmd().exec().getSwarm();
-    val toRefresh = null != s && s.getLocalNodeState() == LocalNodeState.ACTIVE;
-    if (!toRefresh) {
-      // TODO create distinct manager and workers through dind containers.
-      HOST.initializeSwarmCmd(new SwarmSpec()).exec();
-      log.info("Swarm started.");
-    } else if (Boolean.parseBoolean(props.get(Props.DEV_MODE))) {
+    val isOff = null != s && s.getLocalNodeState() != LocalNodeState.ACTIVE;
+    if (!isOff && Boolean.parseBoolean(props.get(Props.DEV_MODE))) {
       HOST.leaveSwarmCmd().withForceEnabled(Boolean.TRUE).exec();
       log.info("Swarm left.");
       // Prune resources
@@ -70,12 +66,15 @@ public interface Main {
       HOST.pruneCmd(PruneType.NETWORKS).exec();
       log.info("Networks pruned.");
     }
+    if (isOff) {
+      HOST.initializeSwarmCmd(new SwarmSpec()).exec();
+      log.info("Swarm started.");
+    }
     // Services and resources
-    val none = EnumSet.noneOf(Middleware.class);
-    val running = !toRefresh ? none : HOST
+    val running = isOff ? EnumSet.noneOf(Middleware.class) : HOST
         .listServicesCmd().exec().stream().map(Service::getSpec)
         .filter(Objects::nonNull).map(ServiceSpec::getName)
-        .map(Middleware::valueOf).collect(Collectors.toCollection(() -> none));
+        .map(Middleware::valueOf).collect(Collectors.toSet());
     Middleware.stream(props.get(Props.SERVICES))
               .map(m -> EnumSet.of(m, m.dependOn().toArray(Middleware[]::new)))
               .flatMap(Collection::stream)
