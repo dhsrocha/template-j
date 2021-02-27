@@ -68,14 +68,16 @@ public interface Application {
         throw new IllegalArgumentException(
             "Arguments given amount is greater than the ones can be afforded!");
       }
-      val a = new HashMap<String, String>();
+      val aa = new HashMap<String, String>();
       for (val ss : args) {
         val s = SPLIT.split(ss, -1);
-        a.putIfAbsent(s[0], s[1]);
+        if (s.length == 2) {
+          aa.putIfAbsent(s[0], s[1]);
+        }
       }
       val m = new EnumMap<Props, String>(Props.class);
       for (val p : values) {
-        m.put(p, System.getProperty(p.key, a.getOrDefault(p.key, p.val)));
+        m.put(p, System.getProperty(p.key, aa.getOrDefault(p.key, p.val)));
       }
       return m;
     }
