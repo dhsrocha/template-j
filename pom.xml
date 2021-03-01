@@ -292,16 +292,17 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
-      <!-- Project -->
-      <dependency>
-        <groupId>io.javalin</groupId>
-        <artifactId>javalin</artifactId>
-        <version>${version.javalin}</version>
-      </dependency>
+      <!-- Application -->
       <dependency>
         <groupId>io.javalin</groupId>
         <artifactId>javalin-openapi</artifactId>
         <version>${version.javalin}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-kotlin</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -321,6 +322,11 @@
       <scope>provided</scope>
     </dependency>
     <!-- Logging -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>1.7.30</version>
+    </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-slf4j-impl</artifactId>
