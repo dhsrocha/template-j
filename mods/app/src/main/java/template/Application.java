@@ -22,7 +22,7 @@ public interface Application {
     val log = LoggerFactory.getLogger(Application.class);
     val props = Props.from(args);
     log.info("Properties:");
-    props.forEach((p, v) -> log.info("* {}: {}", p.getKey(), v));
+    props.forEach((p, v) -> log.info("* {}: [{}]", p.getKey(), v));
     val app = Inner.bootstrap(props);
     log.info("Application running. [port={}]", app.server.port());
   }

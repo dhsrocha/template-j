@@ -12,10 +12,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 final class UserTest {
 
   @ParameterizedTest
-  @CsvSource({
-      ",1",
-      "some_name,0",
-  })
+  @CsvSource({"some_name,0",})
   @DisplayName("Should throw IllegalArgumentException due to invalid values.")
   final void shouldThrow_dueToInvalidValues(final String name, final int age) {
     // Assert / Act
