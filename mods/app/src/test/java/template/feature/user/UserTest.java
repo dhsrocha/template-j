@@ -1,11 +1,10 @@
 package template.feature.user;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.util.Set;
 import lombok.val;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -41,10 +40,10 @@ final class UserTest {
     val u1 = User.of("name2", 2);
     val u2 = User.of("name1", 3);
     val u3 = User.of("name3", 1);
-    // Act
-    val s = Set.of(u1, u2, u3);
-    // Assert
-    assertArrayEquals(Set.of(u3, u1, u2).toArray(), s.toArray());
+    // Assert / Act
+    Assertions.assertEquals(-1, u1.compareTo(u2));
+    Assertions.assertEquals(1, u2.compareTo(u3));
+    Assertions.assertEquals(-1, u3.compareTo(u1));
   }
 }
 

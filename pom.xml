@@ -163,7 +163,7 @@
                   <version>3.6.3</version>
                 </requireMavenVersion>
                 <requireJavaVersion>
-                  <version>11</version>
+                  <version>${maven.compiler.release}</version>
                 </requireJavaVersion>
                 <requireOS>
                   <family>unix</family>
