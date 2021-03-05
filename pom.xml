@@ -24,6 +24,8 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
+    <sep>${path.separator}</sep>
+
     <version.lombok>1.18.16</version.lombok>
     <version.dagger>2.33</version.dagger>
     <version.javalin>3.12.0</version.javalin>
@@ -183,6 +185,10 @@
           <compilerArgs>
             <arg>-XDcompilePolicy=simple</arg>
             <arg>-Xplugin:ErrorProne -XepAllErrorsAsWarnings</arg>
+            <arg>-sourcepath</arg>
+            <arg>
+              ${project.basedir}${sep}src${sep}main${sep}java${sep}${project.basedir}${sep}target${sep}generated-sources${sep}annotations${sep}/
+            </arg>
           </compilerArgs>
           <annotationProcessorPaths>
             <path>

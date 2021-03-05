@@ -20,9 +20,10 @@ enum Props {
    */
   PORT("app.port", "9999"),
   ;
+  private static final Props[] VALUES = values();
   private static final Pattern SPLIT = Pattern.compile("[:=]");
   private final String key;
-  private final String val;
+  private final String defaultVal;
 
   /**
    * Serialize input entries according to the enumerated items.
@@ -41,8 +42,7 @@ enum Props {
    *                                  the enum {@link #values()}.
    */
   static Map<Props, String> from(final String... args) {
-    val values = values();
-    if (args.length > values.length) {
+    if (args.length > VALUES.length) {
       throw new IllegalArgumentException(
           "Arguments given amount is greater than the ones can be afforded!");
     }
@@ -54,8 +54,8 @@ enum Props {
       }
     }
     val m = new EnumMap<Props, String>(Props.class);
-    for (val p : values) {
-      m.put(p, System.getProperty(p.key, aa.getOrDefault(p.key, p.val)));
+    for (val p : VALUES) {
+      m.put(p, System.getProperty(p.key, aa.getOrDefault(p.key, p.defaultVal)));
     }
     return m;
   }
