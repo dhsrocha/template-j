@@ -36,7 +36,7 @@
       ${project.groupId}.${project.artifactId}.Main
     </exec.mainClass>
 
-    <exec.goals.run>clean compile exec:java</exec.goals.run>
+    <exec.goals.run>clean compile test exec:java</exec.goals.run>
 
     <!-- https://maven.apache.org/plugins/maven-checkstyle-plugin/check-mojo.html-->
     <checkstyle.config.location>google_checks.xml</checkstyle.config.location>

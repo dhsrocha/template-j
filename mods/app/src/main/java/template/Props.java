@@ -8,6 +8,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.val;
 
+/**
+ * Indexes and parses system properties used in this application.
+ */
 @Getter
 @AllArgsConstructor
 enum Props {

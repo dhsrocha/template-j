@@ -22,6 +22,10 @@
     <docker.img.port>9900</docker.img.port>
   </properties>
 
+  <build>
+    <defaultGoal>${exec.goals.run}</defaultGoal>
+  </build>
+
   <dependencies>
     <dependency>
       <groupId>io.javalin</groupId>
