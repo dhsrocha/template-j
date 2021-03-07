@@ -2,7 +2,7 @@ package template;
 
 import io.javalin.Javalin;
 import io.javalin.plugin.openapi.annotations.ContentType;
-import java.util.Map;
+import java.util.Objects;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.val;
@@ -26,11 +26,27 @@ public interface Application {
     val props = Props.from(args);
     log.info("Properties:");
     props.forEach((p, v) -> log.info("* {}: [{}]", p.getKey(), v));
-    val app = new Bootstrap(props);
-    if (app.start()) {
-      log.info("Application running. [port={}]", app.server.port());
+    val mode = Mode.valueOf(props.get(Props.MODE).toUpperCase());
+    val server = new Bootstrap().bootstrap(mode);
+    server.start(Integer.parseInt(props.get(Props.PORT)));
+    if (Objects.requireNonNull(server.server()).getStarted()) {
+      log.info("Application running. [port={}]", server.port());
+      Runtime.getRuntime().addShutdownHook(new Thread(server::stop));
     }
-    Runtime.getRuntime().addShutdownHook(new Thread(app.server::stop));
+  }
+
+  /**
+   * Defines ways that application should behave.
+   */
+  enum Mode {
+    /**
+     * Development mode.
+     */
+    DEV,
+    /**
+     * Production mode.
+     */
+    PRD,
   }
 
   /**
@@ -40,15 +56,12 @@ public interface Application {
   class Bootstrap {
 
     Javalin server = Javalin.create();
-    @NonNull Map<Props, String> props;
 
-    boolean start() {
-      server.config.showJavalinBanner =
-          !Boolean.parseBoolean(props.get(Props.IS_TESTING));
+    Javalin bootstrap(final @NonNull Mode mode) {
+      server.config.showJavalinBanner = mode != Mode.DEV;
       server.config.defaultContentType = ContentType.JSON;
       server.config.autogenerateEtags = Boolean.TRUE;
-      server.start(Integer.parseInt(props.get(Props.PORT)));
-      return Boolean.TRUE;
+      return server;
     }
   }
 }

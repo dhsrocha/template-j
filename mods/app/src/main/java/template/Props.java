@@ -17,7 +17,7 @@ enum Props {
   /**
    * Determines if the execution is under testing.
    */
-  IS_TESTING("app.test", "true"),
+  MODE("app.mode", "dev"),
   /**
    * Application's running port.
    */

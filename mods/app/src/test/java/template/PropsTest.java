@@ -1,19 +1,19 @@
 package template;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import lombok.val;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
 @DisplayName("Test case for application input parser.")
 final class PropsTest {
 
   @CsvSource({
-      "app.test:false, false, IS_TESTING",
+      "app.mode:dev, dev, MODE",
       "app.port:0000, 0000, PORT"
   })
   @ParameterizedTest
@@ -28,7 +28,7 @@ final class PropsTest {
   }
 
   @CsvSource({
-      "app.test:=1111",
+      "app.port:=1111",
       "a:a:a",
       "a:a:a:a"
   })
@@ -38,7 +38,7 @@ final class PropsTest {
     // Act
     val props = Props.from(input);
     // Assert
-    assertEquals(Props.IS_TESTING.getDefaultVal(), props.get(Props.IS_TESTING));
+    assertEquals(Props.MODE.getDefaultVal(), props.get(Props.MODE));
   }
 
   @Test
