@@ -26,9 +26,9 @@
 
     <sep>${path.separator}</sep>
 
-    <version.lombok>1.18.16</version.lombok>
+    <version.lombok>1.18.18</version.lombok>
     <version.dagger>2.33</version.dagger>
-    <version.javalin>3.12.0</version.javalin>
+    <version.javalin>3.13.3</version.javalin>
 
     <version.plugin.test>3.0.0-M5</version.plugin.test>
 
@@ -89,6 +89,10 @@
       <plugin>
         <artifactId>maven-pmd-plugin</artifactId>
       </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>versions-maven-plugin</artifactId>
+      </plugin>
     </plugins>
   </reporting>
 
@@ -110,6 +114,11 @@
         <plugin>
           <artifactId>maven-project-info-reports-plugin</artifactId>
           <version>3.1.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>versions-maven-plugin</artifactId>
+          <version>2.8.1</version>
         </plugin>
         <!-- Packaging and running -->
         <plugin>
@@ -294,7 +303,7 @@
       <dependency>
         <groupId>org.junit</groupId>
         <artifactId>junit-bom</artifactId>
-        <version>5.7.0</version>
+        <version>5.8.0-M1</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -347,13 +356,13 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-junit-jupiter</artifactId>
-      <version>3.6.28</version>
+      <version>3.8.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.konghq</groupId>
       <artifactId>unirest-java</artifactId>
-      <version>3.11.04</version>
+      <version>3.11.11</version>
       <classifier>standalone</classifier>
       <scope>test</scope>
     </dependency>
