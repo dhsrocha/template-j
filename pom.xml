@@ -193,11 +193,7 @@
           <showDeprecation>true</showDeprecation>
           <compilerArgs>
             <arg>-XDcompilePolicy=simple</arg>
-            <arg>-Xplugin:ErrorProne -XepAllErrorsAsWarnings</arg>
-            <arg>-sourcepath</arg>
-            <arg>
-              ${project.basedir}${sep}src${sep}main${sep}java${sep}${project.basedir}${sep}target${sep}generated-sources${sep}annotations${sep}/
-            </arg>
+            <arg>-Xplugin:ErrorProne -XepDisableWarningsInGeneratedCode</arg>
           </compilerArgs>
           <annotationProcessorPaths>
             <path>
@@ -251,6 +247,12 @@
               <goal>check</goal>
             </goals>
             <configuration>
+              <excludes>
+                <exclude>**/*_MembersInjector.class</exclude>
+                <exclude>**/Dagger*.class</exclude>
+                <exclude>**/Dagger*$Builder.class</exclude>
+                <exclude>**/*_Factory.class</exclude>
+              </excludes>
               <rules>
                 <rule>
                   <element>CLASS</element>

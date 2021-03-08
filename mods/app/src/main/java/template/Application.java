@@ -1,12 +1,16 @@
 package template;
 
+import dagger.BindsInstance;
+import dagger.Component;
 import io.javalin.Javalin;
 import io.javalin.plugin.openapi.annotations.ContentType;
 import java.util.Objects;
+import java.util.function.Supplier;
+import javax.inject.Inject;
 import lombok.NonNull;
-import lombok.Value;
 import lombok.val;
 import org.slf4j.LoggerFactory;
+import template.Application.Bootstrap;
 
 /**
  * Application's entry point.
@@ -14,7 +18,8 @@ import org.slf4j.LoggerFactory;
  * Design purpose is just exposing {@link #main(String...) main method} for
  * {@code maven-exec-plugin} to be called from command-line.
  */
-public interface Application {
+@Component
+public interface Application extends Supplier<Bootstrap> {
 
   /**
    * Parses provided arguments and initiates application.
@@ -27,12 +32,21 @@ public interface Application {
     log.info("Properties:");
     props.forEach((p, v) -> log.info("* {}: [{}]", p.getKey(), v));
     val mode = Mode.valueOf(props.get(Props.MODE).toUpperCase());
-    val server = new Bootstrap().bootstrap(mode);
-    server.start(Integer.parseInt(props.get(Props.PORT)));
+    val feats = Feat.values();
+    val build = DaggerApplication.builder().mode(mode).features(feats);
+    val server = build.get().get()
+                      .start(Integer.parseInt(props.get(Props.PORT)));
     if (Objects.requireNonNull(server.server()).getStarted()) {
       log.info("Application running. [port={}]", server.port());
       Runtime.getRuntime().addShutdownHook(new Thread(server::stop));
     }
+  }
+
+  /**
+   * Defines application's features.
+   */
+  enum Feat {
+
   }
 
   /**
@@ -49,19 +63,34 @@ public interface Application {
     PRD,
   }
 
+  @Component.Builder
+  interface Builder extends Supplier<Application> {
+
+    @BindsInstance
+    Builder mode(final @NonNull Mode mode);
+
+    @BindsInstance
+    Builder features(final @NonNull Feat[] features);
+  }
+
   /**
    * Application initialization and bootstrap.
    */
-  @Value
-  class Bootstrap {
+  final class Bootstrap {
 
-    Javalin server = Javalin.create();
+    private final Javalin server = Javalin.create();
+    private final @NonNull Mode mode;
 
-    Javalin bootstrap(final @NonNull Mode mode) {
+    @Inject
+    Bootstrap(final Mode mode) {
+      this.mode = mode;
+    }
+
+    Javalin start(final int port) {
       server.config.showJavalinBanner = mode != Mode.DEV;
       server.config.defaultContentType = ContentType.JSON;
       server.config.autogenerateEtags = Boolean.TRUE;
-      return server;
+      return server.start(port);
     }
   }
 }
