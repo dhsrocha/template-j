@@ -1,7 +1,5 @@
 package template.feature.user;
 
-import static template.base.Exceptions.INVALID_DOMAIN;
-
 import java.util.Comparator;
 import lombok.NonNull;
 import lombok.Value;
@@ -14,9 +12,7 @@ public class User implements Domain<User> {
   int age;
 
   public static User of(final String name, final int age) {
-    final var u = new User(name, age);
-    INVALID_DOMAIN.throwIf(IllegalArgumentException::new, ()-> !u.isValid());
-    return u;
+    return Domain.validate(new User(name, age));
   }
 
   @Override
