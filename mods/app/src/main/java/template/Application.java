@@ -7,6 +7,7 @@ import io.javalin.plugin.openapi.annotations.ContentType;
 import java.util.Objects;
 import java.util.function.Supplier;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import lombok.NonNull;
 import lombok.val;
 import org.slf4j.LoggerFactory;
@@ -18,6 +19,7 @@ import template.Application.Bootstrap;
  * Design purpose is just exposing {@link #main(String...) main method} for
  * {@code maven-exec-plugin} to be called from command-line.
  */
+@Singleton
 @Component
 public interface Application extends Supplier<Bootstrap> {
 
