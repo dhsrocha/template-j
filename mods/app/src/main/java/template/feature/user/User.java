@@ -1,20 +1,27 @@
 package template.feature.user;
 
+import static template.base.Exceptions.INVALID_DOMAIN;
+
 import java.util.Comparator;
 import lombok.NonNull;
 import lombok.Value;
-import template.application.Exceptions;
+import template.base.stereotype.Domain;
 
 @Value
-public class User implements Comparable<User> {
+public class User implements Domain<User> {
 
   @NonNull String name;
   int age;
 
-  static User of(final String name, final int age) {
-    Exceptions.INVALID_DOMAIN.throwIf(IllegalArgumentException::new,
-                                      name::isBlank, () -> age <= 0);
-    return new User(name, age);
+  public static User of(final String name, final int age) {
+    final var u = new User(name, age);
+    INVALID_DOMAIN.throwIf(IllegalArgumentException::new, ()-> !u.isValid());
+    return u;
+  }
+
+  @Override
+  public final boolean isValid() {
+    return !name.isBlank() && age > 0;
   }
 
   @Override

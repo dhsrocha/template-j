@@ -1,4 +1,4 @@
-package template.application;
+package template.base;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
