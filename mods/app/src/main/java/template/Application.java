@@ -82,16 +82,19 @@ public interface Application extends Supplier<Bootstrap> {
 
     private final Javalin server = Javalin.create();
     private final @NonNull Mode mode;
+    private final @NonNull Routes routes;
 
     @Inject
-    Bootstrap(final Mode mode) {
+    Bootstrap(final Mode mode, final Routes routes) {
       this.mode = mode;
+      this.routes = routes;
     }
 
     Javalin start(final int port) {
       server.config.showJavalinBanner = mode != Mode.DEV;
       server.config.defaultContentType = ContentType.JSON;
       server.config.autogenerateEtags = Boolean.TRUE;
+      server.routes(routes);
       return server.start(port);
     }
   }
