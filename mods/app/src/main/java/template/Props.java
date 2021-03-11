@@ -24,7 +24,7 @@ enum Props {
   PORT("app.port", "9999"),
   ;
   private static final Props[] VALUES = values();
-  private static final Pattern SPLIT = Pattern.compile("[:=]");
+  private static final Pattern SPLIT = Pattern.compile("=");
   private final String key;
   private final String defaultVal;
 

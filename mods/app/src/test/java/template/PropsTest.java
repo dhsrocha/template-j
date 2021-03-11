@@ -13,8 +13,8 @@ import org.junit.jupiter.params.provider.CsvSource;
 final class PropsTest {
 
   @CsvSource({
-      "app.mode:dev, dev, MODE",
-      "app.port:0000, 0000, PORT"
+      "app.mode=dev, dev, MODE",
+      "app.port=0000, 0000, PORT"
   })
   @ParameterizedTest
   @DisplayName("Success test cases.")
