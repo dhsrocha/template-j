@@ -6,12 +6,12 @@ import java.util.Arrays;
 import javax.inject.Inject;
 import template.Application.Feat;
 
-final class Routes implements EndpointGroup {
+final class Router implements EndpointGroup {
 
   private final Feat[] feats;
 
   @Inject
-  Routes(final Feat[] feats) {
+  Router(final Feat[] feats) {
     this.feats = feats;
   }
 

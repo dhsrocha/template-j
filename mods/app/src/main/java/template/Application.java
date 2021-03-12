@@ -4,6 +4,7 @@ import dagger.BindsInstance;
 import dagger.Component;
 import io.javalin.Javalin;
 import io.javalin.plugin.openapi.annotations.ContentType;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.Supplier;
 import javax.inject.Inject;
@@ -12,6 +13,7 @@ import lombok.NonNull;
 import lombok.val;
 import org.slf4j.LoggerFactory;
 import template.Application.Bootstrap;
+import template.base.contract.Builder;
 
 /**
  * Application's entry point.
@@ -34,10 +36,10 @@ public interface Application extends Supplier<Bootstrap> {
     log.info("Properties:");
     props.forEach((p, v) -> log.info("* {}: [{}]", p.getKey(), v));
     val mode = Mode.valueOf(props.get(Props.MODE).toUpperCase());
-    val feats = Feat.values();
-    val build = DaggerApplication.builder().mode(mode).features(feats);
-    val server = build.get().get()
-                      .start(Integer.parseInt(props.get(Props.PORT)));
+    val feats = Feat.from(props.get(Props.FEAT));
+    val port = Integer.parseInt(props.get(Props.PORT));
+    val app = DaggerApplication.builder().mode(mode).features(feats).build();
+    val server = app.get().start(port);
     if (Objects.requireNonNull(server.server()).getStarted()) {
       log.info("Application running. [port={}]", server.port());
       Runtime.getRuntime().addShutdownHook(new Thread(server::stop));
@@ -48,7 +50,11 @@ public interface Application extends Supplier<Bootstrap> {
    * Defines application's features.
    */
   enum Feat {
+    DEFAULT; // Just a placeholder
 
+    static Feat[] from(final @NonNull String... args) {
+      return Arrays.stream(args).map(Feat::valueOf).toArray(Feat[]::new);
+    }
   }
 
   /**
@@ -66,13 +72,13 @@ public interface Application extends Supplier<Bootstrap> {
   }
 
   @Component.Builder
-  interface Builder extends Supplier<Application> {
+  interface Build extends Builder<Application> {
 
     @BindsInstance
-    Builder mode(final @NonNull Mode mode);
+    Build mode(final @NonNull Mode mode);
 
     @BindsInstance
-    Builder features(final @NonNull Feat[] features);
+    Build features(final @NonNull Feat[] features);
   }
 
   /**
@@ -82,10 +88,10 @@ public interface Application extends Supplier<Bootstrap> {
 
     private final Javalin server = Javalin.create();
     private final @NonNull Mode mode;
-    private final @NonNull Routes routes;
+    private final @NonNull Router routes;
 
     @Inject
-    Bootstrap(final Mode mode, final Routes routes) {
+    Bootstrap(final Mode mode, final Router routes) {
       this.mode = mode;
       this.routes = routes;
     }

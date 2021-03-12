@@ -1,12 +1,15 @@
 package template;
 
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.val;
+import template.Application.Feat;
 
 /**
  * Indexes and parses system properties used in this application.
@@ -22,6 +25,11 @@ enum Props {
    * Application's running port.
    */
   PORT("app.port", "9999"),
+  /**
+   * Application's feature profiles.
+   */
+  FEAT("app.feats", Arrays.stream(Feat.values()).map(Enum::name)
+                          .collect(Collectors.joining(","))),
   ;
   private static final Props[] VALUES = values();
   private static final Pattern SPLIT = Pattern.compile("=");
