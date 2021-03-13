@@ -257,10 +257,11 @@
             </goals>
             <configuration>
               <excludes>
-                <exclude>**/*_MembersInjector.class</exclude>
                 <exclude>**/Dagger*.class</exclude>
-                <exclude>**/Dagger*$Builder.class</exclude>
-                <exclude>**/*_Factory.class</exclude>
+                <exclude>**/*MembersInjector.class</exclude>
+                <exclude>**/*Factory.class</exclude>
+                <exclude>**/*Factory.class</exclude>
+                <exclude>**/*Proxy.class</exclude>
               </excludes>
               <rules>
                 <rule>

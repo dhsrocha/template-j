@@ -3,6 +3,7 @@ package template;
 import dagger.BindsInstance;
 import dagger.Component;
 import io.javalin.Javalin;
+import io.javalin.apibuilder.EndpointGroup;
 import io.javalin.plugin.openapi.annotations.ContentType;
 import java.util.Arrays;
 import java.util.Objects;
@@ -12,7 +13,7 @@ import javax.inject.Singleton;
 import lombok.NonNull;
 import lombok.val;
 import org.slf4j.LoggerFactory;
-import template.Application.Bootstrap;
+import template.Application.Web;
 import template.base.contract.Builder;
 
 /**
@@ -22,8 +23,8 @@ import template.base.contract.Builder;
  * {@code maven-exec-plugin} to be called from command-line.
  */
 @Singleton
-@Component
-public interface Application extends Supplier<Bootstrap> {
+@Component(modules = Router.class)
+public interface Application extends Supplier<Web> {
 
   /**
    * Parses provided arguments and initiates application.
@@ -39,7 +40,7 @@ public interface Application extends Supplier<Bootstrap> {
     val feats = Feat.from(props.get(Props.FEAT));
     val port = Integer.parseInt(props.get(Props.PORT));
     val app = DaggerApplication.builder().mode(mode).features(feats).build();
-    val server = app.get().start(port);
+    val server = app.get().bootstrap(port);
     if (Objects.requireNonNull(server.server()).getStarted()) {
       log.info("Application running. [port={}]", server.port());
       Runtime.getRuntime().addShutdownHook(new Thread(server::stop));
@@ -84,24 +85,23 @@ public interface Application extends Supplier<Bootstrap> {
   /**
    * Application initialization and bootstrap.
    */
-  final class Bootstrap {
+  final class Web {
 
-    private final Javalin server = Javalin.create();
     private final @NonNull Mode mode;
     private final @NonNull Router routes;
 
     @Inject
-    Bootstrap(final Mode mode, final Router routes) {
+    Web(final Mode mode, final Router routes) {
       this.mode = mode;
       this.routes = routes;
     }
 
-    Javalin start(final int port) {
-      server.config.showJavalinBanner = mode != Mode.DEV;
-      server.config.defaultContentType = ContentType.JSON;
-      server.config.autogenerateEtags = Boolean.TRUE;
-      server.routes(routes);
-      return server.start(port);
+    Javalin bootstrap(final int port) {
+      return Javalin.create(cfg -> {
+        cfg.showJavalinBanner = mode != Mode.DEV;
+        cfg.defaultContentType = ContentType.JSON;
+        cfg.autogenerateEtags = Boolean.TRUE;
+      }).routes(routes).start(port);
     }
   }
 }

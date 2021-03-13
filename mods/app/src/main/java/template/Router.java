@@ -1,23 +1,18 @@
 package template;
 
+import dagger.Module;
+import dagger.Provides;
 import io.javalin.apibuilder.ApiBuilder;
 import io.javalin.apibuilder.EndpointGroup;
 import java.util.Arrays;
-import javax.inject.Inject;
+import lombok.NonNull;
 import template.Application.Feat;
 
-final class Router implements EndpointGroup {
+@Module
+interface Router extends EndpointGroup {
 
-  private final Feat[] feats;
-
-  @Inject
-  Router(final Feat[] feats) {
-    this.feats = feats;
-  }
-
-  @Override
-  public void addEndpoints() {
-    ApiBuilder.get(ctx -> ctx.result("It works! Activated features:"
-                                         + Arrays.toString(feats)));
+  @Provides
+  static Router routes(final @NonNull Feat[] feats) {
+    return () -> ApiBuilder.get(ctx -> ctx.result(Arrays.toString(feats)));
   }
 }
