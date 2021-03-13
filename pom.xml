@@ -18,7 +18,7 @@
 
   <properties>
     <!-- Maven -->
-    <maven.compiler.source>11</maven.compiler.source>
+    <maven.compiler.source>14</maven.compiler.source>
     <maven.compiler.target>${maven.compiler.source}</maven.compiler.target>
     <maven.compiler.release>${maven.compiler.source}</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -98,7 +98,8 @@
 
   <build>
     <defaultGoal>
-      clean checkstyle:check pmd:check pmd:cpd-check spotbugs:check
+      clean enforcer:enforce checkstyle:check pmd:check pmd:cpd-check
+      spotbugs:check
     </defaultGoal>
     <pluginManagement>
       <plugins>
@@ -172,21 +173,24 @@
               <goal>enforce</goal>
               <goal>display-info</goal>
             </goals>
-            <configuration>
-              <rules>
-                <requireMavenVersion>
-                  <version>3.6.3</version>
-                </requireMavenVersion>
-                <requireJavaVersion>
-                  <version>${maven.compiler.release}</version>
-                </requireJavaVersion>
-                <requireOS>
-                  <family>unix</family>
-                </requireOS>
-              </rules>
-            </configuration>
           </execution>
         </executions>
+        <configuration>
+          <rules>
+            <requireOS>
+              <family>unix</family>
+            </requireOS>
+            <requireMavenVersion>
+              <version>3.6.3</version>
+            </requireMavenVersion>
+            <requireJavaVersion>
+              <version>${maven.compiler.release}</version>
+            </requireJavaVersion>
+            <bannedPlugins>
+              <level>ERROR</level>
+            </bannedPlugins>
+          </rules>
+        </configuration>
       </plugin>
       <!-- Compiling -->
       <plugin>
