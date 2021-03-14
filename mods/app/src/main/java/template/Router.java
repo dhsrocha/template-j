@@ -1,18 +1,41 @@
 package template;
 
+import dagger.BindsInstance;
+import dagger.Component;
 import dagger.Module;
 import dagger.Provides;
 import io.javalin.apibuilder.ApiBuilder;
-import io.javalin.apibuilder.EndpointGroup;
 import java.util.Arrays;
+import java.util.function.Supplier;
+import javax.inject.Scope;
 import lombok.NonNull;
 import template.Application.Feat;
+import template.Router.FeatureScope;
+import template.Router.Mod;
+import template.base.contract.Routes;
 
-@Module
-interface Router extends EndpointGroup {
+@FeatureScope
+@Component(modules = Mod.class)
+interface Router extends Supplier<Routes> {
 
-  @Provides
-  static Router routes(final @NonNull Feat[] feats) {
-    return () -> ApiBuilder.get(ctx -> ctx.result(Arrays.toString(feats)));
+  @Scope
+  @interface FeatureScope {
+  }
+
+  @Module
+  interface Mod {
+
+    @Provides
+    @FeatureScope
+    static Routes routes(final @NonNull Feat[] feats) {
+      return () -> ApiBuilder.get(ctx -> ctx.result(Arrays.toString(feats)));
+    }
+  }
+
+  @Component.Builder
+  interface Build extends Supplier<Router> {
+
+    @BindsInstance
+    Build feats(final @NonNull Feat[] app);
   }
 }
