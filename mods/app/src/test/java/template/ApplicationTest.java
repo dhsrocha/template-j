@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
  * Application test case.
  */
 @Slf4j
-@DisplayName("Test case for application main class.")
+@DisplayName("Application's smoke test cases.")
 final class ApplicationTest {
 
   /**

@@ -1,12 +1,22 @@
 package template.feature.user;
 
 import java.util.Comparator;
+import java.util.Map;
+import java.util.function.Function;
 import lombok.NonNull;
 import lombok.Value;
 import template.base.stereotype.Domain;
 
 @Value
 public class User implements Domain<User> {
+
+  private enum Rules implements Invariant {
+    AGE_POSITIVE, NAME_NOT_BLANK
+  }
+
+  private static final Map<Invariant, Function<User, Boolean>>
+      RULES = Map.of(Rules.AGE_POSITIVE, u -> u.age > 0,
+                     Rules.NAME_NOT_BLANK, u -> !u.name.isBlank());
 
   @NonNull String name;
   int age;
@@ -16,12 +26,12 @@ public class User implements Domain<User> {
   }
 
   @Override
-  public final boolean isValid() {
-    return !name.isBlank() && age > 0;
+  public Map<Invariant, Function<User, Boolean>> invariants() {
+    return RULES;
   }
 
   @Override
-  public final int compareTo(final @NonNull User user) {
+  public int compareTo(final @NonNull User user) {
     return Comparator.comparing(User::getAge)
                      .thenComparing(User::getName)
                      .compare(this, user);

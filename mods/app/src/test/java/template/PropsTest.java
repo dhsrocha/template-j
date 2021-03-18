@@ -1,5 +1,6 @@
 package template;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -9,7 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-@DisplayName("Test case for application input parser.")
+@DisplayName("Application's input parser test suite.")
 final class PropsTest {
 
   @CsvSource({
@@ -18,12 +19,12 @@ final class PropsTest {
       "app.feat=, DEFAULT, FEAT"
   })
   @ParameterizedTest
-  @DisplayName("Success test cases.")
+  @DisplayName("Successful test cases.")
   final void success(final String input, final String val, final String name) {
     // Arrange
-    val p = Props.valueOf(name);
+    val p = assertDoesNotThrow(() -> Props.valueOf(name));
     // Act
-    val result = Props.from(input);
+    val result = assertDoesNotThrow(() -> Props.from(input));
     // Assert
     assertEquals(val, result.get(p));
   }
@@ -37,7 +38,7 @@ final class PropsTest {
   @DisplayName("Values ignored and default values returned.")
   final void ignore(final String input) {
     // Act
-    val props = Props.from(input);
+    val props = assertDoesNotThrow(() -> Props.from(input));
     // Assert
     assertEquals(Props.MODE.getDefaultVal(), props.get(Props.MODE));
   }
