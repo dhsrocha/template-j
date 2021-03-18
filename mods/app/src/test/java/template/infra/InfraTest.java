@@ -1,12 +1,12 @@
 package template.infra;
 
+import static org.mockito.Mockito.mock;
+
 import io.javalin.Javalin;
 import lombok.val;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import static org.mockito.Mockito.mock;
 
 @DisplayName("Test suite for infrastructure bootstrap.")
 final class InfraTest {
