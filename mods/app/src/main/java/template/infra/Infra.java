@@ -4,6 +4,8 @@ import dagger.BindsInstance;
 import dagger.Component;
 import dagger.Module;
 import io.javalin.Javalin;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 import java.util.function.Supplier;
 import javax.inject.Inject;
 import javax.inject.Scope;
@@ -20,6 +22,7 @@ import template.infra.Infra.Mod;
 public interface Infra extends Supplier<Javalin> {
 
   @Scope
+  @Target({ElementType.TYPE, ElementType.METHOD})
   @interface InfraScope {
   }
 

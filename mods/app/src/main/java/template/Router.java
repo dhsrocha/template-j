@@ -5,6 +5,8 @@ import dagger.Component;
 import dagger.Module;
 import dagger.Provides;
 import io.javalin.apibuilder.ApiBuilder;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 import java.util.Arrays;
 import java.util.function.Supplier;
 import javax.inject.Scope;
@@ -19,6 +21,7 @@ import template.base.contract.Routes;
 interface Router extends Supplier<Routes> {
 
   @Scope
+  @Target({ElementType.TYPE, ElementType.METHOD})
   @interface FeatureScope {
   }
 
