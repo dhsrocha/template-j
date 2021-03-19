@@ -13,7 +13,7 @@ public enum Exceptions {
   /**
    * Indicates that a domain object received invalid parameters.
    */
-  INVALID_DOMAIN,
+  DOMAIN_VIOLATION,
   ;
 
   /**

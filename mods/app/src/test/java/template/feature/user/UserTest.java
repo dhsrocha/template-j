@@ -1,5 +1,6 @@
 package template.feature.user;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -9,26 +10,39 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import template.base.stereotype.Domain.Violation;
 
 @DisplayName("User domain test suite.")
 final class UserTest {
 
-  @ParameterizedTest
-  @CsvSource({"some_name,0",})
-  @DisplayName("Should throw IllegalArgumentException due to invalid values.")
-  final void shouldThrow_dueToInvalidValues(final String name, final int age) {
+  @CsvSource({
+      "AGE_ABOVE_ZERO, some_name, 0",
+      "NAME_NOT_BLANK, ''       , 1"
+  })
+  @ParameterizedTest(name = "{0}: name: ''{1}'' age: ''{2}'' ")
+  @DisplayName(""
+      + "GIVEN invalid values "
+      + "WHEN instantiating User object "
+      + "THEN expect IllegalArgumentException thrown "
+      + "AND corresponding message.")
+  final void shouldThrow_dueToInvalidValues(final String msg, final String name,
+                                            final int age) {
     // Assert / Act
-    assertThrows(IllegalArgumentException.class, () -> User.of(name, age));
+    val ex = assertThrows(Violation.class, () -> User.of(name, age));
+    assertEquals(msg, ex.getViolated().name());
   }
 
   @Test
-  @DisplayName("Should create instance with valid values.")
+  @DisplayName(""
+      + "GIVEN valid values "
+      + "WHEN instantiating User object "
+      + "THEN returns input values.")
   final void shouldCreateInstance_withValidValues() {
     // Arrange
     val name = "some_name";
     val age = 1;
     // Assert
-    val result = User.of(name, age);
+    val result = assertDoesNotThrow(() -> User.of(name, age));
     // Act
     assertEquals(name, result.getName());
     assertEquals(age, result.getAge());
@@ -47,4 +61,3 @@ final class UserTest {
     Assertions.assertEquals(-1, u3.compareTo(u1));
   }
 }
-

@@ -11,11 +11,11 @@ import template.base.stereotype.Domain;
 public class User implements Domain<User> {
 
   private enum Rules implements Invariant {
-    AGE_POSITIVE, NAME_NOT_BLANK
+    AGE_ABOVE_ZERO, NAME_NOT_BLANK
   }
 
   private static final Map<Invariant, Function<User, Boolean>>
-      RULES = Map.of(Rules.AGE_POSITIVE, u -> u.age > 0,
+      RULES = Map.of(Rules.AGE_ABOVE_ZERO, u -> u.age > 0,
                      Rules.NAME_NOT_BLANK, u -> !u.name.isBlank());
 
   @NonNull String name;
