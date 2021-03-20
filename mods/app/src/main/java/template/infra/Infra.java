@@ -1,6 +1,5 @@
 package template.infra;
 
-import dagger.BindsInstance;
 import dagger.Component;
 import dagger.Module;
 import io.javalin.Javalin;
@@ -43,12 +42,7 @@ public interface Infra extends Supplier<Javalin> {
   }
 
   @Component.Builder
-  interface Build extends Builder<Infra> {
-
-    @BindsInstance
-    Build mode(final @NonNull Mode mode);
-
-    @BindsInstance
-    Build routes(final @NonNull Routes routes);
+  interface Build extends Builder.Part1<Build, Infra, Mode>,
+                          Builder.Part2<Build, Infra, Routes> {
   }
 }

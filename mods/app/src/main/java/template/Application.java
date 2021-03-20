@@ -32,8 +32,8 @@ public interface Application {
     val mode = Mode.valueOf(props.get(Props.MODE).toUpperCase());
     val feats = Feat.from(props.get(Props.FEAT));
     val port = Integer.parseInt(props.get(Props.PORT));
-    val router = DaggerRouter.builder().feats(feats).get().get();
-    val infra = DaggerInfra.builder().mode(mode).routes(router).build();
+    val router = DaggerRouter.builder().part1(feats).build().get();
+    val infra = DaggerInfra.builder().part1(mode).part2(router).build();
     val server = infra.get().start(port);
     if (Objects.requireNonNull(server.server()).getStarted()) {
       log.info("Application running. [port={}]", port);
