@@ -16,6 +16,12 @@ import template.infra.Infra.InfraScope;
 import template.infra.Infra.Mod;
 
 
+/**
+ * Component for scoping systemic responsibilities like webserver and
+ * database bootstrap.
+ *
+ * @author <a href="mailto:dhsrocha.dev@gmail.com">>Diego Rocha</a>
+ */
 @InfraScope
 @Component(modules = Mod.class)
 public interface Infra extends Supplier<Javalin> {

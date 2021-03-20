@@ -9,6 +9,11 @@ import template.Application.Mode;
 import template.base.contract.Routes;
 import template.infra.Infra.InfraScope;
 
+/**
+ * Module for bootstrapping application's web server.
+ *
+ * @author <a href="mailto:dhsrocha.dev@gmail.com">>Diego Rocha</a>
+ */
 @Module
 interface Web {
 

@@ -12,6 +12,11 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import template.base.stereotype.Domain.Violation;
 
+/**
+ * User test suite.
+ *
+ * @author <a href="mailto:dhsrocha.dev@gmail.com">>Diego Rocha</a>
+ */
 @DisplayName("User domain test suite.")
 final class UserTest {
 

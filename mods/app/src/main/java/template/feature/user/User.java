@@ -7,11 +7,23 @@ import lombok.NonNull;
 import lombok.Value;
 import template.base.stereotype.Domain;
 
+/**
+ * Domain which represents a user.
+ *
+ * @author <a href="mailto:dhsrocha.dev@gmail.com">>Diego Rocha</a>
+ */
 @Value
 public class User implements Domain<User> {
 
   private enum Rules implements Invariant {
-    AGE_ABOVE_ZERO, NAME_NOT_BLANK
+    /**
+     * {@link User#age} should be above zero.
+     */
+    AGE_ABOVE_ZERO,
+    /**
+     * {@link User#name} should be non-blank.
+     */
+    NAME_NOT_BLANK
   }
 
   private static final Map<Invariant, Function<User, Boolean>>

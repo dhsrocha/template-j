@@ -8,6 +8,14 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
 
+/**
+ * Marks a type as application's domain.
+ *
+ * @param <D> Self-reference for marked type.
+ * @author <a href="mailto:dhsrocha.dev@gmail.com">>Diego Rocha</a>
+ * @see
+ * <a href="https://www.domainlanguage.com/ddd">Domain Driven Design reference</a>
+ */
 public interface Domain<D extends Domain<D>> extends Comparable<D> {
 
   /**
@@ -27,6 +35,9 @@ public interface Domain<D extends Domain<D>> extends Comparable<D> {
   @AllArgsConstructor
   final class Violation extends IllegalArgumentException {
 
+    /**
+     * Indicates which invariant rule was violated.
+     */
     private final transient Invariant violated;
   }
 

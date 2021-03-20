@@ -14,6 +14,8 @@ import template.infra.DaggerInfra;
  * <br/>
  * Design purpose is just exposing {@link #main(String...) main method} for
  * {@code maven-exec-plugin} to be called from command-line.
+ *
+ * @author <a href="mailto:dhsrocha.dev@gmail.com">>Diego Rocha</a>
  */
 @Singleton
 @Component
