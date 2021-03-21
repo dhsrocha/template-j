@@ -15,5 +15,4 @@ module template.app {
   // Open for testing
   opens template;
   opens template.feature.user;
-  opens template.infra;
 }
