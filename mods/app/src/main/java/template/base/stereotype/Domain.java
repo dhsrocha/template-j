@@ -4,9 +4,6 @@ import static template.base.Exceptions.DOMAIN_VIOLATION;
 
 import java.util.Map;
 import java.util.function.Function;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NonNull;
 
 /**
  * Marks a type as application's domain.
@@ -31,8 +28,8 @@ public interface Domain<D extends Domain<D>> extends Comparable<D> {
    * Thrown to indicate an invariant rule violation during {@link Domain}
    * object creation.
    */
-  @Getter
-  @AllArgsConstructor
+  @lombok.Getter
+  @lombok.AllArgsConstructor
   final class Violation extends IllegalArgumentException {
 
     /**
@@ -61,9 +58,9 @@ public interface Domain<D extends Domain<D>> extends Comparable<D> {
    * @throws Domain.Violation      If any of provided {@link #invariants() rule
    *                               set}'s contents fails.
    */
-  static <D extends Domain<D>> D validate(final @NonNull D domain) {
-    DOMAIN_VIOLATION.throwIf(
-        IllegalStateException::new, () -> domain.invariants().isEmpty());
+  static <D extends Domain<D>> D validate(final @lombok.NonNull D domain) {
+    DOMAIN_VIOLATION
+        .throwIf(IllegalStateException::new, domain.invariants()::isEmpty);
     domain.invariants().forEach((k, v) -> DOMAIN_VIOLATION.throwIf(
         e -> new Violation(k), () -> !v.apply(domain)));
     return domain;

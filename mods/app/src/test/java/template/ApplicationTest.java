@@ -41,7 +41,7 @@ final class ApplicationTest {
       // Arrange
       val now = Instant.now();
       // Act
-      Application.main(Props.MODE.getKey() + "=dev");
+      Application.main(Boolean.TRUE, Props.MODE.getKey() + "=dev");
       // Assert
       val elapsed = Duration.between(now, Instant.now()).toMillis();
       log.info("Startup time: [{}]", elapsed);

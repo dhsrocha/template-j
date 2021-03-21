@@ -13,6 +13,10 @@ import lombok.NonNull;
 @AllArgsConstructor
 public enum Exceptions {
   /**
+   * Indicates a general illegal argument.
+   */
+  ILLEGAL_ARGUMENT,
+  /**
    * Indicates that a domain object received invalid parameters.
    */
   DOMAIN_VIOLATION,

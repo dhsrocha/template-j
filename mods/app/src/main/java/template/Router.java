@@ -5,8 +5,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 import java.util.Arrays;
 import java.util.function.Supplier;
-import javax.inject.Scope;
-import lombok.NonNull;
 import template.Application.Feat;
 import template.Router.FeatureScope;
 import template.Router.Mod;
@@ -23,7 +21,7 @@ import template.base.contract.Routes;
 @dagger.Component(modules = Mod.class)
 interface Router extends Supplier<Routes> {
 
-  @Scope
+  @javax.inject.Scope
   @Target({ElementType.TYPE, ElementType.METHOD})
   @interface FeatureScope {
   }
@@ -33,7 +31,7 @@ interface Router extends Supplier<Routes> {
 
     @FeatureScope
     @dagger.Provides
-    static Routes routes(final @NonNull Feat[] feats) {
+    static Routes routes(final @lombok.NonNull Feat[] feats) {
       return () -> ApiBuilder.get(ctx -> ctx.result(Arrays.toString(feats)));
     }
   }

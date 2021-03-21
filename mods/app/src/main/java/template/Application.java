@@ -1,11 +1,14 @@
 package template;
 
-import dagger.Component;
+import static template.base.Exceptions.ILLEGAL_ARGUMENT;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 import java.util.Arrays;
 import java.util.Objects;
 import javax.inject.Singleton;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.val;
 import org.slf4j.LoggerFactory;
@@ -19,7 +22,7 @@ import org.slf4j.LoggerFactory;
  * @author <a href="mailto:dhsrocha.dev@gmail.com">>Diego Rocha</a>
  */
 @Singleton
-@Component
+@dagger.Component
 public interface Application {
 
   @javax.inject.Scope
@@ -31,18 +34,31 @@ public interface Application {
    * Parses provided arguments and initiates application.
    *
    * @param args key-value entries treated by {@link Props#from(String...)}.
+   * @see #main(boolean, String...)
    */
   static void main(final String... args) {
+    main(Boolean.FALSE, args);
+  }
+
+  /**
+   * Parses provided arguments and initiates application.
+   *
+   * @param args     key-value entries treated by {@link Props#from(String...)}.
+   * @param testMode Enables test mode. Meant to be used from test cases.
+   */
+  static void main(final boolean testMode, final String... args) {
     val log = LoggerFactory.getLogger(Application.class);
     val props = Props.from(args);
     log.info("Properties:");
     props.forEach((p, v) -> log.info("* {}: [{}]", p.getKey(), v));
-    val mode = Mode.valueOf(props.get(Props.MODE).toUpperCase());
+    val m = Mode.valueOf(props.get(Props.MODE).toUpperCase());
+    ILLEGAL_ARGUMENT.throwIf(IllegalArgumentException::new, m::isInternalOnly);
+    val mode = testMode ? Mode.TEST : m;
     val feats = Feat.from(props.get(Props.FEAT));
     val port = Integer.parseInt(props.get(Props.PORT));
     // TODO System properties
     val router = DaggerRouter.builder().part1(feats).build();
-    val web = DaggerWeb.builder().part1(mode).part2(router.get()).build();
+    val web = DaggerWeb.builder().part1(mode).dep1(router).build();
     val server = web.get().start(port);
     if (Objects.requireNonNull(server.server()).getStarted()) {
       log.info("Application running. [port={}]", port);
@@ -64,14 +80,22 @@ public interface Application {
   /**
    * Defines ways that application should behave.
    */
+  @Getter
+  @AllArgsConstructor
   enum Mode {
     /**
      * Development mode.
      */
-    DEV,
+    DEV(Boolean.FALSE),
     /**
      * Production mode.
      */
-    PRD,
+    PRD(Boolean.FALSE),
+    /**
+     * Test mode. Should be used internally only.
+     */
+    TEST(Boolean.TRUE),
+    ;
+    private final boolean isInternalOnly;
   }
 }

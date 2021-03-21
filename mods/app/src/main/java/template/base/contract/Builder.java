@@ -36,4 +36,15 @@ public interface Builder<B> {
     @dagger.BindsInstance
     P part2(final @lombok.NonNull C c);
   }
+
+  /**
+   * Utility interface for implementing {@link Builder}'s component's first
+   * dependency.
+   *
+   * @author <a href="mailto:dhsrocha.dev@gmail.com">>Diego Rocha</a>
+   */
+  interface Dependency1<D extends Dependency1<D, B, C>, B, C>
+      extends Builder<B> {
+    D dep1(final @lombok.NonNull C c);
+  }
 }
