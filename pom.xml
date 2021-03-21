@@ -328,6 +328,54 @@
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-kotlin</artifactId>
           </exclusion>
+          <exclusion>
+            <groupId>com.nixxcode.jvmbrotli</groupId>
+            <artifactId>jvmbrotli</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-kotlin</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.velocity</groupId>
+            <artifactId>velocity-engine-core</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.freemarker</groupId>
+            <artifactId>freemarker</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.thymeleaf</groupId>
+            <artifactId>thymeleaf</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.github.spullara.mustache.java</groupId>
+            <artifactId>compiler</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.jtwig</groupId>
+            <artifactId>jtwig-core</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>io.pebbletemplates</groupId>
+            <artifactId>pebble</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>gg.jte</groupId>
+            <artifactId>jte</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.atlassian.commonmark</groupId>
+            <artifactId>commonmark</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-core</artifactId>
+          </exclusion>
         </exclusions>
       </dependency>
     </dependencies>
