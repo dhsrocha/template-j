@@ -23,7 +23,7 @@ interface Web extends Supplier<Javalin> {
     static Javalin server(final @lombok.NonNull Mode mode,
                           final @lombok.NonNull Router routes) {
       return Javalin.create(cfg -> {
-        cfg.showJavalinBanner = mode != Mode.TEST;
+        cfg.showJavalinBanner = mode == Mode.PRD;
         cfg.defaultContentType = ContentType.JSON;
         cfg.autogenerateEtags = Boolean.TRUE;
       }).routes(routes.get());
