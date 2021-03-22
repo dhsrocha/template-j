@@ -29,6 +29,7 @@
     <version.lombok>1.18.18</version.lombok>
     <version.dagger>2.33</version.dagger>
     <version.javalin>3.13.3</version.javalin>
+    <version.mapstruct>1.4.2.Final</version.mapstruct>
 
     <version.plugin.test>3.0.0-M5</version.plugin.test>
 
@@ -211,6 +212,11 @@
               <version>${version.lombok}</version>
             </path>
             <path>
+              <groupId>org.mapstruct</groupId>
+              <artifactId>mapstruct-processor</artifactId>
+              <version>${version.mapstruct}</version>
+            </path>
+            <path>
               <groupId>com.google.dagger</groupId>
               <artifactId>dagger-compiler</artifactId>
               <version>${version.dagger}</version>
@@ -317,6 +323,11 @@
         <version>5.8.0-M1</version>
         <type>pom</type>
         <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.mapstruct</groupId>
+        <artifactId>mapstruct</artifactId>
+        <version>${version.mapstruct}</version>
       </dependency>
       <!-- Application -->
       <dependency>
