@@ -39,7 +39,7 @@ class Client {
   //
   private static final ZerodepDockerHttpClient.Builder HTTP =
       new ZerodepDockerHttpClient.Builder();
-  private static final DockerClientBuilder CLI = DockerClientBuilder
+  private static final DockerClientBuilder CLI  = DockerClientBuilder
       .getInstance();
   //
   private final boolean isDevMode;

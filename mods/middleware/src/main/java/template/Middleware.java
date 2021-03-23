@@ -160,8 +160,8 @@ enum Middleware {
     SOCKET("") {
       @Override
       public Mount get() {
-        return new Mount().withSource(Constants.SOCKET)
-                          .withTarget(Constants.SOCKET)
+        return new Mount().withSource(Client.SOCKET)
+                          .withTarget(Client.SOCKET)
                           .withReadOnly(Boolean.TRUE);
       }
     },
@@ -188,11 +188,6 @@ enum Middleware {
           : new ServiceModeConfig().withReplicated(
           new ServiceReplicatedModeOptions().withReplicas(scale));
     }
-  }
-
-  @UtilityClass
-  static class Constants {
-    static final String SOCKET = "/var/run/docker.sock";
   }
 
   @UtilityClass
