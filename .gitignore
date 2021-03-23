@@ -1,6 +1,6 @@
 
-# Created by https://www.toptal.com/developers/gitignore/api/eclipse,intellij+all,code,java,maven,terraform
-# Edit at https://www.toptal.com/developers/gitignore?templates=eclipse,intellij+all,code,java,maven,terraform
+# Created by https://www.toptal.com/developers/gitignore/api/eclipse,intellij+all,code,java,maven,gradle,terraform
+# Edit at https://www.toptal.com/developers/gitignore?templates=eclipse,intellij+all,code,java,maven,gradle,terraform
 
 ### Code ###
 .vscode/*
@@ -68,8 +68,7 @@ local.properties
 
 # Uncomment this line if you wish to ignore the project description file.
 # Typically, this file would be tracked if it contains build/dependency configurations:
-.project
-.classpath
+#.project
 
 ### Eclipse Patch ###
 # Spring Boot Tooling
@@ -201,6 +200,7 @@ buildNumber.properties
 .mvn/timing.properties
 # https://github.com/takari/maven-wrapper#usage-without-binary-jar
 .mvn/wrapper/maven-wrapper.jar
+.flattened-pom.xml
 
 ### Terraform ###
 # Local .terraform directories
@@ -232,4 +232,23 @@ override.tf.json
 # Include tfplan files to ignore the plan output of command: terraform plan -out=tfplan
 # example: *tfplan*
 
-# End of https://www.toptal.com/developers/gitignore/api/eclipse,intellij+all,code,java,maven,terraform
+### Gradle ###
+.gradle
+build/
+
+# Ignore Gradle GUI config
+gradle-app.setting
+
+# Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
+!gradle-wrapper.jar
+
+# Cache of project
+.gradletasknamecache
+
+# # Work around https://youtrack.jetbrains.com/issue/IDEA-116898
+# gradle/wrapper/gradle-wrapper.properties
+
+### Gradle Patch ###
+**/build/
+
+# End of https://www.toptal.com/developers/gitignore/api/eclipse,intellij+all,code,java,maven,gradle,terraform
