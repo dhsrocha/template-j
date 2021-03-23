@@ -1,5 +1,5 @@
 /**
- * @author <a href="mailto:dhsrocha.dev@gmail.com">>Diego Rocha</a>
+ * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */
 module template.app {
   // System

@@ -22,6 +22,11 @@ import lombok.AllArgsConstructor;
 import lombok.experimental.UtilityClass;
 import lombok.val;
 
+/**
+ * Profiles and describes middleware services.
+ *
+ * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
+ */
 @AllArgsConstructor
 enum Middleware {
   RDB("postgres",
@@ -88,6 +93,13 @@ enum Middleware {
   private final ImmutableList<Network> refs;
   private final ImmutableList<String> entries;
 
+  /**
+   * Extracts middleware profile items from a string input.
+   *
+   * @param ss comma-separated {@link Middleware} profiles input by
+   *           {@link Main:main}.
+   * @return Stream of Middleware inputs to be finished on.
+   */
   static Stream<Middleware> stream(final String ss) {
     return Stream.of(ss.split(",")).map(Middleware::valueOf).distinct();
   }

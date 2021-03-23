@@ -14,7 +14,7 @@ import lombok.NonNull;
  * Design purpose is just exposing {@link #main(String...) main method} for
  * {@code maven-exec-plugin} to be called from command-line.
  *
- * @author <a href="mailto:dhsrocha.dev@gmail.com">>Diego Rocha</a>
+ * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */
 @Singleton
 @dagger.Component

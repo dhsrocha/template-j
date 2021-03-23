@@ -8,7 +8,7 @@ import lombok.NonNull;
 /**
  * Maps application's exceptions.
  *
- * @author <a href="mailto:dhsrocha.dev@gmail.com">>Diego Rocha</a>
+ * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */
 @AllArgsConstructor
 public enum Exceptions {

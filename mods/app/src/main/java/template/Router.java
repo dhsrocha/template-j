@@ -15,7 +15,7 @@ import template.base.contract.Routes;
  * Component for exposing application's ReST resources. Ultimately, assembles
  * and decides which features should be activated and resolved.
  *
- * @author <a href="mailto:dhsrocha.dev@gmail.com">>Diego Rocha</a>
+ * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */
 @FeatureScope
 @dagger.Component(modules = Mod.class)

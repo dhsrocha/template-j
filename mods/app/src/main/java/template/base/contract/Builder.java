@@ -4,7 +4,7 @@ package template.base.contract;
  * General abstraction for implementing Builder Design Pattern.
  *
  * @param <B> The type meant to be built.
- * @author <a href="mailto:dhsrocha.dev@gmail.com">>Diego Rocha</a>
+ * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */
 public interface Builder<B> {
 

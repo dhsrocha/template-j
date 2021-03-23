@@ -18,6 +18,7 @@ public interface Main {
    * to create or refresh all required resources for running an application.
    *
    * @param args key-value entries treated by {@link Props#from(String...)}.
+   * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
    */
   static void main(final String[] args) {
     val log = LoggerFactory.getLogger(Main.class);

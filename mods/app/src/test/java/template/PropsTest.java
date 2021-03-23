@@ -13,7 +13,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 /**
  * Application input parser's test case.
  *
- * @author <a href="mailto:dhsrocha.dev@gmail.com">>Diego Rocha</a>
+ * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */
 @DisplayName("Application's input parser test suite.")
 final class PropsTest {

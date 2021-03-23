@@ -15,7 +15,7 @@ import template.base.stereotype.Domain.Violation;
 /**
  * User test suite.
  *
- * @author <a href="mailto:dhsrocha.dev@gmail.com">>Diego Rocha</a>
+ * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */
 @DisplayName("User domain test suite.")
 final class UserTest {

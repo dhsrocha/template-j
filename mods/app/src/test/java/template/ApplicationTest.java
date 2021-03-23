@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Application's test case.
  *
- * @author <a href="mailto:dhsrocha.dev@gmail.com">>Diego Rocha</a>
+ * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */
 @Slf4j
 @DisplayName("Application's smoke test cases.")

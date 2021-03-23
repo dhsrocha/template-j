@@ -9,7 +9,7 @@ import java.util.function.Function;
  * Marks a type as application's domain.
  *
  * @param <D> Self-reference for marked type.
- * @author <a href="mailto:dhsrocha.dev@gmail.com">>Diego Rocha</a>
+ * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  * @see
  * <a href="https://www.domainlanguage.com/ddd">Domain Driven Design reference</a>
  */

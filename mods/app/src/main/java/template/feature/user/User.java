@@ -10,7 +10,7 @@ import template.base.stereotype.Domain;
 /**
  * Domain which represents a user.
  *
- * @author <a href="mailto:dhsrocha.dev@gmail.com">>Diego Rocha</a>
+ * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */
 @Value
 public class User implements Domain<User> {

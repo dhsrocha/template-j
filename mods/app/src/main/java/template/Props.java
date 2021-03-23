@@ -14,7 +14,7 @@ import template.Application.Feat;
 /**
  * Indexes and parses system properties used in this application.
  *
- * @author <a href="mailto:dhsrocha.dev@gmail.com">>Diego Rocha</a>
+ * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */
 @Getter
 @AllArgsConstructor

@@ -26,6 +26,11 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 
+/**
+ * Client for handling Docker concerns under an automated way.
+ *
+ * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
+ */
 @Slf4j
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 class Client {

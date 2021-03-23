@@ -10,7 +10,7 @@ import template.base.contract.Builder;
 /**
  * Module for bootstrapping application's web server.
  *
- * @author <a href="mailto:dhsrocha.dev@gmail.com">>Diego Rocha</a>
+ * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */
 @Application.Scope
 @dagger.Component(dependencies = Router.class, modules = Mod.class)
