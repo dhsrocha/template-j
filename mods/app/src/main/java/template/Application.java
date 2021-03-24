@@ -29,10 +29,10 @@ public interface Application {
    * Starts the application in non-testing mode.
    *
    * @param args key-value entries treated by {@link Props#from(String...)}.
-   * @see Bootstrap#bootstrap(boolean, String...)
+   * @see Bootstrap#bootstrap(String...)
    */
   static void main(final String... args) {
-    Bootstrap.bootstrap(Boolean.FALSE, args);
+    Bootstrap.bootstrap(args);
   }
 
   /**
@@ -62,10 +62,10 @@ public interface Application {
      */
     PRD(Boolean.FALSE),
     /**
-     * Test mode. Should be used internally only.
+     * Test mode. Should be used under test context (surefire) only.
      */
-    TEST(Boolean.TRUE),
+    TEST(null == System.getProperty("surefire.real.class.path")),
     ;
-    private final boolean isInternalOnly;
+    private final boolean forbidden;
   }
 }

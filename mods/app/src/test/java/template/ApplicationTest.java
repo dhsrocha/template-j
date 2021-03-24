@@ -9,6 +9,7 @@ import lombok.val;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import template.Application.Mode;
 
 /**
  * Application's test case.
@@ -39,7 +40,7 @@ final class ApplicationTest {
       // Arrange
       val now = Instant.now();
       // Act
-      Application.main(Props.MODE.getKey() + "=dev");
+      Application.main(Props.MODE.getKey() + "=" + Mode.TEST);
       // Assert
       val elapsed = Duration.between(now, Instant.now()).toMillis();
       log.info("Startup time: [{}]", elapsed);
