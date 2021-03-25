@@ -3,8 +3,6 @@ package template.feature.user;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.function.Function;
-import lombok.NonNull;
-import lombok.Value;
 import template.base.stereotype.Domain;
 
 /**
@@ -12,7 +10,7 @@ import template.base.stereotype.Domain;
  *
  * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */
-@Value
+@lombok.Value
 public class User implements Domain<User> {
 
   private enum Rules implements Invariant {
@@ -30,7 +28,7 @@ public class User implements Domain<User> {
       RULES = Map.of(Rules.AGE_ABOVE_ZERO, u -> u.age > 0,
                      Rules.NAME_NOT_BLANK, u -> !u.name.isBlank());
 
-  @NonNull String name;
+  @lombok.NonNull String name;
   int age;
 
   public static User of(final String name, final int age) {
@@ -43,7 +41,7 @@ public class User implements Domain<User> {
   }
 
   @Override
-  public int compareTo(final @NonNull User user) {
+  public int compareTo(final @lombok.NonNull User user) {
     return Comparator.comparing(User::getAge)
                      .thenComparing(User::getName)
                      .compare(this, user);

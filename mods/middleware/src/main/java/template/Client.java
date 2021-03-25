@@ -20,10 +20,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.NonNull;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 
 /**
@@ -31,8 +27,8 @@ import lombok.val;
  *
  * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */
-@Slf4j
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@lombok.extern.slf4j.Slf4j
+@lombok.AllArgsConstructor(access = AccessLevel.PRIVATE)
 class Client {
 
   static final String SOCKET = "/var/run/docker.sock";
@@ -46,7 +42,7 @@ class Client {
   private final InetAddress localhost;
   private final DockerClient host;
 
-  @SneakyThrows
+  @lombok.SneakyThrows
   static Client host(final boolean isDevMode) {
     val localhost = InetAddress.getLocalHost();
     val h = HTTP.dockerHost(URI.create("unix://" + SOCKET)).build();
@@ -78,7 +74,7 @@ class Client {
     }
   }
 
-  final void servicesFrom(final @NonNull Stream<Middleware> services) {
+  final void servicesFrom(final @lombok.NonNull Stream<Middleware> services) {
     val running = host
         .listServicesCmd().exec().stream().map(Service::getSpec)
         .filter(Objects::nonNull).map(ServiceSpec::getName)

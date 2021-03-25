@@ -3,9 +3,6 @@ package template;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 import java.util.Arrays;
-import javax.inject.Singleton;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.NonNull;
 
 /**
@@ -16,8 +13,8 @@ import lombok.NonNull;
  *
  * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */
-@Singleton
 @dagger.Component
+@javax.inject.Singleton
 public interface Application {
 
   @javax.inject.Scope
@@ -50,8 +47,8 @@ public interface Application {
   /**
    * Defines ways that application should behave.
    */
-  @Getter
-  @AllArgsConstructor
+  @lombok.Getter
+  @lombok.AllArgsConstructor
   enum Mode {
     /**
      * Development mode.

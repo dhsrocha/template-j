@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import lombok.AllArgsConstructor;
 import lombok.val;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +29,7 @@ public interface Main {
     host.servicesFrom(Middleware.stream(props.get(Props.SERVICES)));
   }
 
-  @AllArgsConstructor
+  @lombok.AllArgsConstructor
   enum Props {
     /**
      * Indicates if the build is going to work in a development environment.

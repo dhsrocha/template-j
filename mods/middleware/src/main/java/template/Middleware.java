@@ -18,8 +18,6 @@ import com.google.common.collect.ImmutableList;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import lombok.AllArgsConstructor;
-import lombok.experimental.UtilityClass;
 import lombok.val;
 
 /**
@@ -27,7 +25,7 @@ import lombok.val;
  *
  * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */
-@AllArgsConstructor
+@lombok.AllArgsConstructor
 enum Middleware {
   RDB("postgres",
       ImmutableList.of(),
@@ -97,7 +95,7 @@ enum Middleware {
    * Extracts middleware profile items from a string input.
    *
    * @param ss comma-separated {@link Middleware} profiles input by
-   *           {@link Main:main}.
+   *           {@link Main#main}.
    * @return Stream of Middleware inputs to be finished on.
    */
   static Stream<Middleware> stream(final String ss) {
@@ -125,7 +123,7 @@ enum Middleware {
     return dependOn;
   }
 
-  @AllArgsConstructor
+  @lombok.AllArgsConstructor
   private enum Port implements Supplier<PortConfig> {
     RDB(9011, 5432),
     NDB(9012, 27017),
@@ -150,7 +148,7 @@ enum Middleware {
     RDB, NDB, MSG
   }
 
-  @AllArgsConstructor
+  @lombok.AllArgsConstructor
   private enum Mounts implements Supplier<Mount> {
     MSG("/var/lib/rabbitmq"),
     RDB("/var/lib/postgresql/data"),
@@ -175,7 +173,7 @@ enum Middleware {
     }
   }
 
-  @AllArgsConstructor
+  @lombok.AllArgsConstructor
   private enum ServiceMode {
     GLOBAL(0),
     // REPLICA(1),
@@ -190,7 +188,7 @@ enum Middleware {
     }
   }
 
-  @UtilityClass
+  @lombok.experimental.UtilityClass
   private static class Credentials {
     private static final String DB_NAME = "base";
     private static final String DB_USER = "user";

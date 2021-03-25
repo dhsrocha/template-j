@@ -6,8 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.val;
 import template.Application.Feat;
 
@@ -16,8 +14,8 @@ import template.Application.Feat;
  *
  * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */
-@Getter
-@AllArgsConstructor
+@lombok.Getter
+@lombok.AllArgsConstructor
 enum Props {
   /**
    * Determines if the execution is under testing.
