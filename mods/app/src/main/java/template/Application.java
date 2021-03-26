@@ -61,7 +61,8 @@ public interface Application {
     /**
      * Test mode. Should be used under test context (surefire) only.
      */
-    TEST(null == System.getProperty("surefire.real.class.path")),
+    TEST(System.getProperties().keySet().stream().map(String::valueOf)
+               .noneMatch(s -> s.contains("test") || s.contains("surefire"))),
     ;
     private final boolean forbidden;
   }
