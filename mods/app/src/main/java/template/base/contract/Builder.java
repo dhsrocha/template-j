@@ -16,7 +16,8 @@ public interface Builder<B> {
   B build();
 
   /**
-   * Utility interface for implementing {@link Builder}'s first component.
+   * Utility interface for implementing {@link Builder}'s component's first
+   * injectable.
    *
    * @author <a href="mailto:dhsrocha.dev@gmail.com">>Diego Rocha</a>
    * @see Builder.Part2
@@ -27,7 +28,8 @@ public interface Builder<B> {
   }
 
   /**
-   * Utility interface for implementing {@link Builder}'s second component.
+   * Utility interface for implementing {@link Builder}'s component's second
+   * injectable.
    *
    * @author <a href="mailto:dhsrocha.dev@gmail.com">>Diego Rocha</a>
    * @see Builder.Part1
