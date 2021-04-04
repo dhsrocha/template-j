@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import lombok.val;
 import template.Application.Feat;
+import template.Application.Mode;
 
 /**
  * Indexes and parses system properties used in this application.
@@ -20,16 +21,16 @@ enum Props {
   /**
    * Determines if the execution is under testing.
    */
-  MODE("app.mode", "dev"),
-  /**
-   * Application's running port.
-   */
-  PORT("app.port", "9999"),
+  MODE("app.mode", Mode.DEV.name().toLowerCase()),
   /**
    * Application's feature profiles.
    */
   FEAT("app.feats", Arrays.stream(Feat.values()).map(Enum::name)
                           .collect(Collectors.joining(","))),
+  /**
+   * Application's running port.
+   */
+  PORT("app.port", "9999"),
   ;
   private static final Props[] VALUES = values();
   private static final Pattern SPLIT = Pattern.compile("=");
@@ -61,7 +62,7 @@ enum Props {
     for (val ss : args) {
       val s = SPLIT.split(ss, -1);
       if (s.length == 2) {
-        aa.putIfAbsent(s[0], s[1]);
+        aa.put(s[0], s[1]);
       }
     }
     val m = new EnumMap<Props, String>(Props.class);
@@ -69,5 +70,15 @@ enum Props {
       m.put(p, System.getProperty(p.key, aa.getOrDefault(p.key, p.defaultVal)));
     }
     return m;
+  }
+
+  /**
+   * Indicates a string value to index to the given key in a proper way.
+   *
+   * @param value A value to index to.
+   * @return A resulting "key=value" string.
+   */
+  final String is(final @lombok.NonNull Object value) {
+    return key + "=" + value;
   }
 }

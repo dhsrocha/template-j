@@ -2,7 +2,6 @@ package template;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import lombok.val;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,6 +17,9 @@ import org.junit.jupiter.params.provider.CsvSource;
  */
 @DisplayName("Application's input parser test suite.")
 final class PropsTest {
+
+  private static final String SYS_STUB = "system stub";
+  private static final String ARG_STUB = "arg stub";
 
   @BeforeEach
   final void setUp() {
@@ -55,11 +57,22 @@ final class PropsTest {
   }
 
   @Test
-  @DisplayName("Input length has more than enum's items length.")
-  final void differentLength() {
+  @DisplayName("Should follow setting preceding order: system > arg.")
+  final void settingSystemOverArg() {
     // Arrange
-    val invalid = "a,".repeat(Props.values().length + 1).split(",");
-    // Assert - Act
-    assertThrows(IllegalArgumentException.class, () -> Props.from(invalid));
+    System.setProperty(Props.PORT.getKey(), SYS_STUB);
+    // Act
+    val result = Props.from(Props.PORT.is(ARG_STUB));
+    // Assert
+    assertEquals(SYS_STUB, result.get(Props.PORT));
+  }
+
+  @Test
+  @DisplayName("Should follow setting preceding order: arg > default.")
+  final void settingArgOverDefault() {
+    // Act
+    val result = Props.from(Props.PORT.is(ARG_STUB));
+    // Assert
+    assertEquals(ARG_STUB, result.get(Props.PORT));
   }
 }
