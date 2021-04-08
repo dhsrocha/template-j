@@ -10,6 +10,7 @@ module template.app {
   requires javax.inject;
   requires dagger;
   // Application
+  requires java.net.http;
   requires io.javalin;
 
   // Open for testing

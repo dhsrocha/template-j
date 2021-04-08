@@ -17,7 +17,7 @@ import template.Application.Mode;
  */
 @lombok.Getter
 @lombok.AllArgsConstructor
-enum Props {
+public enum Props {
   /**
    * Determines if the execution is under testing.
    */
@@ -78,7 +78,7 @@ enum Props {
    * @param value A value to index to.
    * @return A resulting "key=value" string.
    */
-  final String is(final @lombok.NonNull Object value) {
+  public final String is(final @lombok.NonNull Object value) {
     return key + "=" + value;
   }
 }

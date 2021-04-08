@@ -65,6 +65,8 @@ final class PropsTest {
     val result = Props.from(Props.PORT.is(ARG_STUB));
     // Assert
     assertEquals(SYS_STUB, result.get(Props.PORT));
+    // Arrange
+    System.clearProperty(Props.PORT.getKey());
   }
 
   @Test

@@ -1,9 +1,8 @@
 package template.base.stereotype;
 
-import static template.base.Exceptions.DOMAIN_VIOLATION;
-
 import java.util.Map;
 import java.util.function.Function;
+import template.base.Exceptions;
 
 /**
  * Marks a type as an application's domain.
@@ -59,10 +58,9 @@ public interface Domain<D extends Domain<D>> extends Comparable<D> {
    *                               set}'s contents fails.
    */
   static <D extends Domain<D>> D validate(final @lombok.NonNull D domain) {
-    DOMAIN_VIOLATION
-        .throwIf(IllegalStateException::new, domain.invariants()::isEmpty);
-    domain.invariants().forEach((k, v) -> DOMAIN_VIOLATION.throwIf(
-        e -> new Violation(k), () -> !v.apply(domain)));
+    Exceptions.ILLEGAL_ARGUMENT.throwIf(domain.invariants()::isEmpty);
+    domain.invariants().forEach((k, v) -> Exceptions.throwIf(
+        () -> new Violation(k), () -> !v.apply(domain)));
     return domain;
   }
 }
