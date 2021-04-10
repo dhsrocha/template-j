@@ -14,7 +14,7 @@ import com.github.dockerjava.api.model.ServiceSpec;
 import com.github.dockerjava.api.model.TaskSpec;
 import com.github.dockerjava.api.model.UpdateConfig;
 import com.github.dockerjava.api.model.UpdateFailureAction;
-import com.google.common.collect.ImmutableList;
+import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -25,71 +25,72 @@ import lombok.val;
  *
  * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */
+@SuppressWarnings("ImmutableEnumChecker")
 @lombok.AllArgsConstructor
 enum Middleware {
   RDB("postgres",
-      ImmutableList.of(),
+      List.of(),
       ServiceMode.GLOBAL,
-      ImmutableList.of(Mounts.SOCKET, Mounts.RDB),
-      ImmutableList.of(Port.RDB),
-      ImmutableList.of(Network.RDB),
-      ImmutableList.of("POSTGRES_DB=" + Credentials.DB_NAME,
-                       "POSTGRES_USER=" + Credentials.DB_USER,
-                       "POSTGRES_PASSWORD=" + Credentials.DB_PASS)),
+      List.of(Mounts.SOCKET, Mounts.RDB),
+      List.of(Port.RDB),
+      List.of(Network.RDB),
+      List.of("POSTGRES_DB=" + Credentials.DB_NAME,
+              "POSTGRES_USER=" + Credentials.DB_USER,
+              "POSTGRES_PASSWORD=" + Credentials.DB_PASS)),
   RDB_CLIENT("adminer",
-             ImmutableList.of(RDB),
+             List.of(RDB),
              ServiceMode.GLOBAL,
-             ImmutableList.of(Mounts.SOCKET),
-             ImmutableList.of(Port.RDB_CLIENT),
-             ImmutableList.of(Network.RDB),
-             ImmutableList.of("ADMINER_DEFAULT_SERVER=" + RDB)),
+             List.of(Mounts.SOCKET),
+             List.of(Port.RDB_CLIENT),
+             List.of(Network.RDB),
+             List.of("ADMINER_DEFAULT_SERVER=" + RDB)),
   NDB("mongo",
-      ImmutableList.of(),
+      List.of(),
       ServiceMode.GLOBAL,
-      ImmutableList.of(Mounts.SOCKET, Mounts.NDB, Mounts.NDB_CFG),
-      ImmutableList.of(Port.NDB),
-      ImmutableList.of(Network.NDB),
-      ImmutableList.of("MONGO_INITDB_ROOT_USERNAME=" + Credentials.DB_USER,
-                       "MONGO_INITDB_ROOT_PASSWORD=" + Credentials.DB_PASS)),
+      List.of(Mounts.SOCKET, Mounts.NDB, Mounts.NDB_CFG),
+      List.of(Port.NDB),
+      List.of(Network.NDB),
+      List.of("MONGO_INITDB_ROOT_USERNAME=" + Credentials.DB_USER,
+              "MONGO_INITDB_ROOT_PASSWORD=" + Credentials.DB_PASS)),
   NDB_CLIENT("mongo-express",
-             ImmutableList.of(NDB),
+             List.of(NDB),
              ServiceMode.GLOBAL,
-             ImmutableList.of(Mounts.SOCKET),
-             ImmutableList.of(Port.NDB_CLIENT),
-             ImmutableList.of(Network.NDB),
-             ImmutableList.of("ME_CONFIG_MONGODB_ENABLE_ADMIN=true",
-                              "ME_CONFIG_OPTIONS_EDITORTHEME=rubyblue",
-                              "ME_CONFIG_MONGODB_SERVER=" + Middleware.NDB,
-                              "ME_CONFIG_MONGODB_PORT=" + Port.NDB.exposed,
-                              "ME_CONFIG_MONGODB_AUTH_DATABASE=" + Credentials.DB_NAME,
-                              "ME_CONFIG_MONGODB_AUTH_USERNAME=" + Credentials.DB_USER,
-                              "ME_CONFIG_MONGODB_AUTH_PASSWORD=" + Credentials.DB_PASS,
-                              "ME_CONFIG_MONGODB_ADMINUSERNAME=" + Credentials.DB_USER,
-                              "ME_CONFIG_MONGODB_ADMINPASSWORD=" + Credentials.DB_PASS)),
+             List.of(Mounts.SOCKET),
+             List.of(Port.NDB_CLIENT),
+             List.of(Network.NDB),
+             List.of("ME_CONFIG_MONGODB_ENABLE_ADMIN=true",
+                     "ME_CONFIG_OPTIONS_EDITORTHEME=rubyblue",
+                     "ME_CONFIG_MONGODB_SERVER=" + Middleware.NDB,
+                     "ME_CONFIG_MONGODB_PORT=" + Port.NDB.exposed,
+                     "ME_CONFIG_MONGODB_AUTH_DATABASE=" + Credentials.DB_NAME,
+                     "ME_CONFIG_MONGODB_AUTH_USERNAME=" + Credentials.DB_USER,
+                     "ME_CONFIG_MONGODB_AUTH_PASSWORD=" + Credentials.DB_PASS,
+                     "ME_CONFIG_MONGODB_ADMINUSERNAME=" + Credentials.DB_USER,
+                     "ME_CONFIG_MONGODB_ADMINPASSWORD=" + Credentials.DB_PASS)),
   MSG("rabbitmq:management",
-      ImmutableList.of(),
+      List.of(),
       ServiceMode.GLOBAL,
-      ImmutableList.of(Mounts.SOCKET, Mounts.MSG),
-      ImmutableList.of(Port.MSG, Port.MSG_CLIENT),
-      ImmutableList.of(Network.MSG),
-      ImmutableList.of("RABBITMQ_DEFAULT_USER=" + Credentials.DB_USER,
-                       "RABBITMQ_DEFAULT_PASS=" + Credentials.DB_PASS)),
+      List.of(Mounts.SOCKET, Mounts.MSG),
+      List.of(Port.MSG, Port.MSG_CLIENT),
+      List.of(Network.MSG),
+      List.of("RABBITMQ_DEFAULT_USER=" + Credentials.DB_USER,
+              "RABBITMQ_DEFAULT_PASS=" + Credentials.DB_PASS)),
   AGENT("portainer/portainer-ce",
-        ImmutableList.of(),
+        List.of(),
         ServiceMode.GLOBAL,
-        ImmutableList.of(Mounts.SOCKET, Mounts.AGENT),
-        ImmutableList.of(Port.AGENT),
-        ImmutableList.of(),
-        ImmutableList.of()),
+        List.of(Mounts.SOCKET, Mounts.AGENT),
+        List.of(Port.AGENT),
+        List.of(),
+        List.of()),
   ;
 
   private final String image;
-  private final ImmutableList<Middleware> dependOn;
+  private final List<Middleware> dependOn;
   private final ServiceMode mode;
-  private final ImmutableList<Mounts> mounts;
-  private final ImmutableList<Port> ports;
-  private final ImmutableList<Network> refs;
-  private final ImmutableList<String> entries;
+  private final List<Mounts> mounts;
+  private final List<Port> ports;
+  private final List<Network> refs;
+  private final List<String> entries;
 
   /**
    * Extracts middleware profile items from a string input.
@@ -119,7 +120,7 @@ enum Middleware {
                             .withMode(mode.mode()).withRollbackConfig(u);
   }
 
-  final ImmutableList<Middleware> dependOn() {
+  final List<Middleware> dependOn() {
     return dependOn;
   }
 
