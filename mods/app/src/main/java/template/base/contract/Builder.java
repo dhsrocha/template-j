@@ -45,8 +45,7 @@ public interface Builder<B> {
    *
    * @author <a href="mailto:dhsrocha.dev@gmail.com">>Diego Rocha</a>
    */
-  interface Dependency1<D extends Dependency1<D, B, C>, B, C>
-      extends Builder<B> {
+  interface Dep1<D extends Dep1<D, B, C>, B, C> extends Builder<B> {
     D dep1(final @lombok.NonNull C c);
   }
 }

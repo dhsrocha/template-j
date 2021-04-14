@@ -31,7 +31,7 @@ interface Bootstrap {
     val feats = Feat.from(props.get(Props.FEAT));
     val port = Integer.parseInt(props.get(Props.PORT));
     // TODO System properties
-    val router = DaggerRouter.builder().part1(feats).build();
+    val router = DaggerRouter.builder().part1(feats);
     val web = DaggerWeb.builder().part1(m).dep1(router).build();
     val server = web.get().start(port);
     if (Objects.requireNonNull(server.server()).getStarted()) {

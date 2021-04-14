@@ -6,6 +6,7 @@ import java.util.function.Supplier;
 import template.Application.Mode;
 import template.Web.Mod;
 import template.base.contract.Builder;
+import template.base.contract.Builder.Dep1;
 
 /**
  * Module for bootstrapping application's web server.
@@ -13,7 +14,7 @@ import template.base.contract.Builder;
  * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */
 @Application.Scope
-@dagger.Component(dependencies = Router.class, modules = Mod.class)
+@dagger.Component(dependencies = Router.Build.class, modules = Mod.class)
 interface Web extends Supplier<Javalin> {
 
   @dagger.Module
@@ -21,17 +22,17 @@ interface Web extends Supplier<Javalin> {
     @dagger.Provides
     @Application.Scope
     static Javalin server(final @lombok.NonNull Mode mode,
-                          final @lombok.NonNull Router routes) {
+                          final @lombok.NonNull Router.Build routes) {
       return Javalin.create(cfg -> {
         cfg.showJavalinBanner = mode == Mode.PRD;
         cfg.defaultContentType = ContentType.JSON;
         cfg.autogenerateEtags = Boolean.TRUE;
-      }).routes(routes.get());
+      }).routes(routes.build().get());
     }
   }
 
   @dagger.Component.Builder
   interface Build extends Builder.Part1<Build, Web, Mode>,
-                          Builder.Dependency1<Build, Web, Router> {
+                          Dep1<Build, Web, Router.Build> {
   }
 }
