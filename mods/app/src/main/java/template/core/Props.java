@@ -1,5 +1,7 @@
 package template.core;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -19,19 +21,42 @@ import template.Application.Mode;
 public enum Props {
   /**
    * Determines if the execution is under testing.
+   *
+   * @see Mode
    */
-  MODE("app.mode", Mode.DEV.name().toLowerCase()),
+  MODE("mode", Mode.DEV.name().toLowerCase()),
   /**
-   * Application's feature profiles.
+   * Application's {@link Feat feature} profiles.
+   *
+   * @see Feat
    */
-  FEAT("app.feats", Arrays.toString(Feat.values()).replaceAll("[\\[\\] ]", "")),
+  FEAT("feats", Arrays.toString(Feat.values()).replaceAll("[\\[\\] ]", "")),
   /**
    * Application's running port.
    */
-  PORT("app.port", "9999"),
+  PORT("port", "9999"),
+  // ::: DB settings :::
+  /**
+   * Application's running port.
+   */
+  DB_DRIVER("db.driver", null),
+  /**
+   * Database URL to connect to. <b>Not provided but required</b>.
+   */
+  DB_URL("db.url", null),
+  /**
+   * Database username to connect to. <b>Not provided but required</b>.
+   */
+  DB_USER("db.user", null),
+  /**
+   * Database password to connect to. <b>Not provided but required</b>.
+   */
+  DB_PWD("db.pwd", null),
   ;
   private static final Props[] VALUES = values();
   private static final Pattern SPLIT = Pattern.compile("=");
+  private static final Path ROOT = Paths.get("").toAbsolutePath().getFileName();
+
   private final String key;
   private final String defaultVal;
 
@@ -51,7 +76,7 @@ public enum Props {
    * @throws IllegalArgumentException if number of arguments is grater than the
    *                                  enum {@link #values()}.
    */
-  public static Map<Props, String> from(final String... args) {
+  public static Map<Props, String> from(final @lombok.NonNull String... args) {
     if (args.length > VALUES.length) {
       throw new IllegalArgumentException(
           "Arguments given amount is greater than the ones can be afforded!");
@@ -65,7 +90,8 @@ public enum Props {
     }
     val m = new EnumMap<Props, String>(Props.class);
     for (val p : VALUES) {
-      m.put(p, System.getProperty(p.key, aa.getOrDefault(p.key, p.defaultVal)));
+      m.put(p, System.getProperty(p.getKey(),
+                                  aa.getOrDefault(p.getKey(), p.defaultVal)));
     }
     return m;
   }
@@ -74,9 +100,18 @@ public enum Props {
    * Indicates a string value to index to the given key in a proper way.
    *
    * @param value A value to index to.
-   * @return A resulting "key=value" string.
+   * @return A resulting {@code key=value} string.
    */
   public final String is(final @lombok.NonNull Object value) {
-    return key + "=" + value;
+    return getKey() + "=" + value;
+  }
+
+  /**
+   * Retrieves the {@link Props} key.
+   *
+   * @return Key entry appended with project's containing folder.
+   */
+  public final String getKey() {
+    return ROOT + "." + key;
   }
 }

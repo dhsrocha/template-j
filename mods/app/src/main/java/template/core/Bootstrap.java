@@ -29,8 +29,8 @@ public interface Bootstrap {
     Exceptions.ILLEGAL_ARGUMENT.throwIf(m::isForbidden);
     val feats = Feat.from(props.get(Props.FEAT));
     val port = Integer.parseInt(props.get(Props.PORT));
-    // TODO System properties
     val router = DaggerRoutes.builder().part1(m).part2(feats);
+    // TODO Depends on persistence module
     val server = DaggerWeb.builder().part1(m).dep1(router).build().get();
     return server.start(port);
   }

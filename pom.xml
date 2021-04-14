@@ -45,8 +45,8 @@
     <sep>${path.separator}</sep>
 
     <version.lombok>1.18.20</version.lombok>
-    <version.dagger>2.35.1</version.dagger>
-    <version.javalin>3.13.6</version.javalin>
+    <version.dagger>2.36</version.dagger>
+    <version.javalin>3.13.7</version.javalin>
     <version.mapstruct>1.4.2.Final</version.mapstruct>
     <version.docker.java>3.2.8</version.docker.java>
 
@@ -186,6 +186,10 @@
         </plugin>
         <!-- Packaging and running -->
         <plugin>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>3.2.0</version>
+        </plugin>
+        <plugin>
           <artifactId>maven-assembly-plugin</artifactId>
           <version>3.3.0</version>
         </plugin>
@@ -206,6 +210,11 @@
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>exec-maven-plugin</artifactId>
           <version>3.0.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.liquibase</groupId>
+          <artifactId>liquibase-maven-plugin</artifactId>
+          <version>4.3.2</version>
         </plugin>
         <!-- Static Analysis -->
         <plugin>
@@ -403,7 +412,7 @@
       <dependency>
         <groupId>org.jetbrains.kotlin</groupId>
         <artifactId>kotlin-bom</artifactId>
-        <version>1.5.0</version>
+        <version>1.5.20-M1</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -423,12 +432,12 @@
       <dependency>
         <groupId>com.google.code.gson</groupId>
         <artifactId>gson</artifactId>
-        <version>2.8.6</version>
+        <version>2.8.7</version>
       </dependency>
       <dependency>
         <groupId>org.ehcache</groupId>
         <artifactId>ehcache</artifactId>
-        <version>3.9.3</version>
+        <version>3.9.4</version>
       </dependency>
       <dependency>
         <groupId>io.javalin</groupId>
@@ -510,6 +519,17 @@
         <artifactId>docker-java-transport-zerodep</artifactId>
         <version>${version.docker.java}</version>
       </dependency>
+      <!-- Persistence -->
+      <dependency>
+        <groupId>org.hsqldb</groupId>
+        <artifactId>hsqldb</artifactId>
+        <version>2.6.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.liquibase</groupId>
+        <artifactId>liquibase-core</artifactId>
+        <version>4.3.5</version>
+      </dependency>
       <!---->
     </dependencies>
   </dependencyManagement>
@@ -548,6 +568,24 @@
       <version>3.10.0</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jul-to-slf4j</artifactId>
+      <version>1.7.0</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- Persistence -->
+    <dependency>
+      <groupId>org.hsqldb</groupId>
+      <artifactId>hsqldb</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.liquibase</groupId>
+      <artifactId>liquibase-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <!---->
   </dependencies>
 
   <profiles>
@@ -557,26 +595,90 @@
       <activation>
         <activeByDefault>false</activeByDefault>
       </activation>
+      <properties>
+        <!-- Migrator -->
+        <liquibase.changeLogFile>db-changelog.xml</liquibase.changeLogFile>
+        <liquibase.driver>org.hsqldb.jdbcDriver</liquibase.driver>
+        <liquibase.url>jdbc:hsqldb:${project.build.directory}/liquibase/db</liquibase.url>
+        <liquibase.contexts>!test</liquibase.contexts>
+        <liquibase.user>sa</liquibase.user>
+        <liquibase.pwd/>
+        <liquibase.verbose>false</liquibase.verbose>
+        <liquibase.emptyPassword>true</liquibase.emptyPassword>
+        <liquibase.dropFirst>true</liquibase.dropFirst>
+      </properties>
       <build>
-        <defaultGoal>clean compile exec:java@app</defaultGoal>
+        <defaultGoal>
+          clean compile test-compile
+          exec:exec@migrate
+          exec:java@app
+        </defaultGoal>
         <pluginManagement>
           <plugins>
+            <plugin>
+              <groupId>org.liquibase</groupId>
+              <artifactId>liquibase-maven-plugin</artifactId>
+              <configuration>
+                <promptOnNonLocalDatabase>false</promptOnNonLocalDatabase>
+              </configuration>
+            </plugin>
             <plugin>
               <groupId>org.codehaus.mojo</groupId>
               <artifactId>exec-maven-plugin</artifactId>
               <executions>
+                <!---->
+                <execution>
+                  <id>migrate</id>
+                  <phase>none</phase>
+                  <goals>
+                    <goal>exec</goal>
+                  </goals>
+                  <configuration>
+                    <executable>./mvnw</executable>
+                    <arguments>
+                      <argument>liquibase:update@migrate</argument>
+                      <argument>-Plocal</argument>
+                    </arguments>
+                  </configuration>
+                </execution>
+                <!---->
                 <execution>
                   <id>app</id>
                   <phase>none</phase>
                   <goals>
                     <goal>java</goal>
                   </goals>
+                  <configuration>
+                    <arguments>
+                      <argument>app.db.driver=${liquibase.driver}</argument>
+                      <argument>app.db.url=${liquibase.url}</argument>
+                      <argument>app.db.user=${liquibase.user}</argument>
+                      <argument>app.db.pwd=${liquibase.pwd}</argument>
+                    </arguments>
+                  </configuration>
                 </execution>
+                <!---->
               </executions>
             </plugin>
           </plugins>
         </pluginManagement>
+        <resources>
+          <resource>
+            <directory>src/main/resources</directory>
+            <filtering>true</filtering>
+          </resource>
+        </resources>
       </build>
+      <dependencies>
+        <dependency>
+          <groupId>org.liquibase</groupId>
+          <artifactId>liquibase-core</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.hsqldb</groupId>
+          <artifactId>hsqldb</artifactId>
+        </dependency>
+      </dependencies>
     </profile>
     <!---->
     <profile>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+  <changeSet id="initial.schema" author="dhsrocha.dev@gmail.com">
+    <!-- ::: user ::: -->
+    <createTable tableName="user">
+      <column name="id" type="CHAR(36)" valueComputed="UUID()">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="username" type="VARCHAR(20)">
+        <constraints unique="true" nullable="false"/>
+      </column>
+      <column name="email" type="VARCHAR(30)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="name" type="VARCHAR(50)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="age" type="INT">
+        <constraints checkConstraint="CHECK (age &gt;= 0)"/>
+      </column>
+    </createTable>
+    <!-- ::: address ::: -->
+    <createTable tableName="address">
+      <column name="id" type="CHAR(36)" valueComputed="UUID()">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="type" type="VARCHAR(10)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="place" type="VARCHAR(30)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="number" type="VARCHAR(10)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="neighbourhood" type="VARCHAR(30)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="municipality" type="VARCHAR(30)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="state" type="VARCHAR(30)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="postal_code" type="VARCHAR(10)">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+    <!-- ::: user_address ::: -->
+    <createTable tableName="user_address">
+      <column name="user_id" type="CHAR(36)">
+        <constraints foreignKeyName="fk_user" primaryKey="true"
+                     nullable="false" references="user(id)"/>
+      </column>
+      <column name="address_id" type="CHAR(36)">
+        <constraints foreignKeyName="fk_address" primaryKey="true"
+                     nullable="false" references="address(id)"/>
+      </column>
+    </createTable>
+  </changeSet>
+</databaseChangeLog>

@@ -4,7 +4,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import template.Application;
+import template.Application.Mode;
 import template.Support;
+import template.Support.DbExtension;
 import template.Support.IntegrationTest;
 
 /**
@@ -22,7 +24,14 @@ final class ApplicationTest {
       + "THEN expect does not throw any exception.")
   final void withDefaultOpts() {
     // Assert
-    Assertions.assertDoesNotThrow(() -> Application.main(
-        Props.PORT.is(Support.nextAvailablePort())));
+    Assertions.assertDoesNotThrow(
+        // Act
+        () -> Application.main(Props.MODE.is(Mode.TEST),
+                               Props.PORT.is(Support.nextAvailablePort()),
+                               Props.DB_DRIVER.is(org.hsqldb.jdbcDriver.class
+                                                      .getCanonicalName()),
+                               Props.DB_URL.is(DbExtension.DB_URL),
+                               Props.DB_USER.is(DbExtension.DB_USER),
+                               Props.DB_PWD.is(DbExtension.DB_PWD)));
   }
 }
