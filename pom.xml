@@ -15,6 +15,24 @@
   </description>
   <!-- TODO: Need to change accordingly -->
   <url>http://github.com/dhsrocha/template-maven-javalin</url>
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <id>dhsrocha</id>
+      <name>Diego Rocha</name>
+      <email>dhsrocha@gmail.com</email>
+      <roles>
+        <role>architect</role>
+        <role>developer</role>
+      </roles>
+      <timezone>0</timezone>
+    </developer>
+  </developers>
 
   <properties>
     <!-- Maven -->
@@ -305,7 +323,7 @@
       <!-- Standard slf4j/log4j2 configuration file -->
       <resource>
         <directory>
-          ${maven.multiModuleProjectDirectory}${file.separator}src/main/resources
+          ${maven.multiModuleProjectDirectory}${file.separator}src${file.separator}main${file.separator}resources
         </directory>
         <includes>
           <include>log4j2.properties</include>
@@ -316,6 +334,21 @@
 
   <dependencyManagement>
     <dependencies>
+      <!-- Logging -->
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-parent</artifactId>
+        <version>1.7.30</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-bom</artifactId>
+        <version>2.14.1</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
       <!-- Testing -->
       <dependency>
         <groupId>org.junit</groupId>
@@ -324,12 +357,12 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
+      <!-- Application -->
       <dependency>
         <groupId>org.mapstruct</groupId>
         <artifactId>mapstruct</artifactId>
         <version>${version.mapstruct}</version>
       </dependency>
-      <!-- Application -->
       <dependency>
         <groupId>io.javalin</groupId>
         <artifactId>javalin</artifactId>
@@ -409,12 +442,10 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-      <version>1.7.30</version>
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-slf4j-impl</artifactId>
-      <version>2.14.1</version>
     </dependency>
     <!-- Testing -->
     <dependency>
