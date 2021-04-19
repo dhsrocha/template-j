@@ -3,13 +3,14 @@ package template;
 import io.javalin.apibuilder.ApiBuilder;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
-import java.util.Arrays;
 import java.util.function.Supplier;
-import template.Application.Feat;
+import template.Application.Mode;
 import template.Router.FeatureScope;
 import template.Router.Mod;
 import template.base.contract.Builder;
+import template.base.contract.Controller;
 import template.base.contract.Routes;
+import template.feature.info.Info;
 
 /**
  * Component for exposing application's ReST resources. Ultimately, assembles
@@ -26,17 +27,24 @@ interface Router extends Supplier<Routes> {
   @interface FeatureScope {
   }
 
-  @dagger.Module
+  @dagger.Module(includes = {Info.Mod.class})
   interface Mod {
 
     @FeatureScope
     @dagger.Provides
-    static Routes routes(final @lombok.NonNull Feat[] feats) {
-      return () -> ApiBuilder.get(ctx -> ctx.result(Arrays.toString(feats)));
+    static Routes routes(final @lombok.NonNull Application.Mode mode,
+                         final @lombok.NonNull Controller.Getter<Info> info) {
+
+      return () -> {
+        if (Mode.PRD != mode) {
+          ApiBuilder.get(info);
+        }
+      };
     }
   }
 
   @dagger.Component.Builder
-  interface Build extends Builder.Part1<Build, Router, Feat[]> {
+  interface Build extends Builder.Part1<Build, Router, Application.Mode>,
+                          Builder.Part2<Build, Router, Application.Feat[]> {
   }
 }

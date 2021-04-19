@@ -1,5 +1,6 @@
 package template;
 
+import com.google.gson.Gson;
 import java.io.IOException;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -72,6 +73,7 @@ public interface Support {
   @lombok.Value
   class Client {
 
+    private static final Gson MAPPER = new Gson();
     private static final int PORT = nextAvailablePort();
     private static final HttpClient CLIENT = HttpClient
         .newBuilder().version(HttpClient.Version.HTTP_1_1)
@@ -90,11 +92,22 @@ public interface Support {
       return perform(URI.create("/"), build);
     }
 
+    public <T> T perform(final @lombok.NonNull Class<T> serializeTo,
+                         final @lombok.NonNull HttpRequest.Builder build) {
+      return perform(URI.create("/"), serializeTo, build);
+    }
+
     @lombok.SneakyThrows
     public HttpResponse<String> perform(final @lombok.NonNull URI uri,
                                         final @lombok.NonNull HttpRequest.Builder build) {
       return CLIENT.send(build.uri(base.resolve(uri)).build(),
                          HttpResponse.BodyHandlers.ofString());
+    }
+
+    public <T> T perform(final @lombok.NonNull URI uri,
+                         final @lombok.NonNull Class<T> serializeTo,
+                         final @lombok.NonNull HttpRequest.Builder build) {
+      return MAPPER.fromJson(perform(uri, build).body(), serializeTo);
     }
 
     /**
@@ -115,7 +128,7 @@ public interface Support {
         val feats = Optional.of(suite.activated())
                             .or(() -> Optional.of(suite.value()))
                             .filter(l -> l.length > 0)
-                            .orElse(Feat.values());
+                            .orElseGet(Feat::values);
         val str = Arrays.stream(feats).map(Enum::name)
                         .collect(Collectors.joining(","));
         REF.set(Bootstrap.bootstrap(

@@ -420,6 +420,11 @@
         <version>${version.mapstruct}</version>
       </dependency>
       <dependency>
+        <groupId>com.google.code.gson</groupId>
+        <artifactId>gson</artifactId>
+        <version>2.8.6</version>
+      </dependency>
+      <dependency>
         <groupId>io.javalin</groupId>
         <artifactId>javalin</artifactId>
         <version>${version.javalin}</version>

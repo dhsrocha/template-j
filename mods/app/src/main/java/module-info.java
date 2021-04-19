@@ -12,8 +12,10 @@ module template.app {
   // Application
   requires java.net.http;
   requires io.javalin;
+  requires com.google.gson;
 
   // Open for testing
   opens template;
   opens template.feature.user;
+  opens template.feature.info;
 }
