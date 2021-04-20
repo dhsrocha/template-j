@@ -16,6 +16,24 @@ import template.base.Exceptions;
 public interface Domain<D extends Domain<D>> extends Comparable<D> {
 
   /**
+   * Indicates that the implementing type can refer to given {@link Domain
+   * domain type}. Meant to be used along with system-wise abstractions which
+   * are generalized and depend on class reference to allow be located by
+   * contextual dependency injection mechanism.
+   *
+   * @param <D> The type reference.
+   */
+  interface Ref<D extends Domain<D>> {
+
+    /**
+     * Indicates a {@link Domain} reference for type inference purposes.
+     *
+     * @return the class reference.
+     */
+    Class<D> domainRef();
+  }
+
+  /**
    * Meant to preferably mark {@link Enum enums} which index domain invariants
    * provided by {@link Domain#invariants()}.
    */

@@ -1,5 +1,6 @@
 package template.base;
 
+import io.javalin.http.NotFoundResponse;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -18,6 +19,10 @@ public enum Exceptions {
    * Indicates a general illegal argument.
    */
   ILLEGAL_ARGUMENT(IllegalArgumentException::new),
+  /**
+   * Indicates a resource that has not been found.
+   */
+  RESOURCE_NOT_FOUND(NotFoundResponse::new),
   ;
 
   private final Function<String, RuntimeException> ex;
@@ -70,5 +75,14 @@ public enum Exceptions {
         throw ex.get();
       }
     }
+  }
+
+  /**
+   * Instantiates an exception object with the indexed message.
+   *
+   * @return A supplier of a generic exception.
+   */
+  public final RuntimeException create() {
+    return ex.apply(name());
   }
 }

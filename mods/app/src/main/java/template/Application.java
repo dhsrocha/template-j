@@ -34,7 +34,7 @@ public interface Application {
    * Defines application's features.
    */
   enum Feat {
-    DEFAULT, // Just a placeholder
+    USER,
     ;
 
     static Feat[] from(final @NonNull String... args) {

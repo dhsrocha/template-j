@@ -2,7 +2,11 @@ package template.feature.user;
 
 import java.util.Comparator;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
+import template.base.contract.CacheManager;
+import template.base.contract.Controller;
+import template.base.contract.Repository;
 import template.base.stereotype.Domain;
 
 /**
@@ -45,5 +49,19 @@ public class User implements Domain<User> {
     return Comparator.comparing(User::getAge)
                      .thenComparing(User::getName)
                      .compare(this, user);
+  }
+
+
+  @dagger.Module
+  public interface Mod {
+
+    @dagger.Binds
+    CacheManager<User, UUID> cacheManager(final UserCache u);
+
+    @dagger.Binds
+    Repository.Cached<User, UUID> repository(final UserRepository u);
+
+    @dagger.Binds
+    Controller<User> controller(final UserController u);
   }
 }

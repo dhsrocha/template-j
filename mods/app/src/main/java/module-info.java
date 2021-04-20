@@ -13,6 +13,7 @@ module template.app {
   requires java.net.http;
   requires io.javalin;
   requires com.google.gson;
+  requires ehcache;
 
   // Open for testing
   opens template;

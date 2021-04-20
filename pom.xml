@@ -425,6 +425,11 @@
         <version>2.8.6</version>
       </dependency>
       <dependency>
+        <groupId>org.ehcache</groupId>
+        <artifactId>ehcache</artifactId>
+        <version>3.1.3</version>
+      </dependency>
+      <dependency>
         <groupId>io.javalin</groupId>
         <artifactId>javalin</artifactId>
         <version>${version.javalin}</version>

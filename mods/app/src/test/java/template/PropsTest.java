@@ -30,7 +30,6 @@ final class PropsTest {
   @CsvSource({
       "app.mode=dev, dev, MODE",
       "app.port=0000, 0000, PORT",
-      "app.feat=, DEFAULT, FEAT"
   })
   @ParameterizedTest
   @DisplayName("Successful test cases.")
