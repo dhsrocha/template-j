@@ -21,12 +21,12 @@ public class User implements Domain<User> {
     /**
      * {@link User#name} should be non-blank.
      */
-    NAME_NOT_BLANK
+    NAME_NOT_BLANK,
   }
 
   private static final Map<Invariant, Function<User, Boolean>>
       RULES = Map.of(Rules.AGE_ABOVE_ZERO, u -> u.age > 0,
-                     Rules.NAME_NOT_BLANK, u -> !u.name.isBlank());
+                     Rules.NAME_NOT_BLANK, u -> null != u && !u.name.isBlank());
 
   @lombok.NonNull String name;
   int age;
