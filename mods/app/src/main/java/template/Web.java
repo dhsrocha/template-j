@@ -1,6 +1,8 @@
 package template;
 
+import com.google.gson.Gson;
 import io.javalin.Javalin;
+import io.javalin.plugin.json.JavalinJson;
 import io.javalin.plugin.openapi.annotations.ContentType;
 import java.util.function.Supplier;
 import lombok.val;
@@ -32,6 +34,9 @@ interface Web extends Supplier<Server> {
     @Application.Scope
     static Server server(final @lombok.NonNull Mode mode,
                          final @lombok.NonNull Router.Build routes) {
+      val mapper = new Gson();
+      JavalinJson.setFromJsonMapper(mapper::fromJson);
+      JavalinJson.setToJsonMapper(mapper::toJson);
       val app = Javalin.create(cfg -> {
         cfg.showJavalinBanner = mode == Mode.PRD;
         cfg.defaultContentType = ContentType.JSON;
