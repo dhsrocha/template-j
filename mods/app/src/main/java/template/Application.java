@@ -13,8 +13,6 @@ import lombok.NonNull;
  *
  * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */
-@dagger.Component
-@javax.inject.Singleton
 public interface Application {
 
   @javax.inject.Scope
