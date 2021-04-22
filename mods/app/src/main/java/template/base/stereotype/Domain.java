@@ -1,5 +1,6 @@
 package template.base.stereotype;
 
+import io.javalin.http.HttpResponseException;
 import java.util.Map;
 import java.util.function.Function;
 import template.base.Exceptions;
@@ -28,13 +29,11 @@ public interface Domain<D extends Domain<D>> extends Comparable<D> {
    * object creation.
    */
   @lombok.Getter
-  @lombok.AllArgsConstructor
-  final class Violation extends IllegalArgumentException {
+  final class Violation extends HttpResponseException {
 
-    /**
-     * Indicates which invariant rule was violated.
-     */
-    private final transient Invariant violated;
+    Violation(final Invariant violated) {
+      super(422, "Violation rule broken.", Map.of("violation", violated.name()));
+    }
   }
 
   /**

@@ -31,11 +31,6 @@ interface Bootstrap {
     // TODO System properties
     val router = DaggerRouter.builder().part1(m).part2(feats);
     val server = DaggerWeb.builder().part1(m).dep1(router).build().get();
-    try {
-      return server.start(port);
-    } catch (final Exception e) {
-      log.error(e.getMessage(), e);
-      return server;
-    }
+    return server.start(port);
   }
 }

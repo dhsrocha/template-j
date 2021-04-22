@@ -2,6 +2,7 @@ package template;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import lombok.val;
 import org.junit.jupiter.api.BeforeEach;
@@ -54,6 +55,15 @@ final class PropsTest {
     val props = assertDoesNotThrow(() -> Props.from(input));
     // Assert
     assertEquals(Props.MODE.getDefaultVal(), props.get(Props.MODE));
+  }
+
+  @Test
+  @DisplayName("Should expect exception from excessive argument length.")
+  final void length() {
+    // Arrange
+    val args = ",.".repeat(Props.values().length + 1).split(",");
+    // Act / Assert
+    assertThrows(IllegalArgumentException.class, () -> Props.from(args));
   }
 
   @Test

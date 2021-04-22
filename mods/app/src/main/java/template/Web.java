@@ -10,7 +10,6 @@ import template.Application.Mode;
 import template.Web.Mod;
 import template.Web.Server;
 import template.base.contract.Builder;
-import template.base.contract.Builder.Dep1;
 
 /**
  * Module for bootstrapping application's web server.
@@ -61,6 +60,6 @@ interface Web extends Supplier<Server> {
 
   @dagger.Component.Builder
   interface Build extends Builder.Part1<Build, Web, Mode>,
-                          Dep1<Build, Web, Router.Build> {
+                          Builder.Dep1<Build, Web, Router.Build> {
   }
 }

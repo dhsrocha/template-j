@@ -119,9 +119,10 @@ public interface Support {
       return BodyPublishers.ofString(MAPPER.toJson(toBody));
     }
 
+    @lombok.SneakyThrows
     public HttpResponse<String> perform(
         final @lombok.NonNull HttpRequest.Builder build) {
-      return perform(URI.create("/"), build);
+      return CLIENT.send(build.uri(base).build(), BodyHandlers.ofString());
     }
 
     @lombok.SneakyThrows
@@ -134,7 +135,9 @@ public interface Support {
 
     public <T> T perform(final @lombok.NonNull Class<T> serializeTo,
                          final @lombok.NonNull HttpRequest.Builder build) {
-      return perform(URI.create("/"), serializeTo, build);
+      val t = MAPPER.fromJson(perform(build).body(), serializeTo);
+      Exceptions.ILLEGAL_ARGUMENT.throwIf(() -> null == t);
+      return t;
     }
 
     public <T> T perform(final @lombok.NonNull Class<T> domain,
@@ -143,19 +146,6 @@ public interface Support {
       val t = MAPPER.fromJson(perform(build, extensions).body(), domain);
       Exceptions.ILLEGAL_ARGUMENT.throwIf(() -> null == t);
       return t;
-    }
-
-    @lombok.SneakyThrows
-    public HttpResponse<String> perform(final @lombok.NonNull URI uri,
-                                        final @lombok.NonNull HttpRequest.Builder build) {
-      return CLIENT.send(build.uri(base.resolve(uri)).build(),
-                         HttpResponse.BodyHandlers.ofString());
-    }
-
-    public <T> T perform(final @lombok.NonNull URI uri,
-                         final @lombok.NonNull Class<T> serializeTo,
-                         final @lombok.NonNull HttpRequest.Builder build) {
-      return MAPPER.fromJson(perform(uri, build).body(), serializeTo);
     }
 
     @lombok.SneakyThrows

@@ -34,7 +34,7 @@ final class UserTest {
                                             final int age) {
     // Assert / Act
     val ex = assertThrows(Violation.class, () -> User.of(name, age));
-    assertEquals(msg, ex.getViolated().name());
+    assertEquals(msg, ex.getDetails().get("violation"));
   }
 
   @Test
