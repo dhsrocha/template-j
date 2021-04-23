@@ -1,9 +1,11 @@
 package template.feature.user;
 
 import java.util.Comparator;
-import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
-import java.util.function.Function;
+import java.util.function.Predicate;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import template.base.contract.CacheManager;
 import template.base.contract.Controller;
 import template.base.contract.Repository;
@@ -17,20 +19,19 @@ import template.base.stereotype.Domain;
 @lombok.Value
 public class User implements Domain<User> {
 
-  private enum Rules implements Invariant {
-    /**
-     * {@link User#age} should be above zero.
-     */
-    AGE_ABOVE_ZERO,
-    /**
-     * {@link User#name} should be non-blank.
-     */
-    NAME_NOT_BLANK,
+  @SuppressWarnings("ImmutableEnumChecker")
+  @Getter
+  @AllArgsConstructor
+  private enum Rules implements Invariant<User> {
+    AGE_ABOVE_ZERO(u -> u.age > 0),
+    NAME_NOT_BLANK(u -> null != u && !u.name.isBlank()),
+    ;
+    private final Predicate<User> test;
   }
 
-  private static final Map<Invariant, Function<User, Boolean>>
-      RULES = Map.of(Rules.AGE_ABOVE_ZERO, u -> u.age > 0,
-                     Rules.NAME_NOT_BLANK, u -> null != u && !u.name.isBlank());
+  private static final Set<Invariant<User>> SET = Set.of(Rules.values());
+  private static final Comparator<User> COMPARATOR = Comparator
+      .comparing(User::getAge).thenComparing(User::getName);
 
   @lombok.NonNull String name;
   int age;
@@ -40,17 +41,14 @@ public class User implements Domain<User> {
   }
 
   @Override
-  public Map<Invariant, Function<User, Boolean>> invariants() {
-    return RULES;
+  public int compareTo(final @lombok.NonNull User user) {
+    return COMPARATOR.compare(this, user);
   }
 
   @Override
-  public int compareTo(final @lombok.NonNull User user) {
-    return Comparator.comparing(User::getAge)
-                     .thenComparing(User::getName)
-                     .compare(this, user);
+  public Set<Invariant<User>> invariants() {
+    return SET;
   }
-
 
   @dagger.Module
   public interface Mod {

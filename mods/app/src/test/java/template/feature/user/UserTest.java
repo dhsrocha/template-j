@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -40,9 +41,9 @@ final class UserTest {
     // Act
     val ex = assertThrows(Violation.class, () -> User.of(name, age));
     // Assert
-    assertTrue(rules.containsAll(ex.getInvariants().stream()
-                                   .map(Invariant::name)
-                                   .collect(Collectors.toSet())));
+    assertTrue(rules.containsAll(Arrays.stream(ex.getInvariants())
+                                       .map(Invariant::name)
+                                       .collect(Collectors.toSet())));
   }
 
   @SuppressWarnings("unused")

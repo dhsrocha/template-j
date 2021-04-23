@@ -1,9 +1,7 @@
 package template.base.stereotype;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.Set;
+import java.util.function.Predicate;
 import lombok.val;
 import template.base.Exceptions;
 
@@ -39,7 +37,9 @@ public interface Domain<D extends Domain<D>> extends Comparable<D> {
    * Meant to preferably mark {@link Enum enums} which index domain invariants
    * provided by {@link Domain#invariants()}.
    */
-  interface Invariant {
+  interface Invariant<T extends Domain<T>> {
+
+    Predicate<T> getTest();
 
     String name();
   }
@@ -52,7 +52,7 @@ public interface Domain<D extends Domain<D>> extends Comparable<D> {
   @lombok.AllArgsConstructor
   class Violation extends RuntimeException {
 
-    private final transient Collection<Invariant> invariants;
+    private final transient Invariant<?>[] invariants;
   }
 
   /**
@@ -61,7 +61,7 @@ public interface Domain<D extends Domain<D>> extends Comparable<D> {
    *
    * @return A non-empty mapped set of {@link Invariant invariant rules}.
    */
-  Map<Invariant, Function<D, Boolean>> invariants();
+  Set<Invariant<D>> invariants();
 
   /**
    * Validate a domain object. Meant to be invoked in the corresponding factory
@@ -77,11 +77,10 @@ public interface Domain<D extends Domain<D>> extends Comparable<D> {
    */
   static <D extends Domain<D>> D validate(final @lombok.NonNull D domain) {
     Exceptions.ILLEGAL_ARGUMENT.throwIf(domain.invariants()::isEmpty);
-    val rules = domain.invariants().entrySet().stream()
-                      .filter(e -> !e.getValue().apply(domain))
-                      .map(Map.Entry::getKey)
-                      .collect(Collectors.toList());
-    Exceptions.throwIf(() -> new Violation(rules), () -> rules.size() != 0);
+    val rules = domain.invariants().stream()
+                      .filter(e -> !e.getTest().test(domain))
+                      .toArray(Invariant[]::new);
+    Exceptions.throwIf(() -> new Violation(rules), () -> rules.length != 0);
     return domain;
   }
 }
