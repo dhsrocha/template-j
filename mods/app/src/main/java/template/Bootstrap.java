@@ -22,8 +22,8 @@ interface Bootstrap {
   static Web.Server bootstrap(final String... args) {
     val log = LoggerFactory.getLogger(Application.class);
     val props = Props.from(args);
-    log.info("Properties:");
-    props.forEach((p, v) -> log.info("* {}: [{}]", p.getKey(), v));
+    log.debug("Properties:");
+    props.forEach((p, v) -> log.debug("* {}: [{}]", p.getKey(), v));
     val m = Mode.valueOf(props.get(Props.MODE).toUpperCase());
     Exceptions.ILLEGAL_ARGUMENT.throwIf(m::isForbidden);
     val feats = Feat.from(props.get(Props.FEAT));

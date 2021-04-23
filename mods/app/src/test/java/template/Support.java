@@ -175,12 +175,11 @@ public interface Support {
                           .or(() -> Optional.of(suite.value()))
                           .filter(l -> l.length > 0)
                           .orElseGet(Feat::values);
-      val str = Arrays.stream(feats).map(Enum::name)
-                      .collect(Collectors.joining(","));
       REF.set(Bootstrap.bootstrap(
           Props.MODE.is(Mode.TEST),
           Props.PORT.is(Client.PORT),
-          Props.FEAT.is(str)));
+          Props.FEAT.is(Arrays.stream(feats).map(Enum::name)
+                              .collect(Collectors.joining(",")))));
     }
 
     @Override
