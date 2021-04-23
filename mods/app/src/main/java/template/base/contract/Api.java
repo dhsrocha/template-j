@@ -21,6 +21,4 @@ public interface Api<T, I> {
   boolean update(final @lombok.NonNull I id, final @lombok.NonNull T t);
 
   boolean delete(final @lombok.NonNull I id);
-
-  int count();
 }
