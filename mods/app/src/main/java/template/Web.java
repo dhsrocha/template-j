@@ -4,12 +4,14 @@ import com.google.gson.Gson;
 import io.javalin.Javalin;
 import io.javalin.plugin.json.JavalinJson;
 import io.javalin.plugin.openapi.annotations.ContentType;
+import java.util.Map;
 import java.util.function.Supplier;
 import lombok.val;
 import template.Application.Mode;
 import template.Web.Mod;
 import template.Web.Server;
 import template.base.contract.Builder;
+import template.base.stereotype.Domain.Violation;
 
 /**
  * Module for bootstrapping application's web server.
@@ -42,6 +44,14 @@ interface Web extends Supplier<Server> {
         cfg.autogenerateEtags = Boolean.TRUE;
       }).routes(routes.build().get());
       Runtime.getRuntime().addShutdownHook(new Thread(app::stop));
+      app.exception(Violation.class, (e, c) -> {
+        c.status(422);
+        c.result(mapper.toJson(Map.of(
+            "status", c.status(),
+            "message", "Violation rule broken.",
+            "violations", e.getInvariants()
+        )));
+      });
       return new Server() {
 
         @Override

@@ -1,8 +1,10 @@
 package template.base.stereotype;
 
-import io.javalin.http.HttpResponseException;
+import java.util.Collection;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import lombok.val;
 import template.base.Exceptions;
 
 /**
@@ -47,11 +49,10 @@ public interface Domain<D extends Domain<D>> extends Comparable<D> {
    * object creation.
    */
   @lombok.Getter
-  final class Violation extends HttpResponseException {
+  @lombok.AllArgsConstructor
+  class Violation extends RuntimeException {
 
-    Violation(final Invariant violated) {
-      super(422, "Violation rule broken.", Map.of("violation", violated.name()));
-    }
+    private final transient Collection<Invariant> invariants;
   }
 
   /**
@@ -71,13 +72,16 @@ public interface Domain<D extends Domain<D>> extends Comparable<D> {
    * @return The given domain parameter, after its validation processed.
    * @throws IllegalStateException If provided {@link #invariants() invariant
    *                               rule set} returns empty.
-   * @throws Domain.Violation      If any of provided {@link #invariants() rule
+   * @throws Violation             If any of provided {@link #invariants() rule
    *                               set}'s contents fails.
    */
   static <D extends Domain<D>> D validate(final @lombok.NonNull D domain) {
     Exceptions.ILLEGAL_ARGUMENT.throwIf(domain.invariants()::isEmpty);
-    domain.invariants().forEach((k, v) -> Exceptions.throwIf(
-        () -> new Violation(k), () -> !v.apply(domain)));
+    val rules = domain.invariants().entrySet().stream()
+                      .filter(e -> !e.getValue().apply(domain))
+                      .map(Map.Entry::getKey)
+                      .collect(Collectors.toList());
+    Exceptions.throwIf(() -> new Violation(rules), () -> rules.size() != 0);
     return domain;
   }
 }

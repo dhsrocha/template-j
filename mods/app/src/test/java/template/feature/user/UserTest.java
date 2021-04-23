@@ -3,13 +3,20 @@ package template.feature.user;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.val;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import template.base.stereotype.Domain.Invariant;
 import template.base.stereotype.Domain.Violation;
 
 /**
@@ -20,21 +27,30 @@ import template.base.stereotype.Domain.Violation;
 @DisplayName("User domain test suite.")
 final class UserTest {
 
-  @CsvSource({
-      "AGE_ABOVE_ZERO, some_name, 0",
-      "NAME_NOT_BLANK, ''       , 1"
-  })
   @ParameterizedTest(name = "{0}: name: ''{1}'' age: ''{2}'' ")
+  @MethodSource("invalidArgs")
   @DisplayName(""
       + "GIVEN invalid values "
       + "WHEN instantiating User object "
       + "THEN expect IllegalArgumentException thrown "
       + "AND corresponding message.")
-  final void shouldThrow_dueToInvalidValues(final String msg, final String name,
+  final void shouldThrow_dueToInvalidValues(final List<String> rules,
+                                            final String name,
                                             final int age) {
-    // Assert / Act
+    // Act
     val ex = assertThrows(Violation.class, () -> User.of(name, age));
-    assertEquals(msg, ex.getDetails().get("violation"));
+    // Assert
+    assertTrue(rules.containsAll(ex.getInvariants().stream()
+                                   .map(Invariant::name)
+                                   .collect(Collectors.toSet())));
+  }
+
+  @SuppressWarnings("unused")
+  private static Stream<Arguments> invalidArgs() {
+    return Stream.of(
+        arguments(List.of("AGE_ABOVE_ZERO"), "some_name", 0),
+        arguments(List.of("NAME_NOT_BLANK"), "", 1),
+        arguments(List.of("AGE_ABOVE_ZERO", "NAME_NOT_BLANK"), "", 0));
   }
 
   @Test

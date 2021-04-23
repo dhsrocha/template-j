@@ -102,16 +102,14 @@ final class UserIntegrationTest {
   @DisplayName(""
       + "GIVEN invalid request "
       + "WHEN performing user resource creation "
-      + "THEN should not expect thrown exception "
-      + "AND return 422 as HTTP status code.")
-  final void givenInvalidRequest_whenCreating_thenShouldNotExpectException_andReturn422AsStatus() {
+      + "THEN return 422 as HTTP status code.")
+  final void givenInvalidRequest_whenCreating_thenReturn422asStatus() {
     // Arrange
     val map = Map.of("age", "0", "name", "some");
     val body = Client.jsonOf(MAPPER.fromJson(MAPPER.toJson(map), User.class));
+    // Act
+    val resp = CLIENT.perform(HttpRequest.newBuilder().POST(body));
     // Assert
-    Assertions.assertDoesNotThrow(() -> {
-      // Act
-      CLIENT.perform(HttpRequest.newBuilder().POST(body));
-    });
+    Assertions.assertEquals(422, resp.statusCode());
   }
 }
