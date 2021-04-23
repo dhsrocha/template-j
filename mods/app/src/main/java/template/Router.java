@@ -11,6 +11,7 @@ import template.Router.Mod;
 import template.base.contract.Builder;
 import template.base.contract.Controller;
 import template.base.contract.Routes;
+import template.feature.address.Address;
 import template.feature.info.Info;
 import template.feature.user.User;
 
@@ -29,7 +30,7 @@ interface Router extends Supplier<Routes> {
   @interface FeatureScope {
   }
 
-  @dagger.Module(includes = {Info.Mod.class, User.Mod.class})
+  @dagger.Module(includes = {Info.Mod.class, User.Mod.class, Address.Mod.class})
   interface Mod {
 
     @FeatureScope
@@ -37,7 +38,8 @@ interface Router extends Supplier<Routes> {
     static Routes routes(final @lombok.NonNull Application.Mode mode,
                          final @lombok.NonNull Application.Feat[] feats,
                          final @lombok.NonNull Controller.Getter<Info> info,
-                         final @lombok.NonNull Controller<User> user) {
+                         final @lombok.NonNull Controller<User> user,
+                         final @lombok.NonNull Controller<Address> address) {
       return () -> {
         if (Mode.PRD != mode) {
           ApiBuilder.get(info);
@@ -45,6 +47,9 @@ interface Router extends Supplier<Routes> {
         for (final var f : feats) {
           if (Feat.USER == f) {
             ApiBuilder.crud(user.crudPath(), user);
+          }
+          if (Feat.ADDRESS == f) {
+            ApiBuilder.crud(address.crudPath(), address);
           }
         }
       };

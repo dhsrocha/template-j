@@ -35,6 +35,7 @@ public interface Application {
    */
   enum Feat {
     USER,
+    ADDRESS,
     ;
 
     static Feat[] from(final @NonNull String args) {
