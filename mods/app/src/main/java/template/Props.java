@@ -5,7 +5,6 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import lombok.val;
 import template.Application.Feat;
 import template.Application.Mode;
@@ -25,8 +24,7 @@ public enum Props {
   /**
    * Application's feature profiles.
    */
-  FEAT("app.feats", Arrays.stream(Feat.values()).map(Enum::name)
-                          .collect(Collectors.joining(","))),
+  FEAT("app.feats", Arrays.toString(Feat.values()).replaceAll("[\\[\\] ]", "")),
   /**
    * Application's running port.
    */

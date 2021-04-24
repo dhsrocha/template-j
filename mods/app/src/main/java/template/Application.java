@@ -37,6 +37,10 @@ public interface Application {
     USER,
     ;
 
+    static Feat[] from(final @NonNull String args) {
+      return from(args.split(","));
+    }
+
     static Feat[] from(final @NonNull String... args) {
       return Arrays.stream(args).map(Feat::valueOf).toArray(Feat[]::new);
     }

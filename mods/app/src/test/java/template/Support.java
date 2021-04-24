@@ -19,7 +19,6 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.val;
 import org.junit.jupiter.api.extension.AfterTestExecutionCallback;
@@ -178,8 +177,7 @@ public interface Support {
       REF.set(Bootstrap.bootstrap(
           Props.MODE.is(Mode.TEST),
           Props.PORT.is(Client.PORT),
-          Props.FEAT.is(Arrays.stream(feats).map(Enum::name)
-                              .collect(Collectors.joining(",")))));
+          Props.FEAT.is(Arrays.toString(feats).replaceAll("[\\[\\] ]", ""))));
     }
 
     @Override
