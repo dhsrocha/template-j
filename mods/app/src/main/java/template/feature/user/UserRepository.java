@@ -1,7 +1,8 @@
 package template.feature.user;
 
-import java.util.HashMap;
+import java.util.UUID;
 import template.base.contract.Repository;
+import template.base.stereotype.Entity;
 
 /**
  * User feature repository implementation.
@@ -11,7 +12,7 @@ import template.base.contract.Repository;
 final class UserRepository extends Repository.Default<User> {
 
   @javax.inject.Inject
-  UserRepository() {
-    super(new HashMap<>());
+  UserRepository(final @lombok.NonNull Entity<UUID, User> entity) {
+    super(entity);
   }
 }

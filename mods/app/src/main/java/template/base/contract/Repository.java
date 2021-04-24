@@ -15,6 +15,7 @@ import lombok.Value;
 import lombok.val;
 import org.ehcache.Cache;
 import template.base.stereotype.Domain;
+import template.base.stereotype.Entity;
 
 /**
  * Ensembles business concerns and database handling. Meant to follow a
@@ -63,40 +64,41 @@ public interface Repository<D extends Domain<D>, I> {
   abstract class Default<T extends Domain<T>> implements Repository<T, UUID>,
                                                          Cached<T, UUID> {
 
-    private final Map<UUID, T> store;
+    private final Entity<UUID, T> store;
 
     @Override
     public final Optional<T> getOne(final @NonNull UUID id) {
-      return Optional.ofNullable(store.get(id));
+      return Optional.ofNullable(store.getStore().get(id));
     }
 
     @Override
     public final Map<UUID, T> getBy(final @NonNull Predicate<T> filter) {
       return store
+          .getStore()
           .entrySet().stream().filter(e -> filter.test(e.getValue()))
           .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     @Override
     public final Map<UUID, T> getAll() {
-      return store;
+      return store.getStore();
     }
 
     @Override
     public final UUID create(final @NonNull T d) {
       val id = UUID.randomUUID();
-      store.put(id, d);
+      store.getStore().put(id, d);
       return id;
     }
 
     @Override
     public final boolean update(final @NonNull UUID id, final @NonNull T t) {
-      return null != store.replace(id, t);
+      return null != store.getStore().replace(id, t);
     }
 
     @Override
     public final boolean delete(final @NonNull UUID id) {
-      return null != store.remove(id);
+      return null != store.getStore().remove(id);
     }
 
     @Override

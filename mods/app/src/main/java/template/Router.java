@@ -14,6 +14,7 @@ import template.base.contract.Routes;
 import template.feature.address.Address;
 import template.feature.info.Info;
 import template.feature.user.User;
+import template.orm.EntityManager;
 
 /**
  * Component for exposing application's ReST resources. Ultimately, assembles
@@ -42,7 +43,8 @@ interface Router extends Supplier<Routes> {
    * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
    * @see <a href="https://dagger.dev/dev-guide/">Technical reference</a>
    */
-  @dagger.Module(includes = {Info.Mod.class, User.Mod.class, Address.Mod.class})
+  @dagger.Module(includes = {EntityManager.class,
+                             Info.Mod.class, User.Mod.class, Address.Mod.class})
   interface Mod {
 
     @FeatureScope
