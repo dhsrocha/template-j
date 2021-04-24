@@ -8,7 +8,7 @@ import java.util.Map;
  *
  * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */
-public interface Api<T, I> {
+public interface Service<T, I> {
 
   T getOne(final @lombok.NonNull I id);
 

@@ -18,7 +18,7 @@ import template.base.stereotype.Domain;
  * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */
 public interface Controller<D extends Domain<D>> extends CrudHandler,
-                                                         Api<D, UUID>,
+                                                         Service<D, UUID>,
                                                          Domain.Ref<D> {
 
   Gson MAPPER = new Gson();
