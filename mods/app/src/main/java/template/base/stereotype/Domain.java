@@ -1,7 +1,9 @@
 package template.base.stereotype;
 
+import java.util.Collection;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import lombok.val;
 import template.base.Exceptions;
 
@@ -40,8 +42,6 @@ public interface Domain<D extends Domain<D>> extends Comparable<D> {
   interface Invariant<T extends Domain<T>> {
 
     Predicate<T> getTest();
-
-    String name();
   }
 
   /**
@@ -52,7 +52,7 @@ public interface Domain<D extends Domain<D>> extends Comparable<D> {
   @lombok.AllArgsConstructor
   class Violation extends RuntimeException {
 
-    private final transient Invariant<?>[] invariants;
+    private final transient Collection<Invariant<?>> invariants;
   }
 
   /**
@@ -79,8 +79,8 @@ public interface Domain<D extends Domain<D>> extends Comparable<D> {
     Exceptions.ILLEGAL_ARGUMENT.throwIf(domain.invariants()::isEmpty);
     val rules = domain.invariants().stream()
                       .filter(e -> !e.getTest().test(domain))
-                      .toArray(Invariant[]::new);
-    Exceptions.throwIf(() -> new Violation(rules), () -> rules.length != 0);
+                      .collect(Collectors.<Invariant<?>>toUnmodifiableList());
+    Exceptions.throwIf(() -> new Violation(rules), () -> rules.size() != 0);
     return domain;
   }
 }
