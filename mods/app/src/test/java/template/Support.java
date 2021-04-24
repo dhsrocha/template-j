@@ -19,6 +19,7 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.val;
 import org.junit.jupiter.api.extension.AfterTestExecutionCallback;
@@ -127,8 +128,10 @@ public interface Support {
     @lombok.SneakyThrows
     public HttpResponse<String> perform(
         final @lombok.NonNull HttpRequest.Builder build,
-        final @lombok.NonNull String... extensions) {
-      val u = URI.create(base.toString() + "/" + String.join("/", extensions));
+        final @lombok.NonNull Object... extensions) {
+      val params = Arrays.stream(extensions).map(String::valueOf)
+            .collect(Collectors.joining("/"));
+      val u = URI.create(base.toString() + "/" + params);
       return CLIENT.send(build.uri(u).build(), BodyHandlers.ofString());
     }
 
@@ -141,7 +144,7 @@ public interface Support {
 
     public <T> T perform(final @lombok.NonNull Class<T> domain,
                          final @lombok.NonNull HttpRequest.Builder build,
-                         final @lombok.NonNull String... extensions) {
+                         final @lombok.NonNull Object... extensions) {
       val t = MAPPER.fromJson(perform(build, extensions).body(), domain);
       Exceptions.ILLEGAL_ARGUMENT.throwIf(() -> null == t);
       return t;

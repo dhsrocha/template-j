@@ -1,6 +1,5 @@
 package template.feature.user;
 
-import com.google.gson.Gson;
 import io.javalin.plugin.openapi.annotations.HttpMethod;
 import java.net.http.HttpRequest;
 import java.util.Map;
@@ -19,29 +18,29 @@ import template.Support.IntegrationTest;
 final class UserIntegrationTest {
 
   private static final Client CLIENT = Client.create(User.class);
-  private static final Gson MAPPER = new Gson();
+  private static final User VALID_STUB = User.of("user", 1);
 
   @Test
   @DisplayName(""
       + "GIVEN valid resource to persist "
-      + "WHEN performing user create operation "
+      + "WHEN performing user created operation "
       + "THEN should be able to find resource.")
   final void givenValidResource_whenCreating_thenShouldAbleToFindResource() {
     // Arrange
-    val toCreate = User.of("user", 1);
-    val body = Client.jsonOf(toCreate);
+    val body = Client.jsonOf(VALID_STUB);
     // Act
-    val id = CLIENT.perform(UUID.class, HttpRequest.newBuilder().POST(body));
+    val resp = CLIENT.perform(HttpRequest.newBuilder().POST(body));
     // Assert
+    Assertions.assertEquals(201, resp.statusCode());
     val found = CLIENT
-        .perform(User.class, HttpRequest.newBuilder().GET(), id.toString());
-    Assertions.assertEquals(toCreate, found);
+        .perform(User.class, HttpRequest.newBuilder().GET(), resp.body());
+    Assertions.assertEquals(VALID_STUB, found);
   }
 
   @SuppressWarnings("unchecked")
   @Test
   @DisplayName(""
-      + "GIVEN three create resources "
+      + "GIVEN three created resources "
       + "WHEN perform retrieve operation "
       + "THEN return all resources created.")
   final void given3createdResources_whenRetrieving_thenReturnAllResourcesCreated() {
@@ -68,16 +67,19 @@ final class UserIntegrationTest {
       + "THEN return true.")
   final void givenCreatedResource_whenUpdating_thenReturnTrue() {
     // Arrange
-    val toCreate = User.of("user", 1);
-    val body = Client.jsonOf(toCreate);
-    val created = CLIENT
-        .perform(UUID.class, HttpRequest.newBuilder().POST(body));
+    val created = CLIENT.perform(
+        UUID.class, HttpRequest.newBuilder().POST(Client.jsonOf(VALID_STUB)));
+    val toUpdate = User.of("updated", 5);
+    val body = Client.jsonOf(toUpdate);
     // Act
     val isUpdated = CLIENT.perform(
         HttpRequest.newBuilder().method(HttpMethod.PATCH.name(), body),
-        created.toString());
+        created);
     // Assert
     Assertions.assertEquals(204, isUpdated.statusCode());
+    val found = CLIENT
+        .perform(User.class, HttpRequest.newBuilder().GET(), created);
+    Assertions.assertEquals(toUpdate, found);
   }
 
   @Test
@@ -87,15 +89,16 @@ final class UserIntegrationTest {
       + "THEN return true.")
   final void givenCreatedResource_whenDeleting_thenReturnTrue() {
     // Arrange
-    val toCreate = User.of("user", 1);
-    val body = Client.jsonOf(toCreate);
+    val body = Client.jsonOf(VALID_STUB);
     val created = CLIENT
         .perform(UUID.class, HttpRequest.newBuilder().POST(body));
     // Act
-    val isUpdated = CLIENT
-        .perform(HttpRequest.newBuilder().DELETE(), created.toString());
+    val isUpdated = CLIENT.perform(HttpRequest.newBuilder().DELETE(), created);
     // Assert
     Assertions.assertEquals(204, isUpdated.statusCode());
+    val resp = CLIENT
+        .perform(HttpRequest.newBuilder().GET(), created);
+    Assertions.assertEquals(404, resp.statusCode());
   }
 
   @Test
@@ -105,8 +108,7 @@ final class UserIntegrationTest {
       + "THEN return 422 as HTTP status code.")
   final void givenInvalidRequest_whenCreating_thenReturn422asStatus() {
     // Arrange
-    val map = Map.of("age", "0", "name", "some");
-    val body = Client.jsonOf(MAPPER.fromJson(MAPPER.toJson(map), User.class));
+    val body = Client.jsonOf(Map.of("age", "0", "name", "some"));
     // Act
     val resp = CLIENT.perform(HttpRequest.newBuilder().POST(body));
     // Assert

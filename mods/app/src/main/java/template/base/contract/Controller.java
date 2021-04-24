@@ -30,7 +30,8 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
   @Override
   default void create(final @lombok.NonNull Context ctx) {
     val d = Domain.validate(ctx.bodyAsClass(domainRef()));
-    ctx.result(MAPPER.toJson(create(d)));
+    ctx.status(201);
+    ctx.result(create(d).toString());
   }
 
   @Override

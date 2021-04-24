@@ -19,7 +19,7 @@ import template.base.stereotype.Domain;
 @lombok.Value
 public class User implements Domain<User> {
 
-  @SuppressWarnings("ImmutableEnumChecker")
+  @SuppressWarnings({"ImmutableEnumChecker", "MissingOverride"})
   @Getter
   @AllArgsConstructor
   private enum Rules implements Invariant<User> {
