@@ -1,85 +1,117 @@
 package template.feature.user;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.params.provider.Arguments.arguments;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import io.javalin.plugin.openapi.annotations.HttpMethod;
+import java.net.http.HttpRequest;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.IntStream;
 import lombok.val;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import template.base.stereotype.Domain.Invariant;
-import template.base.stereotype.Domain.Violation;
+import template.Application.Feat;
+import template.Support.Client;
+import template.Support.IntegrationTest;
 
-/**
- * User test suite.
- *
- * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
- */
-@DisplayName("User domain test suite.")
+@IntegrationTest(Feat.USER)
+@DisplayName("User feature test suite using integration test strategy.")
 final class UserTest {
 
-  @ParameterizedTest(name = "{0}: name: ''{1}'' age: ''{2}'' ")
-  @MethodSource("invalidArgs")
+  private static final Client CLIENT = Client.create(User.class);
+  private static final User VALID_STUB = User.of("user", 1);
+
+  @Test
   @DisplayName(""
-      + "GIVEN invalid values "
-      + "WHEN instantiating User object "
-      + "THEN expect IllegalArgumentException thrown "
-      + "AND corresponding message.")
-  final void shouldThrow_dueToInvalidValues(final List<String> rules,
-                                            final String name,
-                                            final int age) {
+      + "GIVEN valid resource to persist "
+      + "WHEN performing user created operation "
+      + "THEN should be able to find resource.")
+  final void givenValidResource_whenCreating_thenShouldAbleToFindResource() {
+    // Arrange
+    val body = Client.jsonOf(VALID_STUB);
     // Act
-    val ex = assertThrows(Violation.class, () -> User.of(name, age));
+    val resp = CLIENT.perform(HttpRequest.newBuilder().POST(body));
     // Assert
-    assertTrue(rules.containsAll(Arrays.stream(ex.getInvariants())
-                                       .map(Invariant::name)
-                                       .collect(Collectors.toSet())));
+    Assertions.assertEquals(201, resp.statusCode());
+    val found = CLIENT
+        .perform(User.class, HttpRequest.newBuilder().GET(), resp.body());
+    Assertions.assertEquals(VALID_STUB, found);
   }
 
-  @SuppressWarnings("unused")
-  private static Stream<Arguments> invalidArgs() {
-    return Stream.of(
-        arguments(List.of("AGE_ABOVE_ZERO"), "some_name", 0),
-        arguments(List.of("NAME_NOT_BLANK"), "", 1),
-        arguments(List.of("AGE_ABOVE_ZERO", "NAME_NOT_BLANK"), "", 0));
+  @SuppressWarnings("unchecked")
+  @Test
+  @DisplayName(""
+      + "GIVEN three created resources "
+      + "WHEN perform retrieve operation "
+      + "THEN return all resources created.")
+  final void given3createdResources_whenRetrieving_thenReturnAllResourcesCreated() {
+    // Arrange
+    val ids = IntStream.rangeClosed(1, 3)
+                       .mapToObj(i -> User.of(String.valueOf(i), i))
+                       .map(Client::jsonOf)
+                       .map(HttpRequest.newBuilder()::POST)
+                       .map(req -> CLIENT.perform(UUID.class, req))
+                       .sorted().toArray(UUID[]::new);
+    // Act
+    val found = (Map<String, ?>) CLIENT
+        .perform(Map.class, HttpRequest.newBuilder().GET());
+    // Assert
+    val arr = found.keySet().stream().map(UUID::fromString).sorted()
+                   .toArray(UUID[]::new);
+    Assertions.assertArrayEquals(ids, arr);
   }
 
   @Test
   @DisplayName(""
-      + "GIVEN valid values "
-      + "WHEN instantiating User object "
-      + "THEN returns input values.")
-  final void shouldCreateInstance_withValidValues() {
+      + "GIVEN a created resource "
+      + "WHEN performing user update operation "
+      + "THEN return true.")
+  final void givenCreatedResource_whenUpdating_thenReturnTrue() {
     // Arrange
-    val name = "some_name";
-    val age = 1;
-    // Assert
-    val result = assertDoesNotThrow(() -> User.of(name, age));
+    val created = CLIENT.perform(
+        UUID.class, HttpRequest.newBuilder().POST(Client.jsonOf(VALID_STUB)));
+    val toUpdate = User.of("updated", 5);
+    val body = Client.jsonOf(toUpdate);
     // Act
-    assertEquals(name, result.getName());
-    assertEquals(age, result.getAge());
+    val isUpdated = CLIENT.perform(
+        HttpRequest.newBuilder().method(HttpMethod.PATCH.name(), body),
+        created);
+    // Assert
+    Assertions.assertEquals(204, isUpdated.statusCode());
+    val found = CLIENT
+        .perform(User.class, HttpRequest.newBuilder().GET(), created);
+    Assertions.assertEquals(toUpdate, found);
   }
 
   @Test
-  @DisplayName("Should order accordingly.")
-  final void shouldOrderAccordingly() {
+  @DisplayName(""
+      + "GIVEN a created resource "
+      + "WHEN performing user delete operation "
+      + "THEN return true.")
+  final void givenCreatedResource_whenDeleting_thenReturnTrue() {
     // Arrange
-    val u1 = User.of("name2", 2);
-    val u2 = User.of("name1", 3);
-    val u3 = User.of("name3", 1);
-    // Assert / Act
-    Assertions.assertEquals(-1, u1.compareTo(u2));
-    Assertions.assertEquals(1, u2.compareTo(u3));
-    Assertions.assertEquals(-1, u3.compareTo(u1));
+    val body = Client.jsonOf(VALID_STUB);
+    val created = CLIENT
+        .perform(UUID.class, HttpRequest.newBuilder().POST(body));
+    // Act
+    val isUpdated = CLIENT.perform(HttpRequest.newBuilder().DELETE(), created);
+    // Assert
+    Assertions.assertEquals(204, isUpdated.statusCode());
+    val resp = CLIENT
+        .perform(HttpRequest.newBuilder().GET(), created);
+    Assertions.assertEquals(404, resp.statusCode());
+  }
+
+  @Test
+  @DisplayName(""
+      + "GIVEN invalid request "
+      + "WHEN performing user resource creation "
+      + "THEN return 422 as HTTP status code.")
+  final void givenInvalidRequest_whenCreating_thenReturn422asStatus() {
+    // Arrange
+    val body = Client.jsonOf(Map.of("age", "0", "name", "some"));
+    // Act
+    val resp = CLIENT.perform(HttpRequest.newBuilder().POST(body));
+    // Assert
+    Assertions.assertEquals(422, resp.statusCode());
   }
 }

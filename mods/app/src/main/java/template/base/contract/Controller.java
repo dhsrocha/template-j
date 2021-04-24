@@ -4,7 +4,9 @@ import com.google.gson.Gson;
 import io.javalin.apibuilder.CrudHandler;
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
+import java.util.Comparator;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.UUID;
 import java.util.function.Supplier;
 import lombok.AccessLevel;
@@ -44,7 +46,9 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
   default void getAll(final @lombok.NonNull Context ctx) {
     val res = ctx.body().isBlank()
         ? getAll() : getBy(ctx.bodyAsClass(domainRef()));
-    ctx.result(MAPPER.toJson(res));
+    val sorted = new TreeMap<UUID, D>(Comparator.comparing(res::get));
+    sorted.putAll(res);
+    ctx.result(MAPPER.toJson(sorted));
   }
 
   @Override
