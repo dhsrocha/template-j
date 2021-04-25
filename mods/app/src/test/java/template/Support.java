@@ -1,6 +1,7 @@
 package template;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.annotation.ElementType;
@@ -18,11 +19,13 @@ import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 import lombok.val;
 import org.junit.jupiter.api.extension.AfterTestExecutionCallback;
 import org.junit.jupiter.api.extension.BeforeTestExecutionCallback;
@@ -185,6 +188,25 @@ public interface Support {
                          final @lombok.NonNull UUID id,
                          final @lombok.NonNull HttpRequest.Builder build) {
       return serialize(perform(id, build).body(), serializeTo);
+    }
+
+    @SuppressWarnings("unchecked")
+    @SneakyThrows
+    public HttpResponse<String> getWith(final @lombok.NonNull T criteria) {
+      val token = new TypeToken<Map<String, String>>() {
+      }.getRawType();
+      val params = ((Map<String, String>) MAPPER
+          .fromJson(MAPPER.toJson(criteria), token))
+          .entrySet().stream().map(String::valueOf)
+          .collect(Collectors.joining("&"));
+      val uri = URI.create(base.toString() + "?" + params);
+      return CLIENT.send(HttpRequest.newBuilder().uri(uri)
+                                    .build(), BodyHandlers.ofString());
+    }
+
+    public <U> U getWith(final @lombok.NonNull T criteria,
+                         final @lombok.NonNull Class<U> ref) {
+      return serialize(getWith(criteria).body(), ref);
     }
 
     private static <U> U serialize(final @lombok.NonNull String source,

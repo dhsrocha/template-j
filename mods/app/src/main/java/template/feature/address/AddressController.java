@@ -1,6 +1,7 @@
 package template.feature.address;
 
 import java.util.UUID;
+import java.util.function.Predicate;
 import lombok.NonNull;
 import template.base.contract.CacheManager;
 import template.base.contract.Controller;
@@ -23,5 +24,17 @@ class AddressController
   @Override
   public Class<Address> domainRef() {
     return Address.class;
+  }
+
+  @Override
+  public Predicate<Address> filter(final @NonNull Address c) {
+    return super.filter(c)
+                .or(a -> a.getType() == c.getType())
+                .or(a -> a.getPlace().equals(c.getPlace()))
+                .or(a -> a.getNumber().equals(c.getNumber()))
+                .or(a -> a.getNeighbourhood().equals(c.getNeighbourhood()))
+                .or(a -> a.getMunicipality().equals(c.getMunicipality()))
+                .or(a -> a.getState().equals(c.getState()))
+                .or(a -> a.getPostalCode().equals(c.getPostalCode()));
   }
 }

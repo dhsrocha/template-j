@@ -4,11 +4,15 @@ import com.google.gson.Gson;
 import io.javalin.apibuilder.CrudHandler;
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Comparator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 import java.util.UUID;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.val;
 import template.base.Exceptions;
@@ -46,10 +50,20 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
 
   @Override
   default void getAll(final @lombok.NonNull Context ctx) {
-    val res = ctx.body().isBlank()
-        ? getAll() : getBy(ctx.bodyAsClass(domainRef()));
-    val sorted = new TreeMap<UUID, D>(Comparator.comparing(res::get));
-    sorted.putAll(res);
+    val sourced = ctx.queryParamMap()
+                     .isEmpty() ? getAll() : Exceptions.ILLEGAL_ARGUMENT
+        .trapFrom(() -> {
+          val map = ctx
+              .queryParamMap().entrySet().stream()
+              .map(e -> new SimpleEntry<>(e.getKey(), e.getValue().get(0)))
+              .filter(e -> Objects.nonNull(e.getValue()))
+              .collect(
+                  Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+          return getBy(
+              filter(MAPPER.fromJson(MAPPER.toJson(map), domainRef())));
+        });
+    val sorted = new TreeMap<UUID, D>(Comparator.comparing(sourced::get));
+    sorted.putAll(sourced);
     ctx.result(MAPPER.toJson(sorted));
   }
 
@@ -66,6 +80,11 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
                       final @lombok.NonNull String id) {
     val uuid = Exceptions.ILLEGAL_ARGUMENT.trapFrom(() -> UUID.fromString(id));
     ctx.status(delete(uuid) ? 204 : 404);
+  }
+
+  @Override
+  default Predicate<D> filter(@lombok.NonNull final D d) {
+    return Predicate.isEqual(d);
   }
 
   /**
@@ -103,7 +122,7 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
     }
 
     @Override
-    public Map<UUID, D> getBy(final @lombok.NonNull D criteria) {
+    public Map<UUID, D> getBy(final @lombok.NonNull Predicate<D> criteria) {
       return repo.with(cache.from(domainRef())).getBy(criteria);
     }
 

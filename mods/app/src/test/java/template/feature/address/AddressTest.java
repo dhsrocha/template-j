@@ -3,6 +3,7 @@ package template.feature.address;
 import io.javalin.plugin.openapi.annotations.HttpMethod;
 import java.net.http.HttpRequest;
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 import java.util.stream.IntStream;
 import lombok.val;
@@ -53,6 +54,38 @@ final class AddressTest {
                                UUID.fromString(resp.body()),
                                HttpRequest.newBuilder().GET());
     Assertions.assertEquals(VALID_STUB, found);
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  @DisplayName(""
+      + "GIVEN three distinct resources "
+      + "AND a request body as filtering criterion "
+      + "WHEN perform retrieve operation "
+      + "THEN return resources with matching attributes from request body.")
+  final void given3created_andFilteringCriterion_whenRetrieving_thenReturnMatching() {
+    // Arrange
+    val ids = IntStream.rangeClosed(0, 2)
+                       .mapToObj(i -> Address.builder()
+                                             .type(Address.Type.values()[i])
+                                             .place(String.valueOf(i))
+                                             .number(String.valueOf(i))
+                                             .neighbourhood(String.valueOf(i))
+                                             .municipality(String.valueOf(i))
+                                             .state(String.valueOf(i))
+                                             .postalCode(String.valueOf(i)))
+                       .map(AddressBuilder::build)
+                       .map(Client::jsonOf)
+                       .map(HttpRequest.newBuilder()::POST)
+                       .map(req -> CLIENT.perform(UUID.class, req))
+                       .toArray(UUID[]::new);
+    val pick = ids[new Random().nextInt(ids.length)];
+    val criteria = CLIENT
+        .perform(Address.class, pick, HttpRequest.newBuilder().GET());
+    // Act
+    val filtered = (Map<String, ?>) CLIENT.getWith(criteria, Map.class);
+    // Assert
+    Assertions.assertEquals(1, filtered.size());
   }
 
   @SuppressWarnings("unchecked")
