@@ -38,15 +38,25 @@ public interface Domain<D extends Domain<D>> extends Comparable<D> {
   /**
    * Meant to preferably mark {@link Enum enums} which index domain invariants
    * provided by {@link Domain#invariants()}.
+   *
+   * @param <T> A {@link Domain} type.
+   * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
    */
   interface Invariant<T extends Domain<T>> {
 
+    /**
+     * Provides invariant representation.
+     *
+     * @return A logical test which represents a business rule.
+     */
     Predicate<T> getTest();
   }
 
   /**
    * Thrown to indicate an invariant rule violation during {@link Domain}
    * object creation.
+   *
+   * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
    */
   @lombok.Getter
   @lombok.AllArgsConstructor
