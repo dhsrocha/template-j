@@ -19,7 +19,7 @@ import template.base.stereotype.Domain;
  */
 public interface Repository<D extends Domain<D>, I> {
 
-  I create(final @NonNull D record);
+  I create(final @NonNull D d);
 
   Optional<D> getOne(final @NonNull I id);
 
@@ -43,9 +43,9 @@ public interface Repository<D extends Domain<D>, I> {
     private final Map<UUID, T> store;
 
     @Override
-    public final UUID create(final @NonNull T toCreate) {
+    public final UUID create(final @NonNull T d) {
       val id = UUID.randomUUID();
-      store.put(id, toCreate);
+      store.put(id, d);
       return id;
     }
 
@@ -102,9 +102,9 @@ public interface Repository<D extends Domain<D>, I> {
     }
 
     @Override
-    public I create(final @NonNull D user) {
-      val id = repo.create(user);
-      cache.put(id, user);
+    public I create(final @NonNull D d) {
+      val id = repo.create(d);
+      cache.put(id, d);
       return id;
     }
 
