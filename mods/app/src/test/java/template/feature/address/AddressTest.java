@@ -19,7 +19,7 @@ import template.feature.address.Address.Type;
 @DisplayName("Address feature test suite using integration test strategy.")
 final class AddressTest {
 
-  private static final Client CLIENT = Client.create(Address.class);
+  private static final Client<Address> CLIENT = Client.create(Address.class);
   private static final Address VALID_STUB = Address.builder()
                                                    .type(Type.ROAD)
                                                    .place("a")
@@ -50,8 +50,9 @@ final class AddressTest {
     val resp = CLIENT.perform(HttpRequest.newBuilder().POST(body));
     // Assert
     Assertions.assertEquals(201, resp.statusCode());
-    val found = CLIENT
-        .perform(Address.class, HttpRequest.newBuilder().GET(), resp.body());
+    val found = CLIENT.perform(Address.class,
+                               UUID.fromString(resp.body()),
+                               HttpRequest.newBuilder().GET());
     Assertions.assertEquals(VALID_STUB, found);
   }
 
@@ -93,14 +94,13 @@ final class AddressTest {
                              .number("otherNumber")
                              .build();
     val body = Client.jsonOf(toUpdate);
+    val req = HttpRequest.newBuilder().method(HttpMethod.PATCH.name(), body);
     // Act
-    val isUpdated = CLIENT.perform(
-        HttpRequest.newBuilder().method(HttpMethod.PATCH.name(), body),
-        created);
+    val isUpdated = CLIENT.perform(created, req);
     // Assert
     Assertions.assertEquals(204, isUpdated.statusCode());
     val found = CLIENT
-        .perform(Address.class, HttpRequest.newBuilder().GET(), created);
+        .perform(Address.class, created, HttpRequest.newBuilder().GET());
     Assertions.assertEquals(toUpdate, found);
   }
 
@@ -115,11 +115,10 @@ final class AddressTest {
     val created = CLIENT
         .perform(UUID.class, HttpRequest.newBuilder().POST(body));
     // Act
-    val isUpdated = CLIENT.perform(HttpRequest.newBuilder().DELETE(), created);
+    val isUpdated = CLIENT.perform(created, HttpRequest.newBuilder().DELETE());
     // Assert
     Assertions.assertEquals(204, isUpdated.statusCode());
-    val resp = CLIENT
-        .perform(HttpRequest.newBuilder().GET(), created);
+    val resp = CLIENT.perform(created, HttpRequest.newBuilder().GET());
     Assertions.assertEquals(404, resp.statusCode());
   }
 

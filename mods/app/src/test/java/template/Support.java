@@ -2,6 +2,7 @@ package template;
 
 import com.google.gson.Gson;
 import java.io.IOException;
+import java.io.Serializable;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -18,6 +19,7 @@ import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import lombok.NonNull;
@@ -76,7 +78,7 @@ public interface Support {
    * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
    */
   @lombok.Value
-  class Client {
+  class Client<T> {
 
     private static final Gson MAPPER = new Gson();
     private static final int PORT = nextAvailablePort();
@@ -92,8 +94,8 @@ public interface Support {
      *
      * @return Instance with the adapted base URL.
      */
-    public static Client create() {
-      return new Client(base());
+    public static <T> Client<T> create() {
+      return new Client<>(base());
     }
 
     /**
@@ -101,12 +103,12 @@ public interface Support {
      * server started instance is binding to and also pointing out to the
      * provided {@link Domain}'s expected endpoint.
      *
-     * @param domain Domain class to prefix base .
+     * @param ref Domain class to prefix base .
      * @return Instance with the adapted base URL.
      */
-    public static Client create(
-        final @lombok.NonNull Class<? extends Domain<?>> domain) {
-      return new Client(base("/" + domain.getSimpleName().toLowerCase()));
+    public static <D extends Domain<D>> Client<D> create(
+        final @lombok.NonNull Class<D> ref) {
+      return new Client<>(base(ref.getSimpleName().toLowerCase()));
     }
 
     /**
@@ -126,35 +128,36 @@ public interface Support {
     }
 
     @lombok.SneakyThrows
-    public HttpResponse<String> perform(
-        final @lombok.NonNull HttpRequest.Builder build,
-        final @lombok.NonNull Object... extensions) {
-      val params = Arrays.stream(extensions).map(String::valueOf)
-            .collect(Collectors.joining("/"));
-      val u = URI.create(base.toString() + "/" + params);
-      return CLIENT.send(build.uri(u).build(), BodyHandlers.ofString());
+    public HttpResponse<String> perform(final @lombok.NonNull UUID id,
+                                        final @lombok.NonNull HttpRequest.Builder build) {
+      return CLIENT.send(build.uri(URI.create(base + "/" + id))
+                              .build(), BodyHandlers.ofString());
     }
 
-    public <T> T perform(final @lombok.NonNull Class<T> serializeTo,
+    public <U> U perform(final @lombok.NonNull Class<U> serializeTo,
                          final @lombok.NonNull HttpRequest.Builder build) {
-      val t = MAPPER.fromJson(perform(build).body(), serializeTo);
-      Exceptions.ILLEGAL_ARGUMENT.throwIf(() -> null == t);
-      return t;
+      return serialize(perform(build).body(), serializeTo);
     }
 
-    public <T> T perform(final @lombok.NonNull Class<T> domain,
-                         final @lombok.NonNull HttpRequest.Builder build,
-                         final @lombok.NonNull Object... extensions) {
-      val t = MAPPER.fromJson(perform(build, extensions).body(), domain);
+    public <U> U perform(final @lombok.NonNull Class<U> serializeTo,
+                         final @lombok.NonNull UUID id,
+                         final @lombok.NonNull HttpRequest.Builder build) {
+      return serialize(perform(id, build).body(), serializeTo);
+    }
+
+    private static <U> U serialize(final @lombok.NonNull String source,
+                                   final @lombok.NonNull Class<U> serializeTo) {
+      val t = MAPPER.fromJson(source, serializeTo);
       Exceptions.ILLEGAL_ARGUMENT.throwIf(() -> null == t);
       return t;
     }
 
     @lombok.SneakyThrows
-    private static URI base(final String... prefix) {
+    private static URI base(final Serializable... params) {
       val host = InetAddress.getLocalHost().getHostAddress();
-      return URI.create("http://" + host + ":" + PORT
-                            + String.join("/", prefix));
+      val pp = Arrays.stream(params)
+                     .map(String::valueOf).collect(Collectors.joining("/"));
+      return URI.create("http://" + host + ":" + PORT + "/" + pp);
     }
   }
 

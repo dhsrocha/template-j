@@ -17,7 +17,7 @@ import template.Support.IntegrationTest;
 @DisplayName("User feature test suite using integration test strategy.")
 final class UserTest {
 
-  private static final Client CLIENT = Client.create(User.class);
+  private static final Client<User> CLIENT = Client.create(User.class);
   private static final User VALID_STUB = User.of("user", 1);
 
   @Test
@@ -32,8 +32,9 @@ final class UserTest {
     val resp = CLIENT.perform(HttpRequest.newBuilder().POST(body));
     // Assert
     Assertions.assertEquals(201, resp.statusCode());
-    val found = CLIENT
-        .perform(User.class, HttpRequest.newBuilder().GET(), resp.body());
+    val found = CLIENT.perform(User.class,
+                               UUID.fromString(resp.body()),
+                               HttpRequest.newBuilder().GET());
     Assertions.assertEquals(VALID_STUB, found);
   }
 
@@ -71,14 +72,13 @@ final class UserTest {
         UUID.class, HttpRequest.newBuilder().POST(Client.jsonOf(VALID_STUB)));
     val toUpdate = User.of("updated", 5);
     val body = Client.jsonOf(toUpdate);
+    val req = HttpRequest.newBuilder().method(HttpMethod.PATCH.name(), body);
     // Act
-    val isUpdated = CLIENT.perform(
-        HttpRequest.newBuilder().method(HttpMethod.PATCH.name(), body),
-        created);
+    val isUpdated = CLIENT.perform(created, req);
     // Assert
     Assertions.assertEquals(204, isUpdated.statusCode());
     val found = CLIENT
-        .perform(User.class, HttpRequest.newBuilder().GET(), created);
+        .perform(User.class, created, HttpRequest.newBuilder().GET());
     Assertions.assertEquals(toUpdate, found);
   }
 
@@ -93,11 +93,10 @@ final class UserTest {
     val created = CLIENT
         .perform(UUID.class, HttpRequest.newBuilder().POST(body));
     // Act
-    val isUpdated = CLIENT.perform(HttpRequest.newBuilder().DELETE(), created);
+    val isUpdated = CLIENT.perform(created, HttpRequest.newBuilder().DELETE());
     // Assert
     Assertions.assertEquals(204, isUpdated.statusCode());
-    val resp = CLIENT
-        .perform(HttpRequest.newBuilder().GET(), created);
+    val resp = CLIENT.perform(created, HttpRequest.newBuilder().GET());
     Assertions.assertEquals(404, resp.statusCode());
   }
 
