@@ -29,6 +29,12 @@ interface Web extends Supplier<Server> {
     void stop();
   }
 
+  /**
+   * Type for creating instances managed by Dagger.
+   *
+   * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
+   * @see <a href="https://dagger.dev/dev-guide/">Technical reference</a>
+   */
   @dagger.Module
   interface Mod {
     @dagger.Provides
@@ -68,6 +74,12 @@ interface Web extends Supplier<Server> {
     }
   }
 
+  /**
+   * Type for composing components which life-cycle are managed by Dagger.
+   *
+   * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
+   * @see <a href="https://dagger.dev/dev-guide/">Technical reference</a>
+   */
   @dagger.Component.Builder
   interface Build extends Builder.Part1<Build, Web, Mode>,
                           Builder.Dep1<Build, Web, Router.Build> {

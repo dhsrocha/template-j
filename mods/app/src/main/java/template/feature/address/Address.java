@@ -12,6 +12,7 @@ import template.base.contract.Builder;
 import template.base.contract.CacheManager;
 import template.base.contract.Controller;
 import template.base.contract.Repository;
+import template.base.contract.Routes;
 import template.base.stereotype.Domain;
 
 /**
@@ -25,6 +26,9 @@ import template.base.stereotype.Domain;
 public class Address implements Domain<Address>,
                                 Builder<Address> {
 
+  /**
+   * {@link Address} business rules.
+   */
   @SuppressWarnings({"ImmutableEnumChecker", "MissingOverride"})
   @lombok.Getter
   @lombok.AllArgsConstructor
@@ -39,12 +43,17 @@ public class Address implements Domain<Address>,
     private final Predicate<Address> test;
   }
 
+  /**
+   * Types of an {@link Address}.
+   */
   public enum Type {
     STREET, AVENUE, ROAD,
   }
 
   /**
-   * Type..
+   * Address type.
+   *
+   * @see Type
    */
   @lombok.NonNull Type type;
   /**
@@ -98,6 +107,13 @@ public class Address implements Domain<Address>,
     return COMPARATOR.compare(this, a);
   }
 
+  /**
+   * Type for binding package-private implementations to public interfaces.
+   * It is meant to be included into a {@link Routes} managed module.
+   *
+   * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
+   * @see <a href="https://dagger.dev/dev-guide/">Technical reference</a>
+   */
   @SuppressWarnings("unused")
   @dagger.Module
   public interface Mod {

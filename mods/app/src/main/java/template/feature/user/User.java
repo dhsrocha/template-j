@@ -1,5 +1,7 @@
 package template.feature.user;
 
+import static java.util.Comparator.nullsLast;
+
 import java.util.Comparator;
 import java.util.Set;
 import java.util.UUID;
@@ -9,9 +11,8 @@ import lombok.Getter;
 import template.base.contract.CacheManager;
 import template.base.contract.Controller;
 import template.base.contract.Repository;
+import template.base.contract.Routes;
 import template.base.stereotype.Domain;
-
-import static java.util.Comparator.nullsLast;
 
 /**
  * Domain which represents a user.
@@ -21,6 +22,9 @@ import static java.util.Comparator.nullsLast;
 @lombok.Value
 public class User implements Domain<User> {
 
+  /**
+   * {@link User} business rules.
+   */
   @SuppressWarnings({"ImmutableEnumChecker", "MissingOverride"})
   @Getter
   @AllArgsConstructor
@@ -53,6 +57,13 @@ public class User implements Domain<User> {
     return SET;
   }
 
+  /**
+   * Type for binding package-private implementations to public interfaces.
+   * It is meant to be included into a {@link Routes} managed module.
+   *
+   * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
+   * @see <a href="https://dagger.dev/dev-guide/">Technical reference</a>
+   */
   @SuppressWarnings("unused")
   @dagger.Module
   public interface Mod {

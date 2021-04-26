@@ -15,8 +15,9 @@ import template.base.Exceptions;
 import template.base.stereotype.Domain;
 
 /**
- * General module for application's controllers.
+ * Generically represents the application's ways for handling domain instances.
  *
+ * @param <D> {@link Domain} type to be handled among the operations.
  * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */
 public interface Controller<D extends Domain<D>> extends CrudHandler,
@@ -67,6 +68,7 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
   /**
    * Controller for a returning a specific object, preferably, a value object.
    *
+   * @param <T> A type to be used as the response body.
    * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
    */
   interface Getter<T> extends Handler,
@@ -79,8 +81,10 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
   }
 
   /**
-   * Default {@link Controller} abstraction with caching capability.
+   * Default {@link Controller} abstraction. Meant to openly extendable.
+   * Natively supports caching.
    *
+   * @param <D> {@link Domain} type to be handled among the operations.
    * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
    */
   @lombok.AllArgsConstructor(access = AccessLevel.PROTECTED)

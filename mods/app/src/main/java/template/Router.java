@@ -25,11 +25,23 @@ import template.feature.user.User;
 @dagger.Component(modules = Mod.class)
 interface Router extends Supplier<Routes> {
 
+  /**
+   * Type for scoping instance injection from systemic layer.
+   *
+   * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
+   * @see <a href="https://dagger.dev/dev-guide/">Technical reference</a>
+   */
   @javax.inject.Scope
   @Target({ElementType.TYPE, ElementType.METHOD})
   @interface FeatureScope {
   }
 
+  /**
+   * Type for creating instances managed by Dagger.
+   *
+   * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
+   * @see <a href="https://dagger.dev/dev-guide/">Technical reference</a>
+   */
   @dagger.Module(includes = {Info.Mod.class, User.Mod.class, Address.Mod.class})
   interface Mod {
 
@@ -56,6 +68,12 @@ interface Router extends Supplier<Routes> {
     }
   }
 
+  /**
+   * Type for composing components which life-cycle are managed by Dagger.
+   *
+   * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
+   * @see <a href="https://dagger.dev/dev-guide/">Technical reference</a>
+   */
   @dagger.Component.Builder
   interface Build extends Builder.Part1<Build, Router, Application.Mode>,
                           Builder.Part2<Build, Router, Application.Feat[]> {

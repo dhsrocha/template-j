@@ -15,6 +15,8 @@ import template.base.stereotype.Domain;
  * Ensembles business concerns and database handling. Meant to follow a
  * regular Repository design pattern.
  *
+ * @param <D> {@link Domain} type to be handled among the operations.
+ * @param <I> A type to be used as an the domain indexer.
  * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */
 public interface Repository<D extends Domain<D>, I> {
@@ -31,11 +33,27 @@ public interface Repository<D extends Domain<D>, I> {
 
   boolean delete(final @NonNull I id);
 
+  /**
+   * An {@link Repository} specialization to allow implementation combine
+   * with caching capabilities.
+   *
+   * @param <D> {@link Domain} type to be handled among the operations.
+   * @param <I> A type to be used as an the domain indexer.
+   * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
+   * @see CacheManager
+   * @see WithCache
+   */
   interface Cached<D extends Domain<D>, I>
       extends Repository<D, I>,
               CacheManager.WithCache<D, I, Repository<D, I>> {
   }
 
+  /**
+   * Default {@link Repository} abstraction. Meant to openly extendable.
+   *
+   * @param <T> {@link Domain} type to be handled among the operations.
+   * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
+   */
   @AllArgsConstructor(access = AccessLevel.PROTECTED)
   abstract class Default<T extends Domain<T>> implements Repository<T, UUID>,
                                                          Cached<T, UUID> {
@@ -80,6 +98,14 @@ public interface Repository<D extends Domain<D>, I> {
     }
   }
 
+  /**
+   * Delegate implementation which combines {@link Repository storing} and
+   * {@link Cache caching} capabilities.
+   *
+   * @param <D> {@link Domain} type to be handled among the operations.
+   * @param <I> A type to be used as an the domain indexer.
+   * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
+   */
   @Value
   class WithCache<D extends Domain<D>, I> implements Repository<D, I> {
 

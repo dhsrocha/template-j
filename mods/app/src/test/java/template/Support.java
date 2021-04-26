@@ -75,6 +75,8 @@ public interface Support {
   /**
    * Performs requests to the instance started up by {@link IntegrationTest}.
    *
+   * @param <T> Inferred type to drive which the instance should make
+   *            request from.
    * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
    */
   @lombok.Value
@@ -103,7 +105,10 @@ public interface Support {
      * server started instance is binding to and also pointing out to the
      * provided {@link Domain}'s expected endpoint.
      *
-     * @param ref Domain class to prefix base .
+     * @param <D> Inferred type to drive which the instance should make
+     *            request from.
+     * @param ref {@link Domain} type to be used conventionally as the
+     *            feature route.
      * @return Instance with the adapted base URL.
      */
     public static <D extends Domain<D>> Client<D> create(
@@ -121,12 +126,29 @@ public interface Support {
       return BodyPublishers.ofString(MAPPER.toJson(toBody));
     }
 
+    /**
+     * Performs an HTTP request under some adopted conventions for this
+     * application.
+     *
+     * @param build Request builder.
+     * @return Http response in string form. can be converted to a specific
+     *     type through serialization.
+     */
     @lombok.SneakyThrows
     public HttpResponse<String> perform(
         final @lombok.NonNull HttpRequest.Builder build) {
       return CLIENT.send(build.uri(base).build(), BodyHandlers.ofString());
     }
 
+    /**
+     * Performs an HTTP request under some adopted conventions for this
+     * application.
+     *
+     * @param id    The resource's identity.
+     * @param build Request builder.
+     * @return Http response in string form. can be converted to a specific
+     *     type through serialization.
+     */
     @lombok.SneakyThrows
     public HttpResponse<String> perform(final @lombok.NonNull UUID id,
                                         final @lombok.NonNull HttpRequest.Builder build) {
@@ -134,11 +156,31 @@ public interface Support {
                               .build(), BodyHandlers.ofString());
     }
 
+    /**
+     * Performs an HTTP request under some adopted conventions for this
+     * application and tries to serialize the upcoming response body.
+     *
+     * @param <U>   Inferred type to be used for serialization.
+     * @param build Request builder.
+     * @return Http response in string form. can be converted to a specific
+     *     type through serialization.
+     */
     public <U> U perform(final @lombok.NonNull Class<U> serializeTo,
                          final @lombok.NonNull HttpRequest.Builder build) {
       return serialize(perform(build).body(), serializeTo);
     }
 
+    /**
+     * Performs an HTTP request under some adopted conventions for this
+     * application and tries to serialize the upcoming response body.
+     *
+     * @param <U>         Inferred type to be used for serialization.
+     * @param serializeTo Type to try serialization to.
+     * @param id          The resource's identity.
+     * @param build       Request builder.
+     * @return Http response in string form. can be converted to a specific
+     *     type through serialization.
+     */
     public <U> U perform(final @lombok.NonNull Class<U> serializeTo,
                          final @lombok.NonNull UUID id,
                          final @lombok.NonNull HttpRequest.Builder build) {
