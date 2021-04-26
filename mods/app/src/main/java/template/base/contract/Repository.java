@@ -2,6 +2,7 @@ package template.base.contract;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -29,6 +30,8 @@ public interface Repository<D extends Domain<D>, I> {
 
   Map<I, D> getAll();
 
+  Set<I> ids();
+
   boolean update(final @NonNull I id, final @NonNull D d);
 
   boolean delete(final @NonNull I id);
@@ -41,7 +44,7 @@ public interface Repository<D extends Domain<D>, I> {
    * @param <I> A type to be used as an the domain indexer.
    * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
    * @see CacheManager
-   * @see WithCache
+   * @see CachedDelegate
    */
   interface Cached<D extends Domain<D>, I>
       extends Repository<D, I>,
@@ -61,13 +64,6 @@ public interface Repository<D extends Domain<D>, I> {
     private final Map<UUID, T> store;
 
     @Override
-    public final UUID create(final @NonNull T d) {
-      val id = UUID.randomUUID();
-      store.put(id, d);
-      return id;
-    }
-
-    @Override
     public final Optional<T> getOne(final @NonNull UUID id) {
       return Optional.ofNullable(store.get(id));
     }
@@ -78,13 +74,25 @@ public interface Repository<D extends Domain<D>, I> {
     }
 
     @Override
-    public final boolean update(final @NonNull UUID id, final @NonNull T t) {
-      return null != store.replace(id, t);
+    public final Map<UUID, T> getAll() {
+      return store;
     }
 
     @Override
-    public final Map<UUID, T> getAll() {
-      return store;
+    public Set<UUID> ids() {
+      return store.keySet();
+    }
+
+    @Override
+    public final UUID create(final @NonNull T d) {
+      val id = UUID.randomUUID();
+      store.put(id, d);
+      return id;
+    }
+
+    @Override
+    public final boolean update(final @NonNull UUID id, final @NonNull T t) {
+      return null != store.replace(id, t);
     }
 
     @Override
@@ -94,7 +102,7 @@ public interface Repository<D extends Domain<D>, I> {
 
     @Override
     public final Repository<T, UUID> with(final @NonNull Cache<UUID, T> cache) {
-      return new WithCache<>(cache, this);
+      return new CachedDelegate<>(cache, this);
     }
   }
 
@@ -107,7 +115,7 @@ public interface Repository<D extends Domain<D>, I> {
    * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
    */
   @Value
-  class WithCache<D extends Domain<D>, I> implements Repository<D, I> {
+  class CachedDelegate<D extends Domain<D>, I> implements Repository<D, I> {
 
     Cache<I, D> cache;
     Repository<D, I> repo;
@@ -119,12 +127,17 @@ public interface Repository<D extends Domain<D>, I> {
 
     @Override
     public Map<I, D> getMany(final @NonNull D criteria) {
-      return repo.getMany(criteria);
+      return getAll(); // TODO needs filtering
     }
 
     @Override
     public Map<I, D> getAll() {
-      return repo.getAll();
+      return cache.getAll(ids());
+    }
+
+    @Override
+    public Set<I> ids() {
+      return repo.ids();
     }
 
     @Override
