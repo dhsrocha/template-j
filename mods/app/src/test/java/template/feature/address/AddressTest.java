@@ -13,7 +13,6 @@ import template.Application.Feat;
 import template.Support.Client;
 import template.Support.IntegrationTest;
 import template.feature.address.Address.AddressBuilder;
-import template.feature.address.Address.Type;
 
 @IntegrationTest(Feat.ADDRESS)
 @DisplayName("Address feature test suite using integration test strategy.")
@@ -21,7 +20,7 @@ final class AddressTest {
 
   private static final Client<Address> CLIENT = Client.create(Address.class);
   private static final Address VALID_STUB = Address.builder()
-                                                   .type(Type.ROAD)
+                                                   .type(Address.Type.ROAD)
                                                    .place("a")
                                                    .number("a")
                                                    .neighbourhood("a")
