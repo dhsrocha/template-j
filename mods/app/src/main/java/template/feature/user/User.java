@@ -11,6 +11,8 @@ import template.base.contract.Controller;
 import template.base.contract.Repository;
 import template.base.stereotype.Domain;
 
+import static java.util.Comparator.nullsLast;
+
 /**
  * Domain which represents a user.
  *
@@ -31,7 +33,8 @@ public class User implements Domain<User> {
 
   private static final Set<Invariant<User>> SET = Set.of(Rules.values());
   private static final Comparator<User> COMPARATOR = Comparator
-      .comparing(User::getAge).thenComparing(User::getName);
+      .comparing(User::getAge, nullsLast(Comparator.naturalOrder()))
+      .thenComparing(User::getName, nullsLast(Comparator.naturalOrder()));
 
   @lombok.NonNull String name;
   int age;
@@ -50,6 +53,7 @@ public class User implements Domain<User> {
     return SET;
   }
 
+  @SuppressWarnings("unused")
   @dagger.Module
   public interface Mod {
 

@@ -1,5 +1,8 @@
 package template.feature.address;
 
+import static java.util.Comparator.naturalOrder;
+import static java.util.Comparator.nullsLast;
+
 import java.util.Comparator;
 import java.util.Set;
 import java.util.UUID;
@@ -71,13 +74,13 @@ public class Address implements Domain<Address>,
 
   private static final Set<Invariant<Address>> SET = Set.of(Rules.values());
   private static final Comparator<Address> COMPARATOR = Comparator
-      .comparing(Address::getType)
-      .thenComparing(Address::getPlace)
-      .thenComparing(Address::getNumber)
-      .thenComparing(Address::getNeighbourhood)
-      .thenComparing(Address::getMunicipality)
-      .thenComparing(Address::getState)
-      .thenComparing(Address::getPostalCode);
+      .comparing(Address::getType, nullsLast(naturalOrder()))
+      .thenComparing(Address::getPlace, nullsLast(naturalOrder()))
+      .thenComparing(Address::getNumber, nullsLast(naturalOrder()))
+      .thenComparing(Address::getNeighbourhood, nullsLast(naturalOrder()))
+      .thenComparing(Address::getMunicipality, nullsLast(naturalOrder()))
+      .thenComparing(Address::getState, nullsLast(naturalOrder()))
+      .thenComparing(Address::getPostalCode, nullsLast(naturalOrder()));
 
   @Override
   public Address build() {
@@ -95,6 +98,7 @@ public class Address implements Domain<Address>,
     return COMPARATOR.compare(this, a);
   }
 
+  @SuppressWarnings("unused")
   @dagger.Module
   public interface Mod {
 
