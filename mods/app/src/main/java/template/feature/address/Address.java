@@ -37,8 +37,8 @@ public class Address implements Domain<Address>,
     NUMBER_IS_NOT_BLANK(a -> !a.number.isBlank()),
     NEIGHBOURHOOD_IS_NOT_BLANK(a -> !a.neighbourhood.isBlank()),
     MUNICIPALITY_IS_NOT_BLANK(a -> !a.municipality.isBlank()),
-    STATE_ABOVE_ZERO(a -> !a.state.isBlank()),
-    POSTAL_CODE_ABOVE_ZERO(a -> !a.postalCode.isBlank()),
+    STATE_IS_NOT_BLANK(a -> !a.state.isBlank()),
+    POSTAL_IS_NOT_BLANK(a -> !a.postalCode.isBlank()),
     ;
     private final Predicate<Address> test;
   }
