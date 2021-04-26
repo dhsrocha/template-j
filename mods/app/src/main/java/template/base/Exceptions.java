@@ -1,5 +1,6 @@
 package template.base;
 
+import io.javalin.http.BadRequestResponse;
 import io.javalin.http.NotFoundResponse;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
@@ -18,7 +19,7 @@ public enum Exceptions {
   /**
    * Indicates a general illegal argument.
    */
-  ILLEGAL_ARGUMENT(IllegalArgumentException::new),
+  ILLEGAL_ARGUMENT(BadRequestResponse::new),
   /**
    * Indicates a resource that has not been found.
    */
