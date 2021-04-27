@@ -40,7 +40,8 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
   @Override
   default void getOne(final @lombok.NonNull Context ctx,
                       final @lombok.NonNull String id) {
-    ctx.result(MAPPER.toJson(getOne(UUID.fromString(id))));
+    val uuid = Exceptions.ILLEGAL_ARGUMENT.trapFrom(() -> UUID.fromString(id));
+    ctx.result(MAPPER.toJson(getOne(uuid)));
   }
 
   @Override
@@ -55,14 +56,16 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
   @Override
   default void update(final @lombok.NonNull Context ctx,
                       final @lombok.NonNull String id) {
+    val uuid = Exceptions.ILLEGAL_ARGUMENT.trapFrom(() -> UUID.fromString(id));
     val d = Domain.validate(ctx.bodyAsClass(domainRef()));
-    ctx.status(update(UUID.fromString(id), d) ? 204 : 404);
+    ctx.status(update(uuid, d) ? 204 : 404);
   }
 
   @Override
   default void delete(final @lombok.NonNull Context ctx,
                       final @lombok.NonNull String id) {
-    ctx.status(delete(UUID.fromString(id)) ? 204 : 404);
+    val uuid = Exceptions.ILLEGAL_ARGUMENT.trapFrom(() -> UUID.fromString(id));
+    ctx.status(delete(uuid) ? 204 : 404);
   }
 
   /**
@@ -96,7 +99,7 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
     @Override
     public D getOne(final @lombok.NonNull UUID id) {
       return repo.with(cache.from(domainRef())).getOne(id)
-                 .orElseThrow(Exceptions.RESOURCE_NOT_FOUND::create);
+                 .orElseThrow(Exceptions.RESOURCE_NOT_FOUND);
     }
 
     @Override

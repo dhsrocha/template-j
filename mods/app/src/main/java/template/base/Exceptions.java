@@ -15,7 +15,7 @@ import lombok.NonNull;
  */
 @SuppressWarnings("ImmutableEnumChecker")
 @AllArgsConstructor
-public enum Exceptions {
+public enum Exceptions implements Supplier<RuntimeException> {
   /**
    * Indicates a general illegal argument.
    */
@@ -79,11 +79,29 @@ public enum Exceptions {
   }
 
   /**
-   * Instantiates an exception object with the indexed message.
+   * Provides an exception with the indexed message.
    *
-   * @return A supplier of a generic exception.
+   * @return A instance of indexed exception.
    */
-  public final RuntimeException create() {
+  @Override
+  public final RuntimeException get() {
     return ex.apply(name());
+  }
+
+  /**
+   * Traps any throwing {@link RuntimeException} and redirect (re-throw) to the
+   * indexed one.
+   *
+   * @param <R>   Type of upcoming result from the provided parameter.
+   * @param scope Computation where a {@link RuntimeException} might be thrown
+   *              from.
+   * @return Any result supplied in the provided parameter.
+   */
+  public final <R> R trapFrom(final @NonNull Supplier<R> scope) {
+    try {
+      return scope.get();
+    } catch (final RuntimeException e) {
+      throw ex.apply(e.getMessage());
+    }
   }
 }
