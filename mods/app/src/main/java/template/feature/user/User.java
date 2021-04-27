@@ -8,6 +8,7 @@ import java.util.UUID;
 import java.util.function.Predicate;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import template.base.Checks;
 import template.base.contract.CacheManager;
 import template.base.contract.Controller;
 import template.base.contract.Repository;
@@ -30,7 +31,7 @@ public class User implements Domain<User> {
   @AllArgsConstructor
   private enum Rules implements Invariant<User> {
     AGE_ABOVE_ZERO(u -> u.age > 0),
-    NAME_NOT_BLANK(u -> null != u && !u.name.isBlank()),
+    NAME_NOT_BLANK(Checks.notBlank(User::getName)),
     ;
     private final Predicate<User> test;
   }

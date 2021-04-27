@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
 import lombok.AccessLevel;
+import template.base.Checks;
 import template.base.contract.Builder;
 import template.base.contract.CacheManager;
 import template.base.contract.Controller;
@@ -33,12 +34,13 @@ public class Address implements Domain<Address>,
   @lombok.Getter
   @lombok.AllArgsConstructor
   private enum Rules implements Invariant<Address> {
-    PLACE_IS_NOT_BLANK(a -> null != a && !a.place.isBlank()),
-    NUMBER_IS_NOT_BLANK(a -> null != a && !a.number.isBlank()),
-    NEIGHBOURHOOD_IS_NOT_BLANK(a -> null != a && !a.neighbourhood.isBlank()),
-    MUNICIPALITY_IS_NOT_BLANK(a -> null != a && !a.municipality.isBlank()),
-    STATE_IS_NOT_BLANK(a -> null != a && !a.state.isBlank()),
-    POSTAL_IS_NOT_BLANK(a -> null != a && !a.postalCode.isBlank()),
+    TYPE_IS_NOT_NULL(Checks.enumNotNull(Address::getType)),
+    PLACE_IS_NOT_BLANK(Checks.notBlank(Address::getPlace)),
+    NUMBER_IS_NOT_BLANK(Checks.notBlank(Address::getNumber)),
+    NEIGHBOURHOOD_IS_NOT_BLANK(Checks.notBlank(Address::getNeighbourhood)),
+    MUNICIPALITY_IS_NOT_BLANK(Checks.notBlank(Address::getMunicipality)),
+    STATE_IS_NOT_BLANK(Checks.notBlank(Address::getState)),
+    POSTAL_CODE_IS_NOT_BLANK(Checks.notBlank(Address::getPostalCode)),
     ;
     private final Predicate<Address> test;
   }

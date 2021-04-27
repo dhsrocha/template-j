@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import io.javalin.apibuilder.CrudHandler;
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Objects;
@@ -55,7 +54,7 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
         .trapFrom(() -> {
           val map = ctx
               .queryParamMap().entrySet().stream()
-              .map(e -> new SimpleEntry<>(e.getKey(), e.getValue().get(0)))
+              .map(e -> Map.entry(e.getKey(), e.getValue().get(0)))
               .filter(e -> Objects.nonNull(e.getValue()))
               .collect(
                   Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
