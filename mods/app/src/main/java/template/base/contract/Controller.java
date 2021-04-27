@@ -104,7 +104,7 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
 
     @Override
     public Map<UUID, D> getBy(final @lombok.NonNull D criteria) {
-      return repo.with(cache.from(domainRef())).getMany(criteria);
+      return repo.with(cache.from(domainRef())).getBy(criteria);
     }
 
     @Override

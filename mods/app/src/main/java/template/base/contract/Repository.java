@@ -2,7 +2,6 @@ package template.base.contract;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -26,11 +25,9 @@ public interface Repository<D extends Domain<D>, I> {
 
   Optional<D> getOne(final @NonNull I id);
 
-  Map<I, D> getMany(final @NonNull D criteria);
+  Map<I, D> getBy(final @NonNull D criteria);
 
   Map<I, D> getAll();
-
-  Set<I> ids();
 
   boolean update(final @NonNull I id, final @NonNull D d);
 
@@ -69,18 +66,13 @@ public interface Repository<D extends Domain<D>, I> {
     }
 
     @Override
-    public final Map<UUID, T> getMany(final @NonNull T t) {
+    public final Map<UUID, T> getBy(final @NonNull T t) {
       return store;
     }
 
     @Override
     public final Map<UUID, T> getAll() {
       return store;
-    }
-
-    @Override
-    public Set<UUID> ids() {
-      return store.keySet();
     }
 
     @Override
@@ -126,18 +118,15 @@ public interface Repository<D extends Domain<D>, I> {
     }
 
     @Override
-    public Map<I, D> getMany(final @NonNull D criteria) {
+    public Map<I, D> getBy(final @NonNull D criteria) {
       return getAll(); // TODO needs filtering
     }
 
     @Override
     public Map<I, D> getAll() {
-      return cache.getAll(ids());
-    }
-
-    @Override
-    public Set<I> ids() {
-      return repo.ids();
+      val all = repo.getAll();
+      cache.putAll(all);
+      return cache.getAll(all.keySet());
     }
 
     @Override
