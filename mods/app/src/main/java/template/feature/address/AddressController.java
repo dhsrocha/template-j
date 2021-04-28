@@ -6,14 +6,15 @@ import lombok.NonNull;
 import template.base.contract.CacheManager;
 import template.base.contract.Controller;
 import template.base.contract.Repository;
+import template.base.contract.Service;
 
 /**
  * Address feature controller implementation.
  *
  * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */
-class AddressController
-    extends Controller.Cached<Address> implements Controller<Address> {
+class AddressController extends Service.Cached<Address, UUID>
+    implements Controller<Address> {
 
   @javax.inject.Inject
   AddressController(final @NonNull CacheManager<Address, UUID> cache,
