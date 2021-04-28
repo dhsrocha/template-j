@@ -12,6 +12,7 @@ import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -39,7 +40,7 @@ public interface Client<T> {
    *
    * @return Instance with the adapted base URL.
    */
-  static <T> Client<T> create() {
+  static Client<?> create() {
     return new Impl<>(base(), Request.builder());
   }
 
@@ -48,8 +49,7 @@ public interface Client<T> {
    * server started instance is binding to and also pointing out to the
    * provided {@link Domain}'s expected endpoint.
    *
-   * @param <D> Inferred type to drive which the instance should make
-   *            request from.
+   * @param <D> Inferred type to drive which the instance should request from.
    * @param ref {@link Domain} type to be used conventionally as the
    *            feature route.
    * @return Instance with the adapted base URL.
@@ -74,8 +74,21 @@ public interface Client<T> {
    *
    * @param filter Filtering criteria based on a domains' attributes.
    * @return Client instance with a prompted request.
+   * @see #filter(Object, Map)
    */
-  ThenFilter<T> filter(final @lombok.NonNull T filter);
+  default ThenFilter<T> filter(final @lombok.NonNull T filter) {
+    return filter(filter, new HashMap<>());
+  }
+
+  /**
+   * Filters up a domain-based GET endpoint based on its attributes.
+   *
+   * @param filter Filtering criteria based on a domains' attributes.
+   * @param params Request parameters.
+   * @return Client instance with a prompted request.
+   */
+  ThenFilter<T> filter(final @lombok.NonNull T filter,
+                       final @lombok.NonNull Map<String, String> params);
 
   /**
    * Step for serializing operations an a client with a prompted request.
@@ -157,28 +170,26 @@ public interface Client<T> {
       val body = null == cfg.body
           ? BodyPublishers.noBody()
           : BodyPublishers.ofString(MAPPER.toJson(cfg.body));
-      val params = null == cfg.params ? "" : cfg.params
-          .entrySet()
-          .stream()
-          .map(e -> e.getKey() + "=" + e.getValue())
-          .map(String::valueOf)
-          .collect(Collectors.joining("&"));
-      val uri = null != cfg.uri ? base + "/" + cfg.uri : "" + base;
+      val params = null == cfg.params ? "" : paramsOf("&", cfg.params);
+      val str = null != cfg.uri ? base + "/" + cfg.uri : "" + base;
+      val uri = Exceptions.ILLEGAL_ARGUMENT
+          .trapIn(() -> URI.create(str + "?" + params));
       val req = HttpRequest
           .newBuilder()
           .method(cfg.method.name(), body)
-          .uri(URI.create(uri + "?" + params))
+          .uri(uri)
           .header("Accept", MimeTypes.Type.APPLICATION_JSON.name());
       return client.send(req.build(), BodyHandlers.ofString());
     }
 
     // Specialized requests
 
-    @SuppressWarnings("unchecked")
     @Override
-    public ThenFilter<T> filter(final @lombok.NonNull T filter) {
-      val queries = MAPPER.fromJson(MAPPER.toJson(filter), Map.class);
-      return new Impl<>(base, req.method(HttpMethod.GET).params(queries));
+    public ThenFilter<T> filter(final @lombok.NonNull T filter,
+                                final @lombok.NonNull Map<String, String> params) {
+      val filters = MAPPER.fromJson(MAPPER.toJson(filter), Map.class);
+      params.put("fq", paramsOf(",", filters));
+      return new Impl<>(base, req.method(HttpMethod.GET).params(params));
     }
 
     // Then steps
@@ -196,6 +207,16 @@ public interface Client<T> {
     public Map<UUID, T> thenMap() {
       return (Map<UUID, T>) thenSerializeTo(Map.class);
     }
+
+    private static String paramsOf(final @lombok.NonNull String sep,
+                                   final @lombok.NonNull Map<?, ?> map) {
+      return map
+          .entrySet()
+          .stream()
+          .map(e -> e.getKey() + "=" + e.getValue())
+          .map(String::valueOf)
+          .collect(Collectors.joining(sep));
+    }
   }
 
   /**
@@ -206,7 +227,6 @@ public interface Client<T> {
   @Builder
   @lombok.AllArgsConstructor(access = AccessLevel.PRIVATE)
   class Request {
-
     /**
      * HTTP method.
      */
@@ -223,5 +243,22 @@ public interface Client<T> {
      * Request's query parameters.
      */
     Map<String, ?> params;
+  }
+
+  @lombok.Builder
+  @lombok.AllArgsConstructor(access = AccessLevel.PRIVATE)
+  class Pagination {
+    /**
+     * Up to amount of elements returned.
+     */
+    int limit;
+    /**
+     * Amount to skip to return.
+     */
+    int skip;
+    /**
+     * Pages.
+     */
+    int pages;
   }
 }

@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import lombok.val;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -18,14 +19,14 @@ import template.Support.IntegrationTest;
 final class UserTest {
 
   private static final Client<User> CLIENT = Client.create(User.class);
-  private static final User VALID_STUB = User.of("user", 1);
+  private static final User VALID_STUB = stub(1).findAny().orElseThrow();
   private static final Map<String, String> INVALID_STUB = Map
       .of("age", "0", "name", "some");
 
   @Test
   @DisplayName(""
       + "GIVEN valid resource to persist "
-      + "WHEN performing user created operation "
+      + "WHEN perform user create operation "
       + "THEN should be able to find resource.")
   final void givenValidResource_whenCreating_thenShouldAbleToFindResource() {
     // Act
@@ -47,12 +48,11 @@ final class UserTest {
       + "THEN return resources with matching attributes from request body.")
   final void given3created_andFilteringCriterion_whenRetrieving_thenReturnMatching() {
     // Arrange
-    val ids = IntStream.rangeClosed(1, 3)
-                       .mapToObj(i -> User.of(String.valueOf(i), i))
-                       .map(u -> CLIENT.request(
-                           req -> req.method(HttpMethod.POST).body(u)))
-                       .map(req -> req.get().body())
-                       .toArray(String[]::new);
+    val ids = stub(3)
+        .map(u -> CLIENT.request(
+            req -> req.method(HttpMethod.POST).body(u)))
+        .map(req -> req.get().body())
+        .toArray(String[]::new);
     val pick = ids[new Random().nextInt(ids.length)];
     val criteria = CLIENT.request(req -> req.method(HttpMethod.GET).uri(pick))
                          .thenSerializeTo(User.class);
@@ -66,16 +66,14 @@ final class UserTest {
   @Test
   @DisplayName(""
       + "GIVEN three created resources "
-      + "WHEN perform retrieve operation "
+      + "WHEN perform user retrieve operation "
       + "THEN return all resources created.")
   final void given3createdResources_whenRetrieving_thenReturnAllResourcesCreated() {
     // Arrange
-    val ids = IntStream.rangeClosed(1, 3)
-                       .mapToObj(i -> User.of(String.valueOf(i), i))
-                       .map(u -> CLIENT.request(
-                           req -> req.method(HttpMethod.POST).body(u)))
-                       .map(req -> req.thenSerializeTo(UUID.class))
-                       .sorted().toArray(UUID[]::new);
+    val ids = stub(3)
+        .map(u -> CLIENT.request(req -> req.method(HttpMethod.POST).body(u)))
+        .map(req -> req.thenSerializeTo(UUID.class))
+        .sorted().toArray(UUID[]::new);
     // Act
     val found = (Map<String, ?>) CLIENT
         .request(req -> req.method(HttpMethod.GET)).thenSerializeTo(Map.class);
@@ -88,7 +86,7 @@ final class UserTest {
   @Test
   @DisplayName(""
       + "GIVEN a created resource "
-      + "WHEN performing user update operation "
+      + "WHEN perform user update operation "
       + "THEN return true.")
   final void givenCreatedResource_whenUpdating_thenReturnTrue() {
     // Arrange
@@ -109,7 +107,7 @@ final class UserTest {
   @Test
   @DisplayName(""
       + "GIVEN a created resource "
-      + "WHEN performing user delete operation "
+      + "WHEN perform user delete operation "
       + "THEN return true.")
   final void givenCreatedResource_whenDeleting_thenReturnTrue() {
     // Arrange
@@ -129,7 +127,7 @@ final class UserTest {
   @Test
   @DisplayName(""
       + "GIVEN invalid request "
-      + "WHEN performing user resource creation "
+      + "WHEN performing user creation operation "
       + "THEN return 422 as HTTP status code.")
   final void givenInvalidRequest_whenCreating_thenReturn422asStatus() {
     // Act
@@ -137,5 +135,25 @@ final class UserTest {
         .request(req -> req.method(HttpMethod.POST).body(INVALID_STUB)).get();
     // Assert
     Assertions.assertEquals(422, resp.statusCode());
+  }
+
+  @Test
+  @DisplayName(""
+      + "GIVEN invalid filter query "
+      + "WHEN perform user retrieve operation "
+      + "THEN return 400 as HTTP status code.")
+  final void givenInvalidFilterQuery_whenRetrieving_thenReturn400asStatus() {
+    // Arrange
+    val params = Map.of("fq", "xp");
+    // Act
+    val resp = CLIENT
+        .request(req -> req.method(HttpMethod.GET).params(params)).get();
+    // Assert
+    Assertions.assertEquals(400, resp.statusCode());
+  }
+
+  private static Stream<User> stub(final int bound) {
+    return IntStream.rangeClosed(1, bound)
+                    .mapToObj(i -> User.of(String.valueOf(i), i));
   }
 }

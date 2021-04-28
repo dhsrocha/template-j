@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import lombok.val;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -18,15 +19,7 @@ import template.Support.IntegrationTest;
 final class AddressTest {
 
   private static final Client<Address> CLIENT = Client.create(Address.class);
-  private static final Address VALID_STUB = Address.builder()
-                                                   .type(Address.Type.ROAD)
-                                                   .place("a")
-                                                   .number("a")
-                                                   .neighbourhood("a")
-                                                   .municipality("a")
-                                                   .state("a")
-                                                   .postalCode("a")
-                                                   .build();
+  private static final Address VALID_STUB = stub(1).findAny().orElseThrow();
   private static final Map<String, String> INVALID_STUB =
       Map.of("type", "",
              "place", "",
@@ -57,24 +50,15 @@ final class AddressTest {
   @DisplayName(""
       + "GIVEN three distinct resources "
       + "AND a request body as filtering criterion "
-      + "WHEN perform retrieve operation "
+      + "WHEN perform address retrieve operation "
       + "THEN return resources with matching attributes from request body.")
   final void given3created_andFilteringCriterion_whenRetrieving_thenReturnMatching() {
     // Arrange
-    val ids = IntStream.rangeClosed(0, 2)
-                       .mapToObj(i -> Address.builder()
-                                             .type(Address.Type.values()[i])
-                                             .place(String.valueOf(i))
-                                             .number(String.valueOf(i))
-                                             .neighbourhood(String.valueOf(i))
-                                             .municipality(String.valueOf(i))
-                                             .state(String.valueOf(i))
-                                             .postalCode(String.valueOf(i))
-                                             .build())
-                       .map(u -> CLIENT.request(
-                           req -> req.method(HttpMethod.POST).body(u)))
-                       .map(req -> req.get().body())
-                       .toArray(String[]::new);
+    val ids = stub(3)
+        .map(u -> CLIENT.request(
+            req -> req.method(HttpMethod.POST).body(u)))
+        .map(req -> req.get().body())
+        .toArray(String[]::new);
     val pick = ids[new Random().nextInt(ids.length)];
     val criteria = CLIENT.request(req -> req.method(HttpMethod.GET).uri(pick))
                          .thenSerializeTo(Address.class);
@@ -88,18 +72,14 @@ final class AddressTest {
   @Test
   @DisplayName(""
       + "GIVEN three created resources "
-      + "WHEN perform retrieve operation "
+      + "WHEN perform address retrieve operation "
       + "THEN return all resources created.")
   final void given3createdResources_whenRetrieving_thenReturnAllResourcesCreated() {
     // Arrange
-    val ids = IntStream.rangeClosed(1, 3)
-                       .mapToObj(String::valueOf)
-                       .map(VALID_STUB.toBuilder()::number)
-                       .map(Address.AddressBuilder::build)
-                       .map(a -> CLIENT.request(
-                           req -> req.method(HttpMethod.POST).body(a)))
-                       .map(req -> req.thenSerializeTo(UUID.class))
-                       .sorted().toArray(UUID[]::new);
+    val ids = stub(3)
+        .map(a -> CLIENT.request(req -> req.method(HttpMethod.POST).body(a)))
+        .map(req -> req.thenSerializeTo(UUID.class))
+        .sorted().toArray(UUID[]::new);
     // Act
     val found = (Map<String, ?>) CLIENT
         .request(req -> req.method(HttpMethod.GET)).thenSerializeTo(Map.class);
@@ -156,7 +136,7 @@ final class AddressTest {
   @Test
   @DisplayName(""
       + "GIVEN invalid request "
-      + "WHEN performing address resource creation "
+      + "WHEN performing address creation "
       + "THEN return 422 as HTTP status code.")
   final void givenInvalidRequest_whenCreating_thenReturn422asStatus() {
     // Act
@@ -164,5 +144,35 @@ final class AddressTest {
         .request(req -> req.method(HttpMethod.POST).body(INVALID_STUB)).get();
     // Assert
     Assertions.assertEquals(422, resp.statusCode());
+  }
+
+  @Test
+  @DisplayName(""
+      + "GIVEN invalid filter query "
+      + "WHEN perform user retrieve operation "
+      + "THEN return 400 as HTTP status code.")
+  final void givenInvalidFilterQuery_whenRetrieving_thenReturn400asStatus() {
+    // Arrange
+    val params = Map.of("fq", "xp");
+    // Act
+    val resp = CLIENT
+        .request(req -> req.method(HttpMethod.GET).params(params)).get();
+    // Assert
+    Assertions.assertEquals(400, resp.statusCode());
+  }
+
+  private static Stream<Address> stub(final int bound) {
+    return IntStream
+        .rangeClosed(1, bound)
+        .mapToObj(i -> Address.builder()
+                              .type(Address.Type.values()[i % Address.Type
+                                  .values().length])
+                              .place(String.valueOf(i))
+                              .number(String.valueOf(i))
+                              .neighbourhood(String.valueOf(i))
+                              .municipality(String.valueOf(i))
+                              .state(String.valueOf(i))
+                              .postalCode(String.valueOf(i))
+                              .build());
   }
 }

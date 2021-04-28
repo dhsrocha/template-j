@@ -99,6 +99,22 @@ public enum Exceptions implements Supplier<RuntimeException> {
   }
 
   /**
+   * Traps any potential {@link RuntimeException} thrown out of the provided
+   * scoped code and redirect (re-throw) it as the indexed one.
+   *
+   * @param <T>   Type provided by the functor.
+   * @param <R>   Type of upcoming result from the provided parameter.
+   * @param scope Computation where a {@link RuntimeException} might be thrown
+   *              from.
+   * @return Functor result supplied in the provided parameter.
+   * @see #trapIn(Supplier)
+   */
+  public final <T, R> Function<T, R> trapIn(
+      final @NonNull Function<T, R> scope) {
+    return t -> trapIn(() -> scope.apply(t));
+  }
+
+  /**
    * Provides the indexed exception with its name as the message.
    *
    * @return An instance of indexed exception.
