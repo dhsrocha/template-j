@@ -7,6 +7,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Maps application's exceptions.
@@ -14,6 +15,7 @@ import lombok.NonNull;
  * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */
 @SuppressWarnings("ImmutableEnumChecker")
+@Slf4j
 @AllArgsConstructor
 public enum Exceptions implements Supplier<RuntimeException> {
   /**
@@ -27,6 +29,25 @@ public enum Exceptions implements Supplier<RuntimeException> {
   ;
 
   private final Function<String, RuntimeException> ex;
+
+  /**
+   * Throws a provided exception if at least one of the provided boolean
+   * conditions returns true. It is advisable to provide the computing
+   * starting from the least computing cost.
+   *
+   * @param ex         An {@link RuntimeException} supplied by a string message.
+   * @param conditions Indicates an undesirable conditions to trigger the
+   *                   supplied exception.
+   * @throws RuntimeException The supplied exception instance.
+   */
+  public static void throwIf(final @NonNull Supplier<RuntimeException> ex,
+                             final @NonNull BooleanSupplier... conditions) {
+    for (final @NonNull var b : conditions) {
+      if (b.getAsBoolean()) {
+        throw ex.get();
+      }
+    }
+  }
 
   /**
    * Throws a provided exception if at least one of the provided boolean
@@ -60,48 +81,30 @@ public enum Exceptions implements Supplier<RuntimeException> {
   }
 
   /**
-   * Throws a provided exception if at least one of the provided boolean
-   * conditions returns true. It is advisable to provide the computing
-   * starting from the least computing cost.
-   *
-   * @param ex         An {@link RuntimeException} supplied by a string message.
-   * @param conditions Indicates an undesirable conditions to trigger the
-   *                   supplied exception.
-   * @throws RuntimeException The supplied exception instance.
-   */
-  public static void throwIf(final @NonNull Supplier<RuntimeException> ex,
-                             final @NonNull BooleanSupplier... conditions) {
-    for (final @NonNull var b : conditions) {
-      if (b.getAsBoolean()) {
-        throw ex.get();
-      }
-    }
-  }
-
-  /**
-   * Provides an exception with the indexed message.
-   *
-   * @return A instance of indexed exception.
-   */
-  @Override
-  public final RuntimeException get() {
-    return ex.apply(name());
-  }
-
-  /**
-   * Traps any throwing {@link RuntimeException} and redirect (re-throw) to the
-   * indexed one.
+   * Traps any potential {@link RuntimeException} thrown out of the provided
+   * scoped code and redirect (re-throw) it as the indexed one.
    *
    * @param <R>   Type of upcoming result from the provided parameter.
    * @param scope Computation where a {@link RuntimeException} might be thrown
    *              from.
    * @return Any result supplied in the provided parameter.
    */
-  public final <R> R trapFrom(final @NonNull Supplier<R> scope) {
+  public final <R> R trapIn(final @NonNull Supplier<R> scope) {
     try {
       return scope.get();
     } catch (final RuntimeException e) {
-      throw ex.apply(e.getMessage());
+      log.error(e.getMessage());
+      throw get();
     }
+  }
+
+  /**
+   * Provides the indexed exception with its name as the message.
+   *
+   * @return An instance of indexed exception.
+   */
+  @Override
+  public final RuntimeException get() {
+    return ex.apply(name());
   }
 }

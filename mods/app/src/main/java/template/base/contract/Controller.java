@@ -41,7 +41,7 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
   @Override
   default void getOne(final @lombok.NonNull Context ctx,
                       final @lombok.NonNull String id) {
-    val uuid = Exceptions.ILLEGAL_ARGUMENT.trapFrom(() -> UUID.fromString(id));
+    val uuid = Exceptions.ILLEGAL_ARGUMENT.trapIn(() -> UUID.fromString(id));
     ctx.result(MAPPER.toJson(getOne(uuid)));
   }
 
@@ -49,7 +49,7 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
   default void getAll(final @lombok.NonNull Context ctx) {
     val sourced = ctx.queryParamMap()
                      .isEmpty() ? getAll() : Exceptions.ILLEGAL_ARGUMENT
-        .trapFrom(() -> {
+        .trapIn(() -> {
           val map = ctx
               .queryParamMap().entrySet().stream()
               .map(e -> Map.entry(e.getKey(), e.getValue().get(0)))
@@ -67,7 +67,7 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
   @Override
   default void update(final @lombok.NonNull Context ctx,
                       final @lombok.NonNull String id) {
-    val uuid = Exceptions.ILLEGAL_ARGUMENT.trapFrom(() -> UUID.fromString(id));
+    val uuid = Exceptions.ILLEGAL_ARGUMENT.trapIn(() -> UUID.fromString(id));
     val d = Domain.validate(ctx.bodyAsClass(domainRef()));
     ctx.status(update(uuid, d) ? 204 : 404);
   }
@@ -75,7 +75,7 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
   @Override
   default void delete(final @lombok.NonNull Context ctx,
                       final @lombok.NonNull String id) {
-    val uuid = Exceptions.ILLEGAL_ARGUMENT.trapFrom(() -> UUID.fromString(id));
+    val uuid = Exceptions.ILLEGAL_ARGUMENT.trapIn(() -> UUID.fromString(id));
     ctx.status(delete(uuid) ? 204 : 404);
   }
 
