@@ -1,10 +1,11 @@
-package template;
+package template.core;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import lombok.val;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -35,7 +36,7 @@ final class PropsTest {
   @DisplayName("Successful test cases.")
   final void success(final String input, final String val, final String name) {
     // Arrange
-    val p = assertDoesNotThrow(() -> Props.valueOf(name));
+    val p = Assertions.assertDoesNotThrow(() -> Props.valueOf(name));
     // Act
     val result = assertDoesNotThrow(() -> Props.from(input));
     // Assert

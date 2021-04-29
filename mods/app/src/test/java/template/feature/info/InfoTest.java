@@ -8,9 +8,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import template.Application.Feat;
-import template.Props;
 import template.Support.Client;
 import template.Support.IntegrationTest;
+import template.core.Props;
 
 /**
  * Test suite for application information endpoint.

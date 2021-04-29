@@ -17,6 +17,7 @@ module template.app {
 
   // Open for testing
   opens template;
+  opens template.core;
   opens template.feature.info;
   opens template.feature.user;
   opens template.feature.address;

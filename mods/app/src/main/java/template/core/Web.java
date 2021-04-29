@@ -1,4 +1,4 @@
-package template;
+package template.core;
 
 import com.google.gson.Gson;
 import io.javalin.Javalin;
@@ -7,11 +7,11 @@ import io.javalin.plugin.openapi.annotations.ContentType;
 import java.util.Map;
 import java.util.function.Supplier;
 import lombok.val;
+import template.Application;
 import template.Application.Mode;
-import template.Web.Mod;
-import template.Web.Server;
 import template.base.contract.Builder;
 import template.base.stereotype.Domain.Violation;
+import template.core.Web.Mod;
 
 /**
  * Module for bootstrapping application's web server.
@@ -20,14 +20,8 @@ import template.base.stereotype.Domain.Violation;
  */
 @Application.Scope
 @dagger.Component(dependencies = Router.Build.class, modules = Mod.class)
-interface Web extends Supplier<Server> {
+interface Web extends Supplier<Application.Server> {
 
-  interface Server {
-
-    Server start(final int port);
-
-    void stop();
-  }
 
   /**
    * Type for creating instances managed by Dagger.
@@ -39,8 +33,8 @@ interface Web extends Supplier<Server> {
   interface Mod {
     @dagger.Provides
     @Application.Scope
-    static Server server(final @lombok.NonNull Mode mode,
-                         final @lombok.NonNull Router.Build routes) {
+    static Application.Server server(final @lombok.NonNull Mode mode,
+                                     final @lombok.NonNull Router.Build routes) {
       val mapper = new Gson();
       JavalinJson.setFromJsonMapper(mapper::fromJson);
       JavalinJson.setToJsonMapper(mapper::toJson);
@@ -58,10 +52,10 @@ interface Web extends Supplier<Server> {
             "violations", e.getInvariants()
         )));
       });
-      return new Server() {
+      return new Application.Server() {
 
         @Override
-        public Server start(final int port) {
+        public Application.Server start(final int port) {
           app.start(port);
           return this;
         }

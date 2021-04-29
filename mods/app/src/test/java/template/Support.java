@@ -33,9 +33,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import template.Application.Feat;
 import template.Application.Mode;
-import template.Web.Server;
 import template.base.Exceptions;
 import template.base.stereotype.Domain;
+import template.core.Bootstrap;
+import template.core.Props;
 
 /**
  * Supporting assets for testing purposes.
@@ -232,7 +233,7 @@ public interface Support {
    */
   final class AppExtension implements BeforeTestExecutionCallback,
                                       AfterTestExecutionCallback {
-    private static final AtomicReference<Server> REF =
+    private static final AtomicReference<Application.Server> REF =
         new AtomicReference<>();
 
     @Override

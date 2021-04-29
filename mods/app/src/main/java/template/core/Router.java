@@ -1,16 +1,17 @@
-package template;
+package template.core;
 
 import io.javalin.apibuilder.ApiBuilder;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 import java.util.function.Supplier;
+import template.Application;
 import template.Application.Feat;
 import template.Application.Mode;
-import template.Router.FeatureScope;
-import template.Router.Mod;
 import template.base.contract.Builder;
 import template.base.contract.Controller;
 import template.base.contract.Routes;
+import template.core.Router.FeatureScope;
+import template.core.Router.Mod;
 import template.feature.address.Address;
 import template.feature.info.Info;
 import template.feature.user.User;

@@ -3,8 +3,8 @@ package template.feature.info;
 import java.util.Arrays;
 import java.util.Map;
 import template.Application.Feat;
-import template.Props;
 import template.base.contract.Controller;
+import template.core.Props;
 
 /**
  * Controller for application information feature.

@@ -1,7 +1,8 @@
-package template;
+package template.core;
 
 import lombok.val;
 import org.slf4j.LoggerFactory;
+import template.Application;
 import template.Application.Feat;
 import template.Application.Mode;
 import template.base.Exceptions;
@@ -11,7 +12,7 @@ import template.base.Exceptions;
  *
  * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */
-interface Bootstrap {
+public interface Bootstrap {
 
   /**
    * Parses provided arguments and initiates application.
@@ -19,7 +20,7 @@ interface Bootstrap {
    * @param args key-value entries treated by {@link Props#from(String...)}.
    * @see Application#main(String...)
    */
-  static Web.Server bootstrap(final String... args) {
+  static Application.Server bootstrap(final String... args) {
     val log = LoggerFactory.getLogger(Application.class);
     val props = Props.from(args);
     log.debug("Properties:");

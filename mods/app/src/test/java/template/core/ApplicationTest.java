@@ -1,9 +1,10 @@
-package template;
+package template.core;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
+import template.Application;
 import template.Support.IntegrationTest;
 
 /**

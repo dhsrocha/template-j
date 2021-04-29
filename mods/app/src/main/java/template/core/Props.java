@@ -1,4 +1,4 @@
-package template;
+package template.core;
 
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -51,7 +51,7 @@ public enum Props {
    * @throws IllegalArgumentException if number of arguments is grater than
    *                                  the enum {@link #values()}.
    */
-  static Map<Props, String> from(final String... args) {
+  public static Map<Props, String> from(final String... args) {
     if (args.length > VALUES.length) {
       throw new IllegalArgumentException(
           "Arguments given amount is greater than the ones can be afforded!");

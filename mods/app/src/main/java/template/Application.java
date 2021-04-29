@@ -4,6 +4,8 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 import java.util.Arrays;
 import lombok.NonNull;
+import template.core.Bootstrap;
+import template.core.Props;
 
 /**
  * Application's entry point.
@@ -38,11 +40,11 @@ public interface Application {
     ADDRESS,
     ;
 
-    static Feat[] from(final @NonNull String args) {
+    public static Feat[] from(final @NonNull String args) {
       return from(args.split(","));
     }
 
-    static Feat[] from(final @NonNull String... args) {
+    public static Feat[] from(final @NonNull String... args) {
       return Arrays.stream(args).map(Feat::valueOf).toArray(Feat[]::new);
     }
   }
@@ -68,5 +70,12 @@ public interface Application {
                .noneMatch(s -> s.contains("test") || s.contains("surefire"))),
     ;
     private final boolean forbidden;
+  }
+
+  interface Server {
+
+    Server start(final int port);
+
+    void stop();
   }
 }
