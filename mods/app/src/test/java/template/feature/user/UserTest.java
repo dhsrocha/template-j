@@ -1,7 +1,6 @@
 package template.feature.user;
 
 import io.javalin.plugin.openapi.annotations.HttpMethod;
-import java.net.http.HttpRequest;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
@@ -11,7 +10,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import template.Application.Feat;
-import template.Support.Client;
+import template.Client;
 import template.Support.IntegrationTest;
 
 @IntegrationTest(Feat.USER)
@@ -20,6 +19,8 @@ final class UserTest {
 
   private static final Client<User> CLIENT = Client.create(User.class);
   private static final User VALID_STUB = User.of("user", 1);
+  private static final Map<String, String> INVALID_STUB = Map
+      .of("age", "0", "name", "some");
 
   @Test
   @DisplayName(""
@@ -27,19 +28,17 @@ final class UserTest {
       + "WHEN performing user created operation "
       + "THEN should be able to find resource.")
   final void givenValidResource_whenCreating_thenShouldAbleToFindResource() {
-    // Arrange
-    val body = Client.jsonOf(VALID_STUB);
     // Act
-    val resp = CLIENT.perform(HttpRequest.newBuilder().POST(body));
+    val resp = CLIENT
+        .request(req -> req.method(HttpMethod.POST).body(VALID_STUB)).get();
     // Assert
     Assertions.assertEquals(201, resp.statusCode());
-    val found = CLIENT.perform(User.class,
-                               UUID.fromString(resp.body()),
-                               HttpRequest.newBuilder().GET());
+    val found = CLIENT
+        .request(req -> req.method(HttpMethod.GET).uri(resp.body()))
+        .thenSerializeTo(User.class);
     Assertions.assertEquals(VALID_STUB, found);
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   @DisplayName(""
       + "GIVEN three distinct resources "
@@ -50,15 +49,15 @@ final class UserTest {
     // Arrange
     val ids = IntStream.rangeClosed(1, 3)
                        .mapToObj(i -> User.of(String.valueOf(i), i))
-                       .map(Client::jsonOf)
-                       .map(HttpRequest.newBuilder()::POST)
-                       .map(req -> CLIENT.perform(UUID.class, req))
-                       .toArray(UUID[]::new);
+                       .map(u -> CLIENT.request(
+                           req -> req.method(HttpMethod.POST).body(u)))
+                       .map(req -> req.get().body())
+                       .toArray(String[]::new);
     val pick = ids[new Random().nextInt(ids.length)];
-    val criteria = CLIENT
-        .perform(User.class, pick, HttpRequest.newBuilder().GET());
+    val criteria = CLIENT.request(req -> req.method(HttpMethod.GET).uri(pick))
+                         .thenSerializeTo(User.class);
     // Act
-    val filtered = (Map<String, ?>) CLIENT.getWith(criteria, Map.class);
+    val filtered = CLIENT.filter(criteria).thenMap();
     // Assert
     Assertions.assertEquals(1, filtered.size());
   }
@@ -73,13 +72,13 @@ final class UserTest {
     // Arrange
     val ids = IntStream.rangeClosed(1, 3)
                        .mapToObj(i -> User.of(String.valueOf(i), i))
-                       .map(Client::jsonOf)
-                       .map(HttpRequest.newBuilder()::POST)
-                       .map(req -> CLIENT.perform(UUID.class, req))
+                       .map(u -> CLIENT.request(
+                           req -> req.method(HttpMethod.POST).body(u)))
+                       .map(req -> req.thenSerializeTo(UUID.class))
                        .sorted().toArray(UUID[]::new);
     // Act
     val found = (Map<String, ?>) CLIENT
-        .perform(Map.class, HttpRequest.newBuilder().GET());
+        .request(req -> req.method(HttpMethod.GET)).thenSerializeTo(Map.class);
     // Assert
     val arr = found.keySet().stream().map(UUID::fromString).sorted()
                    .toArray(UUID[]::new);
@@ -93,17 +92,17 @@ final class UserTest {
       + "THEN return true.")
   final void givenCreatedResource_whenUpdating_thenReturnTrue() {
     // Arrange
-    val created = CLIENT.perform(
-        UUID.class, HttpRequest.newBuilder().POST(Client.jsonOf(VALID_STUB)));
+    val created = CLIENT
+        .request(req -> req.method(HttpMethod.POST).body(VALID_STUB))
+        .thenSerializeTo(UUID.class);
     val toUpdate = User.of("updated", 5);
-    val body = Client.jsonOf(toUpdate);
-    val req = HttpRequest.newBuilder().method(HttpMethod.PATCH.name(), body);
     // Act
-    val isUpdated = CLIENT.perform(created, req);
+    val isUpdated = CLIENT.request(
+        req -> req.method(HttpMethod.PATCH).uri(created).body(toUpdate)).get();
     // Assert
     Assertions.assertEquals(204, isUpdated.statusCode());
-    val found = CLIENT
-        .perform(User.class, created, HttpRequest.newBuilder().GET());
+    val found = CLIENT.request(req -> req.method(HttpMethod.GET).uri(created))
+                      .thenSerializeTo(User.class);
     Assertions.assertEquals(toUpdate, found);
   }
 
@@ -114,15 +113,17 @@ final class UserTest {
       + "THEN return true.")
   final void givenCreatedResource_whenDeleting_thenReturnTrue() {
     // Arrange
-    val body = Client.jsonOf(VALID_STUB);
     val created = CLIENT
-        .perform(UUID.class, HttpRequest.newBuilder().POST(body));
+        .request(req -> req.method(HttpMethod.POST).body(VALID_STUB))
+        .thenSerializeTo(UUID.class);
     // Act
-    val isUpdated = CLIENT.perform(created, HttpRequest.newBuilder().DELETE());
+    val isDeleted = CLIENT
+        .request(req -> req.method(HttpMethod.DELETE).uri(created)).get();
     // Assert
-    Assertions.assertEquals(204, isUpdated.statusCode());
-    val resp = CLIENT.perform(created, HttpRequest.newBuilder().GET());
-    Assertions.assertEquals(404, resp.statusCode());
+    Assertions.assertEquals(204, isDeleted.statusCode());
+    val notFound = CLIENT
+        .request(req -> req.method(HttpMethod.GET).uri(created)).get();
+    Assertions.assertEquals(404, notFound.statusCode());
   }
 
   @Test
@@ -131,10 +132,9 @@ final class UserTest {
       + "WHEN performing user resource creation "
       + "THEN return 422 as HTTP status code.")
   final void givenInvalidRequest_whenCreating_thenReturn422asStatus() {
-    // Arrange
-    val body = Client.jsonOf(Map.of("age", "0", "name", "some"));
     // Act
-    val resp = CLIENT.perform(HttpRequest.newBuilder().POST(body));
+    val resp = CLIENT
+        .request(req -> req.method(HttpMethod.POST).body(INVALID_STUB)).get();
     // Assert
     Assertions.assertEquals(422, resp.statusCode());
   }

@@ -1,7 +1,6 @@
 package template.feature.address;
 
 import io.javalin.plugin.openapi.annotations.HttpMethod;
-import java.net.http.HttpRequest;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
@@ -11,9 +10,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import template.Application.Feat;
-import template.Support.Client;
+import template.Client;
 import template.Support.IntegrationTest;
-import template.feature.address.Address.AddressBuilder;
 
 @IntegrationTest(Feat.ADDRESS)
 @DisplayName("Address feature test suite using integration test strategy.")
@@ -44,19 +42,17 @@ final class AddressTest {
       + "WHEN performing address create operation "
       + "THEN should be able to find resource.")
   final void givenValidResource_whenCreating_thenShouldAbleToFindResource() {
-    // Arrange
-    val body = Client.jsonOf(VALID_STUB);
     // Act
-    val resp = CLIENT.perform(HttpRequest.newBuilder().POST(body));
+    val resp = CLIENT
+        .request(req -> req.method(HttpMethod.POST).body(VALID_STUB)).get();
     // Assert
     Assertions.assertEquals(201, resp.statusCode());
-    val found = CLIENT.perform(Address.class,
-                               UUID.fromString(resp.body()),
-                               HttpRequest.newBuilder().GET());
+    val found = CLIENT
+        .request(req -> req.method(HttpMethod.GET).uri(resp.body()))
+        .thenSerializeTo(Address.class);
     Assertions.assertEquals(VALID_STUB, found);
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   @DisplayName(""
       + "GIVEN three distinct resources "
@@ -73,17 +69,17 @@ final class AddressTest {
                                              .neighbourhood(String.valueOf(i))
                                              .municipality(String.valueOf(i))
                                              .state(String.valueOf(i))
-                                             .postalCode(String.valueOf(i)))
-                       .map(AddressBuilder::build)
-                       .map(Client::jsonOf)
-                       .map(HttpRequest.newBuilder()::POST)
-                       .map(req -> CLIENT.perform(UUID.class, req))
-                       .toArray(UUID[]::new);
+                                             .postalCode(String.valueOf(i))
+                                             .build())
+                       .map(u -> CLIENT.request(
+                           req -> req.method(HttpMethod.POST).body(u)))
+                       .map(req -> req.get().body())
+                       .toArray(String[]::new);
     val pick = ids[new Random().nextInt(ids.length)];
-    val criteria = CLIENT
-        .perform(Address.class, pick, HttpRequest.newBuilder().GET());
+    val criteria = CLIENT.request(req -> req.method(HttpMethod.GET).uri(pick))
+                         .thenSerializeTo(Address.class);
     // Act
-    val filtered = (Map<String, ?>) CLIENT.getWith(criteria, Map.class);
+    val filtered = CLIENT.filter(criteria).thenMap();
     // Assert
     Assertions.assertEquals(1, filtered.size());
   }
@@ -92,20 +88,21 @@ final class AddressTest {
   @Test
   @DisplayName(""
       + "GIVEN three created resources "
-      + "WHEN perform address retrieve operation "
+      + "WHEN perform retrieve operation "
       + "THEN return all resources created.")
   final void given3createdResources_whenRetrieving_thenReturnAllResourcesCreated() {
     // Arrange
-    val ids = IntStream.rangeClosed(1, 3).mapToObj(String::valueOf)
+    val ids = IntStream.rangeClosed(1, 3)
+                       .mapToObj(String::valueOf)
                        .map(VALID_STUB.toBuilder()::number)
-                       .map(AddressBuilder::build)
-                       .map(Client::jsonOf)
-                       .map(HttpRequest.newBuilder()::POST)
-                       .map(req -> CLIENT.perform(UUID.class, req))
+                       .map(Address.AddressBuilder::build)
+                       .map(a -> CLIENT.request(
+                           req -> req.method(HttpMethod.POST).body(a)))
+                       .map(req -> req.thenSerializeTo(UUID.class))
                        .sorted().toArray(UUID[]::new);
     // Act
     val found = (Map<String, ?>) CLIENT
-        .perform(Map.class, HttpRequest.newBuilder().GET());
+        .request(req -> req.method(HttpMethod.GET)).thenSerializeTo(Map.class);
     // Assert
     val arr = found.keySet().stream().map(UUID::fromString).sorted()
                    .toArray(UUID[]::new);
@@ -119,20 +116,20 @@ final class AddressTest {
       + "THEN return true.")
   final void givenCreatedResource_whenUpdating_thenReturnTrue() {
     // Arrange
-    val created = CLIENT.perform(
-        UUID.class, HttpRequest.newBuilder().POST(Client.jsonOf(VALID_STUB)));
+    val created = CLIENT
+        .request(req -> req.method(HttpMethod.POST).body(VALID_STUB))
+        .thenSerializeTo(UUID.class);
     val toUpdate = VALID_STUB.toBuilder()
                              .place("otherPlace")
                              .number("otherNumber")
                              .build();
-    val body = Client.jsonOf(toUpdate);
-    val req = HttpRequest.newBuilder().method(HttpMethod.PATCH.name(), body);
     // Act
-    val isUpdated = CLIENT.perform(created, req);
+    val isUpdated = CLIENT.request(
+        req -> req.method(HttpMethod.PATCH).uri(created).body(toUpdate)).get();
     // Assert
     Assertions.assertEquals(204, isUpdated.statusCode());
-    val found = CLIENT
-        .perform(Address.class, created, HttpRequest.newBuilder().GET());
+    val found = CLIENT.request(req -> req.method(HttpMethod.GET).uri(created))
+                      .thenSerializeTo(Address.class);
     Assertions.assertEquals(toUpdate, found);
   }
 
@@ -143,15 +140,17 @@ final class AddressTest {
       + "THEN return true.")
   final void givenCreatedResource_whenDeleting_thenReturnTrue() {
     // Arrange
-    val body = Client.jsonOf(VALID_STUB);
     val created = CLIENT
-        .perform(UUID.class, HttpRequest.newBuilder().POST(body));
+        .request(req -> req.method(HttpMethod.POST).body(VALID_STUB))
+        .thenSerializeTo(UUID.class);
     // Act
-    val isUpdated = CLIENT.perform(created, HttpRequest.newBuilder().DELETE());
+    val isDeleted = CLIENT
+        .request(req -> req.method(HttpMethod.DELETE).uri(created)).get();
     // Assert
-    Assertions.assertEquals(204, isUpdated.statusCode());
-    val resp = CLIENT.perform(created, HttpRequest.newBuilder().GET());
-    Assertions.assertEquals(404, resp.statusCode());
+    Assertions.assertEquals(204, isDeleted.statusCode());
+    val notFound = CLIENT
+        .request(req -> req.method(HttpMethod.GET).uri(created)).get();
+    Assertions.assertEquals(404, notFound.statusCode());
   }
 
   @Test
@@ -160,10 +159,9 @@ final class AddressTest {
       + "WHEN performing address resource creation "
       + "THEN return 422 as HTTP status code.")
   final void givenInvalidRequest_whenCreating_thenReturn422asStatus() {
-    // Arrange
-    val body = Client.jsonOf(INVALID_STUB);
     // Act
-    val resp = CLIENT.perform(HttpRequest.newBuilder().POST(body));
+    val resp = CLIENT
+        .request(req -> req.method(HttpMethod.POST).body(INVALID_STUB)).get();
     // Assert
     Assertions.assertEquals(422, resp.statusCode());
   }

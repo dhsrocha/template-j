@@ -1,31 +1,14 @@
 package template;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
-import java.io.Serializable;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.net.InetAddress;
 import java.net.ServerSocket;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpRequest.BodyPublisher;
-import java.net.http.HttpRequest.BodyPublishers;
-import java.net.http.HttpResponse;
-import java.net.http.HttpResponse.BodyHandlers;
-import java.time.Duration;
 import java.util.Arrays;
-import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
-import lombok.NonNull;
-import lombok.SneakyThrows;
 import lombok.val;
 import org.junit.jupiter.api.extension.AfterTestExecutionCallback;
 import org.junit.jupiter.api.extension.BeforeTestExecutionCallback;
@@ -33,8 +16,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import template.Application.Feat;
 import template.Application.Mode;
-import template.base.Exceptions;
-import template.base.stereotype.Domain;
 import template.core.Bootstrap;
 import template.core.Props;
 
@@ -77,152 +58,22 @@ public interface Support {
   }
 
   /**
-   * Performs requests to the instance started up by {@link IntegrationTest}.
-   *
-   * @param <T> Inferred type to drive which the instance should make
-   *            request from.
-   * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
+   * Common listening port shared by the starting up application and its
+   * requesting clients.
    */
-  @lombok.Value
-  class Client<T> {
+  int PORT = nextAvailablePort();
 
-    private static final Gson MAPPER = new Gson();
-    private static final int PORT = nextAvailablePort();
-    private static final HttpClient CLIENT = HttpClient
-        .newBuilder().version(HttpClient.Version.HTTP_1_1)
-        .connectTimeout(Duration.ofSeconds(1)).build();
-
-    URI base;
-
-    /**
-     * Instantiates an HTTP client with base URL listening to the same port the
-     * server started instance is binding to.
-     *
-     * @return Instance with the adapted base URL.
-     */
-    public static <T> Client<T> create() {
-      return new Client<>(base());
-    }
-
-    /**
-     * Instantiates an HTTP client with base URL listening to the same port the
-     * server started instance is binding to and also pointing out to the
-     * provided {@link Domain}'s expected endpoint.
-     *
-     * @param <D> Inferred type to drive which the instance should make
-     *            request from.
-     * @param ref {@link Domain} type to be used conventionally as the
-     *            feature route.
-     * @return Instance with the adapted base URL.
-     */
-    public static <D extends Domain<D>> Client<D> create(
-        final @lombok.NonNull Class<D> ref) {
-      return new Client<>(base(ref.getSimpleName().toLowerCase()));
-    }
-
-    /**
-     * Support method to construct json body for a sending request.
-     *
-     * @param toBody an object as request body.
-     * @return {@link BodyPublisher}'s instance.
-     */
-    public static BodyPublisher jsonOf(final @NonNull Object toBody) {
-      return BodyPublishers.ofString(MAPPER.toJson(toBody));
-    }
-
-    /**
-     * Performs an HTTP request under some adopted conventions for this
-     * application.
-     *
-     * @param build Request builder.
-     * @return Http response in string form. can be converted to a specific
-     *     type through serialization.
-     */
-    @lombok.SneakyThrows
-    public HttpResponse<String> perform(
-        final @lombok.NonNull HttpRequest.Builder build) {
-      return CLIENT.send(build.uri(base).build(), BodyHandlers.ofString());
-    }
-
-    /**
-     * Performs an HTTP request under some adopted conventions for this
-     * application.
-     *
-     * @param id    The resource's identity.
-     * @param build Request builder.
-     * @return Http response in string form. can be converted to a specific
-     *     type through serialization.
-     */
-    @lombok.SneakyThrows
-    public HttpResponse<String> perform(final @lombok.NonNull UUID id,
-                                        final @lombok.NonNull HttpRequest.Builder build) {
-      return CLIENT.send(build.uri(URI.create(base + "/" + id))
-                              .build(), BodyHandlers.ofString());
-    }
-
-    /**
-     * Performs an HTTP request under some adopted conventions for this
-     * application and tries to serialize the upcoming response body.
-     *
-     * @param <U>   Inferred type to be used for serialization.
-     * @param build Request builder.
-     * @return Http response in string form. can be converted to a specific
-     *     type through serialization.
-     */
-    public <U> U perform(final @lombok.NonNull Class<U> serializeTo,
-                         final @lombok.NonNull HttpRequest.Builder build) {
-      return serialize(perform(build).body(), serializeTo);
-    }
-
-    /**
-     * Performs an HTTP request under some adopted conventions for this
-     * application and tries to serialize the upcoming response body.
-     *
-     * @param <U>         Inferred type to be used for serialization.
-     * @param serializeTo Type to try serialization to.
-     * @param id          The resource's identity.
-     * @param build       Request builder.
-     * @return Http response in string form. can be converted to a specific
-     *     type through serialization.
-     */
-    public <U> U perform(final @lombok.NonNull Class<U> serializeTo,
-                         final @lombok.NonNull UUID id,
-                         final @lombok.NonNull HttpRequest.Builder build) {
-      return serialize(perform(id, build).body(), serializeTo);
-    }
-
-    @SuppressWarnings("unchecked")
-    @SneakyThrows
-    public HttpResponse<String> getWith(final @lombok.NonNull T criteria) {
-      val token = new TypeToken<Map<String, String>>() {
-      }.getRawType();
-      val params = ((Map<String, String>) MAPPER
-          .fromJson(MAPPER.toJson(criteria), token))
-          .entrySet().stream().map(String::valueOf)
-          .collect(Collectors.joining("&"));
-      val uri = URI.create(base.toString() + "?" + params);
-      return CLIENT.send(HttpRequest.newBuilder().uri(uri)
-                                    .build(), BodyHandlers.ofString());
-    }
-
-    public <U> U getWith(final @lombok.NonNull T criteria,
-                         final @lombok.NonNull Class<U> ref) {
-      return serialize(getWith(criteria).body(), ref);
-    }
-
-    private static <U> U serialize(final @lombok.NonNull String source,
-                                   final @lombok.NonNull Class<U> serializeTo) {
-      val t = MAPPER.fromJson(source, serializeTo);
-      Exceptions.ILLEGAL_ARGUMENT.throwIf(() -> null == t);
-      return t;
-    }
-
-    @lombok.SneakyThrows
-    private static URI base(final Serializable... params) {
-      val host = InetAddress.getLocalHost().getHostAddress();
-      val pp = Arrays.stream(params)
-                     .map(String::valueOf).collect(Collectors.joining("/"));
-      return URI.create("http://" + host + ":" + PORT + "/" + pp);
+  /**
+   * Recursively loops until finding a available TCP port, locks it, get its
+   * value and then releases it.
+   *
+   * @return next available port.
+   */
+  private static int nextAvailablePort() {
+    try (val s = new ServerSocket(0)) {
+      return s.getLocalPort();
+    } catch (final IOException e) {
+      return nextAvailablePort();
     }
   }
 
@@ -241,33 +92,19 @@ public interface Support {
       // Setup
       val suite = ctx.getTestInstance().orElseThrow().getClass()
                      .getAnnotation(IntegrationTest.class);
-      val feats = Optional.of(suite.activated())
-                          .or(() -> Optional.of(suite.value()))
-                          .filter(l -> l.length > 0)
-                          .orElseGet(Feat::values);
+      val feats = Optional
+          .of(suite.activated()).filter(l -> l.length > 0)
+          .or(() -> Optional.of(suite.value()).filter(l -> l.length > 0))
+          .orElseGet(Feat::values);
       REF.set(Bootstrap.bootstrap(
           Props.MODE.is(Mode.TEST),
-          Props.PORT.is(Client.PORT),
+          Props.PORT.is(Support.PORT),
           Props.FEAT.is(Arrays.toString(feats).replaceAll("[\\[\\] ]", ""))));
     }
 
     @Override
     public void afterTestExecution(final ExtensionContext ctx) {
       REF.get().stop();
-    }
-  }
-
-  /**
-   * Recursively loops until finding a available TCP port, locks it, get its
-   * value and then releases it.
-   *
-   * @return next available port.
-   */
-  private static int nextAvailablePort() {
-    try (val s = new ServerSocket(0)) {
-      return s.getLocalPort();
-    } catch (final IOException e) {
-      return nextAvailablePort();
     }
   }
 }
