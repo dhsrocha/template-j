@@ -3,8 +3,8 @@ package template.core;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
 import template.Application;
+import template.Support;
 import template.Support.IntegrationTest;
 
 /**
@@ -22,6 +22,7 @@ final class ApplicationTest {
       + "THEN expect does not throw any exception.")
   final void withDefaultOpts() {
     // Assert
-    Assertions.assertDoesNotThrow((Executable) Application::main);
+    Assertions.assertDoesNotThrow(() -> Application.main(
+        Props.PORT.is(Support.nextAvailablePort())));
   }
 }

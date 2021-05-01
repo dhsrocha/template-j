@@ -69,7 +69,7 @@ public interface Support {
    *
    * @return next available port.
    */
-  private static int nextAvailablePort() {
+  static int nextAvailablePort() {
     try (val s = new ServerSocket(0)) {
       return s.getLocalPort();
     } catch (final IOException e) {
