@@ -6,6 +6,7 @@ import template.base.contract.CacheManager;
 import template.base.contract.Controller;
 import template.base.contract.Repository;
 import template.base.contract.Service;
+import template.feature.address.Address;
 
 /**
  * {@link User} feature controller implementation.
@@ -31,5 +32,32 @@ final class UserController extends Service.Cached<User, UUID>
     return super.filter(c)
                 .or(u -> u.getAge() == c.getAge())
                 .or(u -> u.getName().equals(c.getName()));
+  }
+
+  /**
+   * Aggregate implementation between {@link User} and {@link Address} domains.
+   *
+   * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
+   */
+  static final class WithAddress
+      extends Service.Composed<User, Address, UUID>
+      implements Controller.Aggregate<User, Address> {
+
+    @javax.inject.Inject
+    WithAddress(
+        final @lombok.NonNull Repository.Composable<User, Address, UUID> base,
+        final @lombok.NonNull Service<Address, UUID> ext) {
+      super(base, ext);
+    }
+
+    @Override
+    public Class<User> ref() {
+      return User.class;
+    }
+
+    @Override
+    public Class<Address> extRef() {
+      return Address.class;
+    }
   }
 }

@@ -4,10 +4,15 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.NonNull;
 import template.base.stereotype.Entity;
+import template.base.stereotype.Entity.WithJoin;
 import template.feature.address.Address;
 import template.feature.user.User;
 
@@ -16,7 +21,6 @@ import template.feature.user.User;
  *
  * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */
-@SuppressWarnings("unused")
 @dagger.Module
 public final class DataAccess {
 
@@ -35,18 +39,44 @@ public final class DataAccess {
   // TODO Provisional ORM implementations. Should be replaced by a real one.
   private final Map<UUID, User> user = new HashMap<>();
   private final Map<UUID, Address> address = new HashMap<>();
+  // Joins
+  private final Map<Class<?>, Map<UUID, Set<UUID>>> userJoins = Stream
+      .of(Address.class)
+      .map(c -> Map.entry(c, new HashMap<UUID, Set<UUID>>()))
+      .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
   @javax.inject.Inject
   DataAccess() {
   }
 
+  @DataAccess.Scope
   @dagger.Provides
-  static Entity<UUID, User> user(final @NonNull DataAccess em) {
-    return () -> em.user;
+  static Entity<UUID, User> user(final @NonNull DataAccess da) {
+    return () -> da.user;
   }
 
+  @DataAccess.Scope
   @dagger.Provides
-  static Entity<UUID, Address> address(final @NonNull DataAccess em) {
-    return () -> em.address;
+  static Entity<UUID, Address> address(final @NonNull DataAccess da) {
+    return () -> da.address;
+  }
+
+  @DataAccess.Scope
+  @dagger.Provides
+  static Entity.WithJoin<UUID, User, Address> uaJoin(
+      final @NonNull DataAccess da) {
+    return new WithJoin<>() {
+      @Override
+      public Map<UUID, User> getStore() {
+        return da.user;
+      }
+
+      @Override
+      public Set<UUID> from(final @NonNull Class<Address> ref,
+                            final @NonNull UUID id) {
+        da.userJoins.get(ref).putIfAbsent(id, new HashSet<>());
+        return da.userJoins.get(ref).get(id);
+      }
+    };
   }
 }

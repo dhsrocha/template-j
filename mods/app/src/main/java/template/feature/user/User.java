@@ -11,9 +11,11 @@ import lombok.Getter;
 import template.base.Checks;
 import template.base.contract.CacheManager;
 import template.base.contract.Controller;
+import template.base.contract.Controller.Aggregate;
 import template.base.contract.Repository;
 import template.base.contract.Router;
 import template.base.stereotype.Domain;
+import template.feature.address.Address;
 
 /**
  * {@link Domain} which represents an user.
@@ -76,13 +78,29 @@ public class User implements Domain<User> {
   @dagger.Module
   public interface Mod {
 
-    @dagger.Binds
-    CacheManager<User, UUID> cacheManager(final UserCache u);
-
-    @dagger.Binds
-    Repository.Cached<User, UUID> repository(final UserRepository u);
+    // Controller
 
     @dagger.Binds
     Controller<User> controller(final UserController u);
+
+    @dagger.Binds
+    Aggregate<User, Address> withAddress(final UserController.WithAddress a);
+
+    // Repository
+
+    @dagger.Binds
+    Repository<User, UUID> repo(final UserRepository r);
+
+    @dagger.Binds
+    Repository.Cached<User, UUID> repoCached(final UserRepository r);
+
+    @dagger.Binds
+    Repository.Composable<User, Address, UUID> repoAddress(
+        final UserRepository.WithAddress a);
+
+    // Caching
+
+    @dagger.Binds
+    CacheManager<User, UUID> cache(final UserCache c);
   }
 }

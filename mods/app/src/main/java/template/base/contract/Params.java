@@ -30,6 +30,7 @@ enum Params {
   ;
   static final String MSG = "Skip parameter is higher than limit parameter.";
   static final Gson MAPPER = new Gson();
+  static final String ROOT_ID = "root";
 
   /**
    * Extracts a query parameter from {@link Context} and parses it. It should

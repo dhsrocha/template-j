@@ -14,6 +14,7 @@ import template.base.contract.CacheManager;
 import template.base.contract.Controller;
 import template.base.contract.Repository;
 import template.base.contract.Router;
+import template.base.contract.Service;
 import template.base.stereotype.Domain;
 
 /**
@@ -119,13 +120,22 @@ public class Address implements Domain<Address>,
   @dagger.Module
   public interface Mod {
 
-    @dagger.Binds
-    CacheManager<Address, UUID> cacheManager(final AddressCache u);
+    // Controller
 
     @dagger.Binds
-    Repository.Cached<Address, UUID> repository(final AddressRepository u);
+    Controller<Address> controller(final AddressController a);
 
     @dagger.Binds
-    Controller<Address> controller(final AddressController u);
+    Service<Address, UUID> service(final AddressController a);
+
+    // Repository
+
+    @dagger.Binds
+    Repository.Cached<Address, UUID> cached(final AddressRepository a);
+
+    // Caching
+
+    @dagger.Binds
+    CacheManager<Address, UUID> cacheManager(final AddressCache a);
   }
 }

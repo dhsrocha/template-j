@@ -1,5 +1,7 @@
 package template.base.contract;
 
+import static template.base.contract.Params.ROOT_ID;
+
 import io.javalin.apibuilder.CrudHandler;
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
@@ -9,6 +11,7 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import lombok.val;
 import template.base.Exceptions;
+import template.base.contract.Router.Path;
 import template.base.stereotype.Domain;
 
 /**
@@ -130,6 +133,152 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
     @Override
     default void handle(final @lombok.NonNull Context ctx) {
       ctx.result(Params.MAPPER.toJson(get()));
+    }
+  }
+
+  /**
+   * Aggregates sets of resources from a {@link T specific domain context} to
+   * another one's.
+   *
+   * @param <T> {@link Domain} type which the association will be based on.
+   * @param <U> {@link Domain} type to be handled by the following operations.
+   * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
+   * @apiNote It is intended to have only one implementation per combination of
+   *     the inferred types, as the dependency injection framework generates
+   *     code considering both type inferences.
+   */
+  interface Aggregate<T extends Domain<T>, U extends Domain<U>>
+      extends CrudHandler,
+              Router.Path<T>,
+              Composable<T, U, UUID> {
+
+    /**
+     * Provides a class reference from the extension domain context.
+     *
+     * @return The class reference.
+     */
+    Class<U> extRef();
+
+    /**
+     * Standard path for crud operations with aggregated resources.
+     *
+     * @return String with pattern {@code {2nd-domain}/:id}.
+     */
+    @Override
+    default String path() {
+      return ref().getSimpleName().toLowerCase() + "/:" + ROOT_ID
+          + "/" + extRef().getSimpleName().toLowerCase() + Path.PATH_ID;
+    }
+
+    /**
+     * Exposes all resources from the projected domain context that are
+     * associated with resources from {@link T root domain context}.
+     * <br/>
+     * <b>Requirements:</b>
+     * <ul>
+     *   <li>Root domain resource from first path variable must exist.</li>
+     * </ul>
+     *
+     * @param ctx Application's context.
+     */
+    @Override
+    default void getAll(final @lombok.NonNull Context ctx) {
+      final int skip = Params.SKIP.valFrom(ctx, Integer::parseInt)
+                                  .filter(i -> i > 0).orElse(0);
+      final int limit = Params.LIMIT.valFrom(ctx, Integer::parseInt)
+                                    .filter(i -> i > 0).orElse(30);
+      Exceptions.ILLEGAL_ARGUMENT.throwIf(Params.MSG, () -> skip > limit);
+      val root = Exceptions.INVALID_ID
+          .trapIn(() -> UUID.fromString(ctx.pathParam(ROOT_ID)));
+      val filter = Params.FQ.parsedFrom(ctx, extRef()).map(this::filter)
+                            .orElseGet(Params::noFilter);
+      ctx.result(Params.MAPPER.toJson(getByFrom(root, filter, skip, limit)));
+    }
+
+    /**
+     * Exposes a particular resource from the projected domain context that are
+     * associated with resources from root domain context.
+     * <br/>
+     * <b>Requirements:</b>
+     * <ul>
+     *   <li>Root domain resource from first path variable must exist;</li>
+     *   <li>Projected domain resource from first path variable must exist.</li>
+     * </ul>
+     *
+     * @param ctx Application's context.
+     * @param id  Identity key which it must correspond to an existing resource.
+     */
+    @Override
+    default void getOne(final @lombok.NonNull Context ctx,
+                        final @lombok.NonNull String id) {
+      val root = Exceptions.INVALID_ID
+          .trapIn(() -> UUID.fromString(ctx.pathParam(ROOT_ID)));
+      val uuid = Exceptions.INVALID_ID.trapIn(() -> UUID.fromString(id));
+      ctx.result(Params.MAPPER.toJson(getOneFrom(root, uuid)));
+    }
+
+    /**
+     * Creates projection's domain context bound to {@link T root domain
+     * context}'s provided resource.
+     * <br/>
+     * <b>Requirements:</b>
+     * <ul>
+     *   <li>Root domain resource from first path variable must exist.</li>
+     * </ul>
+     *
+     * @param ctx Application's context.
+     */
+    @Override
+    default void create(final @lombok.NonNull Context ctx) {
+      val root = Exceptions.INVALID_ID
+          .trapIn(() -> UUID.fromString(ctx.pathParam(ROOT_ID)));
+      val body = Exceptions.EMPTY_BODY.trapIn(() -> ctx.bodyAsClass(extRef()));
+      ctx.status(201);
+      ctx.result(Params.MAPPER.toJson(createOn(root, Domain.validate(body))));
+    }
+
+    /**
+     * Creates correlation between provided identities' resources, only if
+     * there is not any.
+     * <br/>
+     * <b>Requirements:</b>
+     * <ul>
+     *   <li>Root domain resource from first path variable must exist;</li>
+     *   <li>Projected domain resource from first path variable must exist.</li>
+     * </ul>
+     *
+     * @param ctx Application's context.
+     * @param id  Identity key which it must correspond to an existing resource.
+     */
+    @Override
+    default void update(final @lombok.NonNull Context ctx,
+                        final @lombok.NonNull String id) {
+      val root = Exceptions.INVALID_ID
+          .trapIn(() -> UUID.fromString(ctx.pathParam(ROOT_ID)));
+      val uuid = Exceptions.INVALID_ID.trapIn(() -> UUID.fromString(id));
+      ctx.status(link(root, uuid) ? 204 : 422);
+    }
+
+    /**
+     * Removes correlation between provided identities' resources, only if
+     * there is any.
+     * <br/>
+     * <b>Requirements:</b>
+     * <ul>
+     *   <li>Root domain resource from first path variable must exist;</li>
+     *   <li>Projected domain resource from first path variable must exist.</li>
+     * </ul>
+     *
+     * @param ctx Application's context.
+     * @param id  Identity key which it must correspond to an existing resource.
+     */
+    @Override
+    default void delete(final @lombok.NonNull Context ctx,
+                        final @lombok.NonNull String id) {
+      val root = Exceptions.INVALID_ID
+          .trapIn(() -> UUID.fromString(ctx.pathParam(ROOT_ID)));
+      val uuid = Exceptions.INVALID_ID.trapIn(() -> UUID.fromString(id));
+      ctx.status(unlink(root, uuid) ? 204 : 422);
     }
   }
 }

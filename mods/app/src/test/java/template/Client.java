@@ -20,6 +20,7 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import lombok.AccessLevel;
+import lombok.NonNull;
 import lombok.val;
 import org.eclipse.jetty.http.MimeTypes;
 import template.Support.IntegrationTest;
@@ -60,6 +61,17 @@ public interface Client<T> {
     return new Impl<>(base(ref.getSimpleName().toLowerCase()),
                       Request.builder());
   }
+
+  /**
+   * Creates another client by appending URI based on provided parameters.
+   *
+   * @param id  Identity parameter related to provided domain context.
+   * @param ref Domain context reference to append to base URI.
+   * @param <D> Domain context type for aggregating.
+   * @return Client with updated base URI.
+   */
+  <D extends Domain<D>> Client<D> compose(final @lombok.NonNull UUID id,
+                                          final @lombok.NonNull Class<D> ref);
 
   /**
    * Prepares a request to be triggered afterwards.
@@ -178,6 +190,13 @@ public interface Client<T> {
 
     URI base;
     Request.RequestBuilder req;
+
+    @Override
+    public <U extends Domain<U>> Client<U> compose(final @NonNull UUID id,
+                                                   final @NonNull Class<U> ref) {
+      val uri = base + "/" + id + "/" + ref.getSimpleName().toLowerCase();
+      return new Impl<>(URI.create(uri), req);
+    }
 
     // Basic set
 

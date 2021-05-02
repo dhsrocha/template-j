@@ -3,6 +3,7 @@ package template.base;
 import io.javalin.http.BadRequestResponse;
 import io.javalin.http.HttpResponseException;
 import io.javalin.http.NotFoundResponse;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
@@ -36,6 +37,11 @@ public enum Exceptions implements Supplier<RuntimeException> {
    * Indicates a resource that has not been found.
    */
   RESOURCE_NOT_FOUND(NotFoundResponse::new),
+  /**
+   * Indicates a resource that is not able to processed correctly whether for
+   * systemic or business reasons.
+   */
+  UNPROCESSABLE_ENTITY(s -> new HttpResponseException(422, s, Map.of())),
   ;
 
   private final Function<String, HttpResponseException> ex;

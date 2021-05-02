@@ -78,4 +78,89 @@ public interface Service<T, I> {
       return repo.with(cache.from(ref())).delete(id);
     }
   }
+
+  // ::: Composition :::
+
+  /**
+   * Handles CRUD operations based on the a provided domain resource.
+   *
+   * @param <D> Resource from which operations are based on.
+   * @param <E> Resource handled by the extension operations.
+   * @param <I> Represents the {@link D domain context}'s identity.
+   * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
+   * @see Composed
+   */
+  interface Composable<D, E, I> {
+
+    Map<I, E> getByFrom(final @NonNull I root,
+                        final @NonNull Predicate<E> criteria,
+                        final int skip, final int limit);
+
+    E getOneFrom(final @NonNull I root, final @NonNull I id);
+
+    I createOn(final @NonNull I root, final @NonNull E e);
+
+    boolean link(final @NonNull I root, final @NonNull I id);
+
+    boolean unlink(final @NonNull I root, final @NonNull I id);
+
+    Predicate<E> filter(final @NonNull E e);
+
+    default Predicate<E> isValidBound(final @NonNull D d) {
+      return e -> Boolean.TRUE;
+    }
+  }
+
+  /**
+   * General abstraction which composes abstractions from distinct domain
+   * contexts. Meant to be openly extendable.
+   *
+   * @param <D> {@link Domain Resource} from which operations are based on.
+   * @param <E> {@link Domain Resource} handled by the extension operations.
+   * @param <I> Represents the {@link D domain context}'s identity.
+   * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
+   * @see Composable
+   */
+  @AllArgsConstructor(access = AccessLevel.PROTECTED)
+  abstract class Composed<D extends Domain<D>, E extends Domain<E>, I>
+      implements Composable<D, E, I> {
+
+    private final Repository.Composable<D, E, I> base;
+    private final Service<E, I> extent;
+
+    @Override
+    public Map<I, E> getByFrom(final @NonNull I root,
+                               final @NonNull Predicate<E> criteria,
+                               final int skip, final int limit) {
+      return base.compose(root, extent, this::isValidBound)
+                 .getBy(criteria, skip, limit);
+    }
+
+    @Override
+    public E getOneFrom(final @NonNull I root, final @NonNull I id) {
+      return base.compose(root, extent, this::isValidBound).getOne(id)
+                 .orElseThrow(Exceptions.RESOURCE_NOT_FOUND);
+    }
+
+    @Override
+    public I createOn(final @NonNull I root, final @NonNull E e) {
+      return base.compose(root, extent, this::isValidBound).create(e);
+    }
+
+    @Override
+    public boolean link(final @NonNull I root, final @NonNull I id) {
+      return base.compose(root, extent, this::isValidBound)
+                 .update(id, extent.getOne(id));
+    }
+
+    @Override
+    public boolean unlink(final @NonNull I root, final @NonNull I id) {
+      return base.compose(root, extent, this::isValidBound).delete(id);
+    }
+
+    @Override
+    public Predicate<E> filter(final @NonNull E e) {
+      return extent.filter(e);
+    }
+  }
 }

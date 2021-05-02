@@ -3,6 +3,7 @@ package template.core;
 import io.javalin.apibuilder.ApiBuilder;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
+import java.util.Arrays;
 import java.util.function.Supplier;
 import template.Application;
 import template.Application.Feat;
@@ -55,7 +56,9 @@ interface Routes extends Supplier<Router> {
                          final @lombok.NonNull Application.Feat[] feats,
                          final @lombok.NonNull Controller.Single<Info> info,
                          final @lombok.NonNull Controller<User> user,
-                         final @lombok.NonNull Controller<Address> address) {
+                         final @lombok.NonNull Controller<Address> address,
+                         final @lombok.NonNull Controller.Aggregate<User,
+                             Address> userAddress) {
       return () -> {
         if (Mode.PRD != mode) {
           ApiBuilder.get(info);
@@ -67,6 +70,10 @@ interface Routes extends Supplier<Router> {
           if (Feat.ADDRESS == f) {
             ApiBuilder.crud(address.path(), address);
           }
+        }
+        if (Arrays.stream(feats).filter(
+            f -> Feat.USER == f || Feat.ADDRESS == f).limit(2).count() == 2) {
+          ApiBuilder.crud(userAddress.path(), userAddress);
         }
       };
     }
