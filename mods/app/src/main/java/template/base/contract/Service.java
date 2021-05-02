@@ -18,7 +18,8 @@ public interface Service<T, I> {
 
   T getOne(final @lombok.NonNull I id);
 
-  Map<I, T> getBy(final @lombok.NonNull Predicate<T> criteria);
+  Map<I, T> getBy(final @lombok.NonNull Predicate<T> criteria,
+                  final int skip, final int limit);
 
   I create(final @lombok.NonNull T t);
 
@@ -51,8 +52,9 @@ public interface Service<T, I> {
     }
 
     @Override
-    public Map<I, D> getBy(final @lombok.NonNull Predicate<D> criteria) {
-      return repo.with(cache.from(domainRef())).getBy(criteria);
+    public Map<I, D> getBy(final @lombok.NonNull Predicate<D> criteria,
+                           final int skip, final int limit) {
+      return repo.with(cache.from(domainRef())).getBy(criteria, skip, limit);
     }
 
     @Override

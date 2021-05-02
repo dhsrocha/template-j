@@ -4,6 +4,7 @@ import io.javalin.plugin.openapi.annotations.HttpMethod;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
+import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import lombok.val;
@@ -66,6 +67,27 @@ final class AddressTest {
     val filtered = CLIENT.filter(criteria).thenMap();
     // Assert
     Assertions.assertEquals(1, filtered.size());
+  }
+
+  @Test
+  @DisplayName(""
+      + "GIVEN 30 address resources created"
+      + "AND parameters to skip 5 and limit 15 resources "
+      + "WHEN perform user retrieve operation "
+      + "THEN return from the 6th resource to the 20th one.")
+  final void given30Created_andParamsSkip5and10limit_whenRetrieving_thenReturn6thTo20th() {
+    // Arrange
+    stub(30)
+        .map(a -> CLIENT.request(req -> req.method(HttpMethod.POST).body(a)))
+        .map(Supplier::get)
+        .forEachOrdered(r -> Assertions.assertEquals(201, r.statusCode()));
+    // Act
+    val found = CLIENT
+        .request(req -> req.method(HttpMethod.GET).params(Map.of("limit", "15",
+                                                                 "skip", "5")))
+        .thenSerializeTo(Map.class);
+    // Assert
+    Assertions.assertEquals(15, found.size());
   }
 
   @SuppressWarnings("unchecked")

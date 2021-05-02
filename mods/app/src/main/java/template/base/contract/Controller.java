@@ -43,11 +43,13 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
 
   @Override
   default void getAll(final @lombok.NonNull Context ctx) {
+    final int skip = Support.intOf(ctx, Support.SKIP).orElse(0);
+    final int limit = Support.intOf(ctx, Support.LIMIT).orElse(30);
     val str = Optional.ofNullable(ctx.queryParam(Support.FQ)).orElse("");
     final Predicate<D> filter = str
         .isBlank() ? t -> Boolean.TRUE : Exceptions.ILLEGAL_ARGUMENT
         .trapIn(() -> filter(Support.objOf(str, domainRef())));
-    val sourced = getBy(filter);
+    val sourced = getBy(filter, skip, limit);
     val sorted = new TreeMap<UUID, D>(Comparator.comparing(sourced::get));
     sorted.putAll(sourced);
     ctx.result(Support.MAPPER.toJson(sorted));

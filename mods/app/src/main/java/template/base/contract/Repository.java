@@ -28,7 +28,8 @@ public interface Repository<D extends Domain<D>, I> {
 
   Optional<D> getOne(final @NonNull I id);
 
-  Map<I, D> getBy(final @NonNull Predicate<D> criteria);
+  Map<I, D> getBy(final @NonNull Predicate<D> criteria,
+                  final int skip, final int limit);
 
   boolean update(final @NonNull I id, final @NonNull D d);
 
@@ -67,10 +68,12 @@ public interface Repository<D extends Domain<D>, I> {
     }
 
     @Override
-    public final Map<UUID, T> getBy(final @NonNull Predicate<T> filter) {
+    public final Map<UUID, T> getBy(final @NonNull Predicate<T> filter,
+                                    final int skip, final int limit) {
       return store
           .getStore()
           .entrySet().stream().filter(e -> filter.test(e.getValue()))
+          .skip(skip).limit(limit)
           .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
@@ -121,10 +124,11 @@ public interface Repository<D extends Domain<D>, I> {
     }
 
     @Override
-    public Map<I, D> getBy(final @NonNull Predicate<D> filter) {
-      val all = repo.getBy(filter);
-      cache.putAll(all);
-      return all;
+    public Map<I, D> getBy(final @NonNull Predicate<D> filter,
+                           final int skip, final int limit) {
+      val store = repo.getBy(filter, skip, limit);
+      cache.putAll(store);
+      return store;
     }
 
     @Override
