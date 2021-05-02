@@ -1,6 +1,5 @@
 package template.base.contract;
 
-import java.util.AbstractMap.SimpleEntry;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Spliterators;
@@ -123,24 +122,31 @@ public interface Repository<D extends Domain<D>, I> {
 
     @Override
     public Optional<D> getOne(final @NonNull I id) {
-      return Optional.ofNullable(cache.get(id)).or(() -> repo.getOne(id));
+      return Optional.ofNullable(cache.get(id))
+                     .or(() -> repo.getOne(id).map(d -> {
+                       cache.put(id, d);
+                       return d;
+                     }));
     }
 
     @Override
     public Map<I, D> getBy(final @NonNull Predicate<D> filter) {
-      return StreamSupport
-          .stream(Spliterators.spliteratorUnknownSize(cache.iterator(), 0),
-                  Boolean.FALSE)
-          .filter(e -> filter.test(e.getValue()))
-          .map(e -> new SimpleEntry<>(e.getKey(), e.getValue()))
-          .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+      return Optional.of(
+          StreamSupport.stream(Spliterators.spliteratorUnknownSize(
+              cache.iterator(), 0), Boolean.FALSE)
+                       .filter(e -> null != e.getValue())
+                       .filter(e -> filter.test(e.getValue()))
+                       .map(e -> Map.entry(e.getKey(), e.getValue()))
+                       .collect(Collectors.toMap(Map.Entry::getKey,
+                                                 Map.Entry::getValue)))
+                     .orElseGet(() -> getBy(filter));
     }
 
     @Override
     public Map<I, D> getAll() {
       val all = repo.getAll();
       cache.putAll(all);
-      return cache.getAll(all.keySet());
+      return all;
     }
 
     @Override
