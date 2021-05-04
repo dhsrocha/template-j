@@ -4,10 +4,10 @@ import io.javalin.apibuilder.CrudHandler;
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
 import java.util.Comparator;
-import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
 import java.util.UUID;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import lombok.val;
 import template.base.Exceptions;
@@ -43,12 +43,11 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
 
   @Override
   default void getAll(final @lombok.NonNull Context ctx) {
-    val sourced = Optional
-        .ofNullable(ctx.queryParam(Support.FQ)).filter(s -> !s.isBlank())
-        .map(Exceptions.ILLEGAL_ARGUMENT.trapIn(s -> {
-          val p = Support.MAPPER.fromJson("{" + s + "}", Map.class);
-          return Support.MAPPER.fromJson(Support.MAPPER.toJson(p), domainRef());
-        })).map(this::filter).map(this::getBy).orElseGet(this::getAll);
+    val str = Optional.ofNullable(ctx.queryParam(Support.FQ)).orElse("");
+    final Predicate<D> filter = str
+        .isBlank() ? t -> Boolean.TRUE : Exceptions.ILLEGAL_ARGUMENT
+        .trapIn(() -> filter(Support.objOf(str, domainRef())));
+    val sourced = getBy(filter);
     val sorted = new TreeMap<UUID, D>(Comparator.comparing(sourced::get));
     sorted.putAll(sourced);
     ctx.result(Support.MAPPER.toJson(sorted));

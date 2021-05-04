@@ -2,11 +2,9 @@ package template.base.contract;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.Spliterators;
 import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -31,8 +29,6 @@ public interface Repository<D extends Domain<D>, I> {
   Optional<D> getOne(final @NonNull I id);
 
   Map<I, D> getBy(final @NonNull Predicate<D> criteria);
-
-  Map<I, D> getAll();
 
   boolean update(final @NonNull I id, final @NonNull D d);
 
@@ -76,11 +72,6 @@ public interface Repository<D extends Domain<D>, I> {
           .getStore()
           .entrySet().stream().filter(e -> filter.test(e.getValue()))
           .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-    }
-
-    @Override
-    public final Map<UUID, T> getAll() {
-      return store.getStore();
     }
 
     @Override
@@ -131,20 +122,7 @@ public interface Repository<D extends Domain<D>, I> {
 
     @Override
     public Map<I, D> getBy(final @NonNull Predicate<D> filter) {
-      return Optional.of(
-          StreamSupport.stream(Spliterators.spliteratorUnknownSize(
-              cache.iterator(), 0), Boolean.FALSE)
-                       .filter(e -> null != e.getValue())
-                       .filter(e -> filter.test(e.getValue()))
-                       .map(e -> Map.entry(e.getKey(), e.getValue()))
-                       .collect(Collectors.toMap(Map.Entry::getKey,
-                                                 Map.Entry::getValue)))
-                     .orElseGet(() -> getBy(filter));
-    }
-
-    @Override
-    public Map<I, D> getAll() {
-      val all = repo.getAll();
+      val all = repo.getBy(filter);
       cache.putAll(all);
       return all;
     }

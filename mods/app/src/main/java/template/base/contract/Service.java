@@ -20,8 +20,6 @@ public interface Service<T, I> {
 
   Map<I, T> getBy(final @lombok.NonNull Predicate<T> criteria);
 
-  Map<I, T> getAll();
-
   I create(final @lombok.NonNull T t);
 
   boolean update(final @lombok.NonNull I id, final @lombok.NonNull T t);
@@ -55,11 +53,6 @@ public interface Service<T, I> {
     @Override
     public Map<I, D> getBy(final @lombok.NonNull Predicate<D> criteria) {
       return repo.with(cache.from(domainRef())).getBy(criteria);
-    }
-
-    @Override
-    public Map<I, D> getAll() {
-      return repo.with(cache.from(domainRef())).getAll();
     }
 
     @Override
