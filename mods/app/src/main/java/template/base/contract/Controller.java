@@ -4,10 +4,8 @@ import io.javalin.apibuilder.CrudHandler;
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
 import java.util.Comparator;
-import java.util.Optional;
 import java.util.TreeMap;
 import java.util.UUID;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 import lombok.val;
 import template.base.Exceptions;
@@ -38,21 +36,19 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
   default void getOne(final @lombok.NonNull Context ctx,
                       final @lombok.NonNull String id) {
     val uuid = Exceptions.ILLEGAL_ARGUMENT.trapIn(() -> UUID.fromString(id));
-    ctx.result(Support.MAPPER.toJson(getOne(uuid)));
+    ctx.result(Params.MAPPER.toJson(getOne(uuid)));
   }
 
   @Override
   default void getAll(final @lombok.NonNull Context ctx) {
-    final int skip = Support.intOf(ctx, Support.SKIP).orElse(0);
-    final int limit = Support.intOf(ctx, Support.LIMIT).orElse(30);
-    val str = Optional.ofNullable(ctx.queryParam(Support.FQ)).orElse("");
-    final Predicate<D> filter = str
-        .isBlank() ? t -> Boolean.TRUE : Exceptions.ILLEGAL_ARGUMENT
-        .trapIn(() -> filter(Support.objOf(str, domainRef())));
+    val skip = Params.SKIP.valFrom(ctx, Integer::parseInt).orElse(0);
+    val limit = Params.LIMIT.valFrom(ctx, Integer::parseInt).orElse(30);
+    val filter = Params.FQ.parsedFrom(ctx, domainRef())
+                          .map(this::filter).orElseGet(() -> x -> Boolean.TRUE);
     val sourced = getBy(filter, skip, limit);
     val sorted = new TreeMap<UUID, D>(Comparator.comparing(sourced::get));
     sorted.putAll(sourced);
-    ctx.result(Support.MAPPER.toJson(sorted));
+    ctx.result(Params.MAPPER.toJson(sorted));
   }
 
   @Override
@@ -81,7 +77,7 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
 
     @Override
     default void handle(final @lombok.NonNull Context ctx) {
-      ctx.result(Support.MAPPER.toJson(get()));
+      ctx.result(Params.MAPPER.toJson(get()));
     }
   }
 }
