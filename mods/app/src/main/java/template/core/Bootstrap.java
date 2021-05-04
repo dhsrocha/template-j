@@ -30,7 +30,7 @@ public interface Bootstrap {
     val feats = Feat.from(props.get(Props.FEAT));
     val port = Integer.parseInt(props.get(Props.PORT));
     // TODO System properties
-    val router = DaggerRouter.builder().part1(m).part2(feats);
+    val router = DaggerRoutes.builder().part1(m).part2(feats);
     val server = DaggerWeb.builder().part1(m).dep1(router).build().get();
     return server.start(port);
   }

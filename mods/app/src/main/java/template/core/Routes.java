@@ -9,9 +9,9 @@ import template.Application.Feat;
 import template.Application.Mode;
 import template.base.contract.Builder;
 import template.base.contract.Controller;
-import template.base.contract.Routes;
-import template.core.Router.FeatureScope;
-import template.core.Router.Mod;
+import template.base.contract.Router;
+import template.core.Routes.FeatureScope;
+import template.core.Routes.Mod;
 import template.feature.address.Address;
 import template.feature.info.Info;
 import template.feature.user.User;
@@ -25,7 +25,7 @@ import template.orm.EntityManager;
  */
 @FeatureScope
 @dagger.Component(modules = Mod.class)
-interface Router extends Supplier<Routes> {
+interface Routes extends Supplier<Router> {
 
   /**
    * Type for scoping instance injection from systemic layer.
@@ -50,7 +50,7 @@ interface Router extends Supplier<Routes> {
 
     @FeatureScope
     @dagger.Provides
-    static Routes routes(final @lombok.NonNull Application.Mode mode,
+    static Router routes(final @lombok.NonNull Application.Mode mode,
                          final @lombok.NonNull Application.Feat[] feats,
                          final @lombok.NonNull Controller.Getter<Info> info,
                          final @lombok.NonNull Controller<User> user,
@@ -78,7 +78,7 @@ interface Router extends Supplier<Routes> {
    * @see <a href="https://dagger.dev/dev-guide/">Technical reference</a>
    */
   @dagger.Component.Builder
-  interface Build extends Builder.Part1<Build, Router, Application.Mode>,
-                          Builder.Part2<Build, Router, Application.Feat[]> {
+  interface Build extends Builder.Part1<Build, Routes, Application.Mode>,
+                          Builder.Part2<Build, Routes, Application.Feat[]> {
   }
 }

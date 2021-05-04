@@ -13,7 +13,7 @@ import template.base.contract.Builder;
 import template.base.contract.CacheManager;
 import template.base.contract.Controller;
 import template.base.contract.Repository;
-import template.base.contract.Routes;
+import template.base.contract.Router;
 import template.base.stereotype.Domain;
 
 /**
@@ -111,7 +111,7 @@ public class Address implements Domain<Address>,
 
   /**
    * Type for binding package-private implementations to public interfaces.
-   * It is meant to be included into a {@link Routes} managed module.
+   * It is meant to be included into a {@link Router} managed module.
    *
    * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
    * @see <a href="https://dagger.dev/dev-guide/">Technical reference</a>

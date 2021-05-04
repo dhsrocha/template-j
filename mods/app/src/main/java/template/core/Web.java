@@ -19,7 +19,7 @@ import template.core.Web.Mod;
  * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */
 @Application.Scope
-@dagger.Component(dependencies = Router.Build.class, modules = Mod.class)
+@dagger.Component(dependencies = Routes.Build.class, modules = Mod.class)
 interface Web extends Supplier<Application.Server> {
 
 
@@ -34,7 +34,7 @@ interface Web extends Supplier<Application.Server> {
     @dagger.Provides
     @Application.Scope
     static Application.Server server(final @lombok.NonNull Mode mode,
-                                     final @lombok.NonNull Router.Build routes) {
+                                     final @lombok.NonNull Routes.Build routes) {
       val mapper = new Gson();
       JavalinJson.setFromJsonMapper(mapper::fromJson);
       JavalinJson.setToJsonMapper(mapper::toJson);
@@ -76,6 +76,6 @@ interface Web extends Supplier<Application.Server> {
    */
   @dagger.Component.Builder
   interface Build extends Builder.Part1<Build, Web, Mode>,
-                          Builder.Dep1<Build, Web, Router.Build> {
+                          Builder.Dep1<Build, Web, Routes.Build> {
   }
 }

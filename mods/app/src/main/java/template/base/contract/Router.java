@@ -7,5 +7,5 @@ import io.javalin.apibuilder.EndpointGroup;
  *
  * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */
-public interface Routes extends EndpointGroup {
+public interface Router extends EndpointGroup {
 }
