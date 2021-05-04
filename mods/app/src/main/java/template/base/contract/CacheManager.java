@@ -11,6 +11,7 @@ import org.ehcache.config.builders.ResourcePoolsBuilder;
 import org.ehcache.expiry.Duration;
 import org.ehcache.expiry.Expirations;
 import template.base.stereotype.Domain;
+import template.base.stereotype.Referable;
 
 /**
  * Manager cache concerns for a given {@link Domain domain} scope.
@@ -54,7 +55,7 @@ public interface CacheManager<D extends Domain<D>, I> {
    */
   @Module
   abstract class Default<D extends Domain<D>, I> implements CacheManager<D, I>,
-                                                            Domain.Ref<D> {
+                                                            Referable<D> {
 
     private static final ResourcePoolsBuilder POOL = ResourcePoolsBuilder
         .heap(10);
@@ -68,13 +69,13 @@ public interface CacheManager<D extends Domain<D>, I> {
     @Override
     public final Cache<I, D> from(final @NonNull Class<D> ref) {
       return Optional.ofNullable(manager.getCache(
-          ref.getSimpleName(), idRef(), domainRef())).orElseGet(() -> manager
+          ref.getSimpleName(), idRef(), ref())).orElseGet(() -> manager
           .createCache(ref.getSimpleName(), defaultConfig()));
     }
 
     protected CacheConfigurationBuilder<I, D> defaultConfig() {
       return CacheConfigurationBuilder
-          .newCacheConfigurationBuilder(idRef(), domainRef(), POOL)
+          .newCacheConfigurationBuilder(idRef(), ref(), POOL)
           .withExpiry(Expirations.timeToLiveExpiration(
               Duration.of(5, TimeUnit.MINUTES)));
     }

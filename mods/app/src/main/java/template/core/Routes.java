@@ -61,10 +61,10 @@ interface Routes extends Supplier<Router> {
         }
         for (final var f : feats) {
           if (Feat.USER == f) {
-            ApiBuilder.crud(user.crudPath(), user);
+            ApiBuilder.crud(user.path(), user);
           }
           if (Feat.ADDRESS == f) {
-            ApiBuilder.crud(address.crudPath(), address);
+            ApiBuilder.crud(address.path(), address);
           }
         }
       };

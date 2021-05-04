@@ -5,6 +5,7 @@ import java.util.function.Predicate;
 import lombok.AccessLevel;
 import template.base.Exceptions;
 import template.base.stereotype.Domain;
+import template.base.stereotype.Referable;
 
 /**
  * Describes general api for handling MVC operations. Meant to be used along
@@ -40,37 +41,37 @@ public interface Service<T, I> {
    */
   @lombok.AllArgsConstructor(access = AccessLevel.PROTECTED)
   abstract class Cached<D extends Domain<D>, I> implements Service<D, I>,
-                                                           Domain.Ref<D> {
+                                                           Referable<D> {
 
     private final CacheManager<D, I> cache;
     private final Repository.Cached<D, I> repo;
 
     @Override
     public D getOne(final @lombok.NonNull I id) {
-      return repo.with(cache.from(domainRef())).getOne(id)
+      return repo.with(cache.from(ref())).getOne(id)
                  .orElseThrow(Exceptions.RESOURCE_NOT_FOUND);
     }
 
     @Override
     public Map<I, D> getBy(final @lombok.NonNull Predicate<D> criteria,
                            final int skip, final int limit) {
-      return repo.with(cache.from(domainRef())).getBy(criteria, skip, limit);
+      return repo.with(cache.from(ref())).getBy(criteria, skip, limit);
     }
 
     @Override
     public I create(final @lombok.NonNull D user) {
-      return repo.with(cache.from(domainRef())).create(user);
+      return repo.with(cache.from(ref())).create(user);
     }
 
     @Override
     public boolean update(final @lombok.NonNull I id,
                           final @lombok.NonNull D user) {
-      return repo.with(cache.from(domainRef())).update(id, user);
+      return repo.with(cache.from(ref())).update(id, user);
     }
 
     @Override
     public boolean delete(final @lombok.NonNull I id) {
-      return repo.with(cache.from(domainRef())).delete(id);
+      return repo.with(cache.from(ref())).delete(id);
     }
   }
 }

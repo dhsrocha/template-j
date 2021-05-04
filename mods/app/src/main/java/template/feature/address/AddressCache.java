@@ -21,7 +21,7 @@ class AddressCache extends CacheManager.Default<Address, UUID> {
 
 
   @Override
-  public Class<Address> domainRef() {
+  public Class<Address> ref() {
     return Address.class;
   }
 }

@@ -22,7 +22,7 @@ final class UserController extends Service.Cached<User, UUID>
   }
 
   @Override
-  public Class<User> domainRef() {
+  public Class<User> ref() {
     return User.class;
   }
 

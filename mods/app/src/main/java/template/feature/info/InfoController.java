@@ -21,6 +21,11 @@ final class InfoController implements Controller.Getter<Info> {
   }
 
   @Override
+  public Class<Info> ref() {
+    return Info.class;
+  }
+
+  @Override
   public Info get() {
     return Info.of(Map.of(Props.FEAT.name(), Arrays.toString(feats)));
   }

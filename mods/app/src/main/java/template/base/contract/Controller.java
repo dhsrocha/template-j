@@ -9,6 +9,7 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import lombok.val;
 import template.base.Exceptions;
+import template.base.contract.Router.Path;
 import template.base.stereotype.Domain;
 
 /**
@@ -19,15 +20,16 @@ import template.base.stereotype.Domain;
  */
 public interface Controller<D extends Domain<D>> extends CrudHandler,
                                                          Service<D, UUID>,
-                                                         Domain.Ref<D> {
+                                                         Router.Path<D> {
 
-  default String crudPath() {
-    return domainRef().getSimpleName().toLowerCase() + "/:id";
+  @Override
+  default String path() {
+    return Path.super.path() + "/:id";
   }
 
   @Override
   default void create(final @lombok.NonNull Context ctx) {
-    val d = Domain.validate(ctx.bodyAsClass(domainRef()));
+    val d = Domain.validate(ctx.bodyAsClass(ref()));
     ctx.status(201);
     ctx.result(create(d).toString());
   }
@@ -43,7 +45,7 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
   default void getAll(final @lombok.NonNull Context ctx) {
     val skip = Params.SKIP.valFrom(ctx, Integer::parseInt).orElse(0);
     val limit = Params.LIMIT.valFrom(ctx, Integer::parseInt).orElse(30);
-    val filter = Params.FQ.parsedFrom(ctx, domainRef())
+    val filter = Params.FQ.parsedFrom(ctx, ref())
                           .map(this::filter).orElseGet(() -> x -> Boolean.TRUE);
     val sourced = getBy(filter, skip, limit);
     val sorted = new TreeMap<UUID, D>(Comparator.comparing(sourced::get));
@@ -55,7 +57,7 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
   default void update(final @lombok.NonNull Context ctx,
                       final @lombok.NonNull String id) {
     val uuid = Exceptions.ILLEGAL_ARGUMENT.trapIn(() -> UUID.fromString(id));
-    val d = Domain.validate(ctx.bodyAsClass(domainRef()));
+    val d = Domain.validate(ctx.bodyAsClass(ref()));
     ctx.status(update(uuid, d) ? 204 : 404);
   }
 
@@ -73,7 +75,8 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
    * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
    */
   interface Getter<T> extends Handler,
-                              Supplier<T> {
+                              Supplier<T>,
+                              Router.Path<T> {
 
     @Override
     default void handle(final @lombok.NonNull Context ctx) {

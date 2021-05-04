@@ -20,7 +20,7 @@ final class UserCache extends CacheManager.Default<User, UUID> {
   }
 
   @Override
-  public Class<User> domainRef() {
+  public Class<User> ref() {
     return User.class;
   }
 }
