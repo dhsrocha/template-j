@@ -1,6 +1,7 @@
 package template.base;
 
 import io.javalin.http.BadRequestResponse;
+import io.javalin.http.ForbiddenResponse;
 import io.javalin.http.HttpResponseException;
 import io.javalin.http.NotFoundResponse;
 import java.util.Map;
@@ -46,6 +47,10 @@ public enum Exceptions implements Supplier<RuntimeException> {
    * Indicates that a resource cannot be bound or unbound.
    */
   CANNOT_BIND_UNBIND(s -> new HttpResponseException(412, s, Map.of())),
+  /**
+   * Indicates a forbidden access try.
+   */
+  FORBIDDEN_ACCESS(ForbiddenResponse::new),
   ;
 
   private final Function<String, HttpResponseException> ex;

@@ -13,6 +13,7 @@ module template.app {
   // Application
   requires ehcache;
   requires io.javalin;
+  requires jjwt.api;
   requires transitive java.net.http;
   // Persistence
   requires org.jooq;
@@ -24,6 +25,7 @@ module template.app {
   opens template;
   opens template.core;
   opens template.feature.info;
+  opens template.feature.auth;
   opens template.feature.user;
   opens template.feature.address;
 }

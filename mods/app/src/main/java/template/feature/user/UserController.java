@@ -6,6 +6,8 @@ import template.base.contract.Controller;
 import template.base.contract.Repository;
 import template.base.contract.Service;
 import template.feature.address.Address;
+import template.feature.auth.Auth;
+import template.feature.auth.Auth.Role;
 
 /**
  * {@link User} feature controller implementation.
@@ -15,15 +17,26 @@ import template.feature.address.Address;
 final class UserController extends Service.Cached<User, UUID>
     implements Controller<User> {
 
+  private final Service<Auth, UUID> auth;
+
   @javax.inject.Inject
   UserController(final @lombok.NonNull CacheManager<User, UUID> cache,
-                 final @lombok.NonNull Repository.Cached<User, UUID> repo) {
+                 final @lombok.NonNull Repository.Cached<User, UUID> repo,
+                 final @lombok.NonNull Service<Auth, UUID> auth) {
     super(cache, repo);
+    this.auth = auth;
   }
 
   @Override
   public Class<User> ref() {
     return User.class;
+  }
+
+  @Override
+  public UUID create(final @lombok.NonNull User u) {
+    final var uuid = super.create(u);
+    auth.create(Auth.of(uuid, Role.DEFAULT));
+    return uuid;
   }
 
   /**

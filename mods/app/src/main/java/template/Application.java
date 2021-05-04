@@ -42,6 +42,7 @@ public interface Application {
    * Defines application's features.
    */
   enum Feat {
+    AUTH,
     USER,
     ADDRESS,
     ;
