@@ -1,15 +1,14 @@
 package template.base.contract;
 
 import dagger.Module;
+import java.time.Duration;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import lombok.NonNull;
 import org.ehcache.Cache;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
 import org.ehcache.config.builders.CacheManagerBuilder;
+import org.ehcache.config.builders.ExpiryPolicyBuilder;
 import org.ehcache.config.builders.ResourcePoolsBuilder;
-import org.ehcache.expiry.Duration;
-import org.ehcache.expiry.Expirations;
 import template.base.stereotype.Domain;
 import template.base.stereotype.Referable;
 
@@ -76,8 +75,9 @@ public interface CacheManager<D extends Domain<D>, I> {
     protected CacheConfigurationBuilder<I, D> defaultConfig() {
       return CacheConfigurationBuilder
           .newCacheConfigurationBuilder(idRef(), ref(), POOL)
-          .withExpiry(Expirations.timeToLiveExpiration(
-              Duration.of(5, TimeUnit.MINUTES)));
+          .withExpiry(ExpiryPolicyBuilder.expiry()
+                                         .access(Duration.ofMinutes(5))
+                                         .build());
     }
 
     protected abstract Class<I> idRef();

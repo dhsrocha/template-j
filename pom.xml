@@ -45,8 +45,8 @@
     <sep>${path.separator}</sep>
 
     <version.lombok>1.18.20</version.lombok>
-    <version.dagger>2.34.1</version.dagger>
-    <version.javalin>3.13.3</version.javalin>
+    <version.dagger>2.35.1</version.dagger>
+    <version.javalin>3.13.6</version.javalin>
     <version.mapstruct>1.4.2.Final</version.mapstruct>
 
     <version.plugin.test>3.0.0-M5</version.plugin.test>
@@ -402,7 +402,7 @@
       <dependency>
         <groupId>org.jetbrains.kotlin</groupId>
         <artifactId>kotlin-bom</artifactId>
-        <version>1.5.0-M2</version>
+        <version>1.5.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -427,7 +427,7 @@
       <dependency>
         <groupId>org.ehcache</groupId>
         <artifactId>ehcache</artifactId>
-        <version>3.1.3</version>
+        <version>3.9.3</version>
       </dependency>
       <dependency>
         <groupId>io.javalin</groupId>
