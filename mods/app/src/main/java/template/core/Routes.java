@@ -16,6 +16,7 @@ import template.core.Routes.Mod;
 import template.core.Routes.Scope;
 import template.feature.address.Address;
 import template.feature.info.Info;
+import template.feature.sec.token.Token;
 import template.feature.user.User;
 
 /**
@@ -46,14 +47,17 @@ interface Routes extends Supplier<Router> {
    * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
    * @see <a href="https://dagger.dev/dev-guide/">Technical reference</a>
    */
-  @dagger.Module(includes = {Info.Mod.class, User.Mod.class, Address.Mod.class})
+  @Scope
+  @dagger.Module(includes = {Info.Mod.class, Token.Mod.class,
+                             User.Mod.class, Address.Mod.class})
   interface Mod {
 
-    @Scope
+    @SuppressWarnings("FallThrough")
     @dagger.Provides
     static Router routes(final @lombok.NonNull Application.Mode mode,
                          final @lombok.NonNull Application.Feat[] feats,
                          final @lombok.NonNull Controller.Single<Info> info,
+                         final @lombok.NonNull Controller.Single<Token> token,
                          final @lombok.NonNull Controller<User> user,
                          final @lombok.NonNull Controller<Address> address,
                          final @lombok.NonNull Controller.Aggregate<User,
@@ -63,11 +67,12 @@ interface Routes extends Supplier<Router> {
           ApiBuilder.get(info);
         }
         for (final var f : feats) {
-          if (Feat.USER == f) {
-            ApiBuilder.crud(user.path(), user);
-          }
-          if (Feat.ADDRESS == f) {
-            ApiBuilder.crud(address.path(), address);
+          switch (f) {
+            case SECURITY -> ApiBuilder.get(token.path(), token);
+            case USER -> ApiBuilder.crud(user.path(), user);
+            case ADDRESS -> ApiBuilder.crud(address.path(), address);
+            // Breaks execution if there is some feat entry to map on.
+            default -> throw new IllegalStateException();
           }
         }
         if (Arrays.stream(feats).filter(
