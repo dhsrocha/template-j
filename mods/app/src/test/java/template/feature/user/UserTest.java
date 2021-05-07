@@ -22,7 +22,7 @@ final class UserTest {
   private static final Client<User> CLIENT = Client.create(User.class);
   private static final User VALID_STUB = stub(1).findAny().orElseThrow();
   private static final Map<String, String> INVALID_STUB = Map
-      .of("age", "0", "name", "some");
+      .of("age", "0", "name", "some", "email", "non-email");
 
   @Test
   @DisplayName(""
@@ -115,7 +115,7 @@ final class UserTest {
     val created = CLIENT
         .request(req -> req.method(HttpMethod.POST).body(VALID_STUB))
         .thenSerializeTo(UUID.class);
-    val toUpdate = User.of("updated", 5);
+    val toUpdate = User.of("updated", "updated@updated.com", "updated",  5);
     // Act
     val isUpdated = CLIENT.request(
         req -> req.method(HttpMethod.PATCH).uri(created).body(toUpdate)).get();
@@ -176,6 +176,9 @@ final class UserTest {
 
   private static Stream<User> stub(final int bound) {
     return IntStream.rangeClosed(1, bound)
-                    .mapToObj(i -> User.of(String.valueOf(i), i));
+                    .mapToObj(i -> User.of(String.valueOf(i),
+                                           i + "@" + i + ".com",
+                                           String.valueOf(i),
+                                           i));
   }
 }

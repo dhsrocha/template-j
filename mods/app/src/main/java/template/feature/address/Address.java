@@ -34,13 +34,12 @@ public class Address implements Domain<Address>,
   @lombok.Getter
   @lombok.AllArgsConstructor
   private enum Rules implements Invariant<Address> {
-    TYPE_IS_NOT_NULL(Checks.enumNotNull(Address::getType)),
-    PLACE_IS_NOT_BLANK(Checks.notBlank(Address::getPlace)),
-    NUMBER_IS_NOT_BLANK(Checks.notBlank(Address::getNumber)),
-    NEIGHBOURHOOD_IS_NOT_BLANK(Checks.notBlank(Address::getNeighbourhood)),
-    MUNICIPALITY_IS_NOT_BLANK(Checks.notBlank(Address::getMunicipality)),
-    STATE_IS_NOT_BLANK(Checks.notBlank(Address::getState)),
-    POSTAL_CODE_IS_NOT_BLANK(Checks.notBlank(Address::getPostalCode)),
+    PLACE_NOT_BLANK(Checks.NOT_BLANK.on(Address::getPlace)),
+    NUMBER_NOT_BLANK(Checks.NOT_BLANK.on(Address::getNumber)),
+    NEIGHBOURHOOD_NOT_BLANK(Checks.NOT_BLANK.on(Address::getNeighbourhood)),
+    MUNICIPALITY_NOT_BLANK(Checks.NOT_BLANK.on(Address::getMunicipality)),
+    STATE_NOT_BLANK(Checks.NOT_BLANK.on(Address::getState)),
+    POSTAL_CODE_NOT_BLANK(Checks.NOT_BLANK.on(Address::getPostalCode)),
     ;
     private final Predicate<Address> test;
   }

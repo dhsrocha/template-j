@@ -244,21 +244,4 @@ public interface Client<T> {
      */
     Map<String, ?> params;
   }
-
-  @lombok.Builder
-  @lombok.AllArgsConstructor(access = AccessLevel.PRIVATE)
-  class Pagination {
-    /**
-     * Up to amount of elements returned.
-     */
-    int limit;
-    /**
-     * Amount to skip to return.
-     */
-    int skip;
-    /**
-     * Pages.
-     */
-    int pages;
-  }
 }

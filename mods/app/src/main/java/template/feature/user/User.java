@@ -16,7 +16,7 @@ import template.base.contract.Router;
 import template.base.stereotype.Domain;
 
 /**
- * Domain which represents a user.
+ * Domain which represents an user.
  *
  * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */
@@ -31,21 +31,28 @@ public class User implements Domain<User> {
   @AllArgsConstructor
   private enum Rules implements Invariant<User> {
     AGE_ABOVE_ZERO(u -> u.age > 0),
-    NAME_NOT_BLANK(Checks.notBlank(User::getName)),
+    USERNAME_NOT_BLANK(Checks.NOT_BLANK.on(User::getUsername)),
+    NAME_NOT_BLANK(Checks.NOT_BLANK.on(User::getName)),
+    EMAIL_INVALID(Checks.VALID_EMAIL.on(User::getEmail)),
     ;
     private final Predicate<User> test;
   }
 
   private static final Set<Invariant<User>> SET = Set.of(Rules.values());
   private static final Comparator<User> COMPARATOR = Comparator
-      .comparing(User::getAge, nullsLast(Comparator.naturalOrder()))
-      .thenComparing(User::getName, nullsLast(Comparator.naturalOrder()));
+      .comparing(User::getUsername, nullsLast(Comparator.naturalOrder()))
+      .thenComparing(User::getEmail, nullsLast(Comparator.naturalOrder()))
+      .thenComparing(User::getName, nullsLast(Comparator.naturalOrder()))
+      .thenComparing(User::getAge, nullsLast(Comparator.naturalOrder()));
 
+  @lombok.NonNull String username;
+  @lombok.NonNull String email;
   @lombok.NonNull String name;
   int age;
 
-  public static User of(final String name, final int age) {
-    return Domain.validate(new User(name, age));
+  public static User of(final String username, final String email,
+                        final String name, final int age) {
+    return Domain.validate(new User(username, email, name, age));
   }
 
   @Override
