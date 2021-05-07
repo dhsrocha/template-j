@@ -11,7 +11,7 @@ import template.core.Props;
  *
  * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */
-final class InfoController implements Controller.Getter<Info> {
+final class InfoController implements Controller.Single<Info> {
 
   private final Feat[] feats;
 

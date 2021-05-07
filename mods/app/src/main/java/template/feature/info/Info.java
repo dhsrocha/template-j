@@ -28,6 +28,6 @@ public class Info {
   public interface Mod {
 
     @dagger.Binds
-    Controller.Getter<Info> controller(final InfoController u);
+    Controller.Single<Info> controller(final InfoController u);
   }
 }

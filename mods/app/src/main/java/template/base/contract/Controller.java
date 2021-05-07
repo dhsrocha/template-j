@@ -74,7 +74,7 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
    * @param <T> A type to be used as the response body.
    * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
    */
-  interface Getter<T> extends Handler,
+  interface Single<T> extends Handler,
                               Supplier<T>,
                               Router.Path<T> {
 

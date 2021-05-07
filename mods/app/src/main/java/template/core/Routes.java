@@ -52,7 +52,7 @@ interface Routes extends Supplier<Router> {
     @dagger.Provides
     static Router routes(final @lombok.NonNull Application.Mode mode,
                          final @lombok.NonNull Application.Feat[] feats,
-                         final @lombok.NonNull Controller.Getter<Info> info,
+                         final @lombok.NonNull Controller.Single<Info> info,
                          final @lombok.NonNull Controller<User> user,
                          final @lombok.NonNull Controller<Address> address) {
       return () -> {
