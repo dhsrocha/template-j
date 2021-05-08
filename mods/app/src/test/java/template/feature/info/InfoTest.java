@@ -35,7 +35,7 @@ class InfoTest {
     // Act
     val info = Client.create()
                      .request(req -> req.method(HttpMethod.GET))
-                     .thenSerializeTo(Info.class);
+                     .thenTurnInto(Info.class);
     // Assert
     val map = Map.of(Props.FEAT.name(), Arrays.toString(Feat.values()));
     Assertions.assertEquals(Info.of(map), info);

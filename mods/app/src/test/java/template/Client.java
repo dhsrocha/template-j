@@ -1,8 +1,10 @@
 package template;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import io.javalin.plugin.openapi.annotations.HttpMethod;
 import java.io.Serializable;
+import java.lang.reflect.Type;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -102,7 +104,16 @@ public interface Client<T> {
      * @param <R> A type to serialize to.
      * @return The serialized instance.
      */
-    <R> R thenSerializeTo(final @lombok.NonNull Class<R> ref);
+    <R> R thenTurnInto(final @lombok.NonNull Class<R> ref);
+
+    /**
+     * Post step for serializing content coming from HTTP response.
+     *
+     * @param ref Type reference to be used on serialization.
+     * @param <R> A type to serialize to.
+     * @return The serialized instance.
+     */
+    <R> R thenTurnInto(final @lombok.NonNull TypeToken<R> ref);
   }
 
   /**
@@ -196,16 +207,24 @@ public interface Client<T> {
 
     @Override
     @lombok.SneakyThrows
-    public <U> U thenSerializeTo(final @lombok.NonNull Class<U> ref) {
-      val x = MAPPER.fromJson(get().body(), ref);
-      Exceptions.ILLEGAL_ARGUMENT.throwIf(() -> null == x);
-      return x;
+    public <U> U thenTurnInto(final @lombok.NonNull Class<U> ref) {
+      val u = MAPPER.fromJson(get().body(), ref);
+      Exceptions.ILLEGAL_ARGUMENT.throwIf(() -> null == u);
+      return u;
+    }
+
+    @Override
+    @lombok.SneakyThrows
+    public <U> U thenTurnInto(final @lombok.NonNull TypeToken<U> ref) {
+      final U u = MAPPER.fromJson(get().body(), ref.getType());
+      Exceptions.ILLEGAL_ARGUMENT.throwIf(() -> null == u);
+      return u;
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public Map<UUID, T> thenMap() {
-      return (Map<UUID, T>) thenSerializeTo(Map.class);
+      return (Map<UUID, T>) thenTurnInto(Map.class);
     }
 
     private static String paramsOf(final @lombok.NonNull String sep,

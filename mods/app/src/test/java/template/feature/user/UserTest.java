@@ -1,5 +1,6 @@
 package template.feature.user;
 
+import com.google.gson.reflect.TypeToken;
 import io.javalin.plugin.openapi.annotations.HttpMethod;
 import java.util.Map;
 import java.util.Random;
@@ -20,6 +21,8 @@ import template.Support.IntegrationTest;
 final class UserTest {
 
   private static final Client<User> CLIENT = Client.create(User.class);
+  private static final TypeToken<Map<UUID, User>> TYPE = new TypeToken<>() {
+  };
   private static final User VALID_STUB = stub(1).findAny().orElseThrow();
   private static final Map<String, String> INVALID_STUB = Map
       .of("age", "0", "name", "some", "email", "non-email");
@@ -37,7 +40,7 @@ final class UserTest {
     Assertions.assertEquals(201, resp.statusCode());
     val found = CLIENT
         .request(req -> req.method(HttpMethod.GET).uri(resp.body()))
-        .thenSerializeTo(User.class);
+        .thenTurnInto(User.class);
     Assertions.assertEquals(VALID_STUB, found);
   }
 
@@ -56,7 +59,7 @@ final class UserTest {
         .toArray(String[]::new);
     val pick = ids[new Random().nextInt(ids.length)];
     val criteria = CLIENT.request(req -> req.method(HttpMethod.GET).uri(pick))
-                         .thenSerializeTo(User.class);
+                         .thenTurnInto(User.class);
     // Act
     val filtered = CLIENT.filter(criteria).thenMap();
     // Assert
@@ -79,12 +82,11 @@ final class UserTest {
     val found = CLIENT
         .request(req -> req.method(HttpMethod.GET).params(Map.of("limit", "15",
                                                                  "skip", "5")))
-        .thenSerializeTo(Map.class);
+        .thenTurnInto(TYPE);
     // Assert
     Assertions.assertEquals(15, found.size());
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   @DisplayName(""
       + "GIVEN three created resources "
@@ -94,14 +96,12 @@ final class UserTest {
     // Arrange
     val ids = stub(3)
         .map(u -> CLIENT.request(req -> req.method(HttpMethod.POST).body(u)))
-        .map(req -> req.thenSerializeTo(UUID.class))
+        .map(req -> req.thenTurnInto(UUID.class))
         .sorted().toArray(UUID[]::new);
     // Act
-    val found = (Map<String, ?>) CLIENT
-        .request(req -> req.method(HttpMethod.GET)).thenSerializeTo(Map.class);
+    val found = CLIENT.request(req -> req.method(HttpMethod.GET)).thenTurnInto(TYPE);
     // Assert
-    val arr = found.keySet().stream().map(UUID::fromString).sorted()
-                   .toArray(UUID[]::new);
+    val arr = found.keySet().stream().sorted().toArray(UUID[]::new);
     Assertions.assertArrayEquals(ids, arr);
   }
 
@@ -114,15 +114,15 @@ final class UserTest {
     // Arrange
     val created = CLIENT
         .request(req -> req.method(HttpMethod.POST).body(VALID_STUB))
-        .thenSerializeTo(UUID.class);
-    val toUpdate = User.of("updated", "updated@updated.com", "updated",  5);
+        .thenTurnInto(UUID.class);
+    val toUpdate = User.of("updated", "updated@updated.com", "updated", 5);
     // Act
     val isUpdated = CLIENT.request(
         req -> req.method(HttpMethod.PATCH).uri(created).body(toUpdate)).get();
     // Assert
     Assertions.assertEquals(204, isUpdated.statusCode());
     val found = CLIENT.request(req -> req.method(HttpMethod.GET).uri(created))
-                      .thenSerializeTo(User.class);
+                      .thenTurnInto(User.class);
     Assertions.assertEquals(toUpdate, found);
   }
 
@@ -135,7 +135,7 @@ final class UserTest {
     // Arrange
     val created = CLIENT
         .request(req -> req.method(HttpMethod.POST).body(VALID_STUB))
-        .thenSerializeTo(UUID.class);
+        .thenTurnInto(UUID.class);
     // Act
     val isDeleted = CLIENT
         .request(req -> req.method(HttpMethod.DELETE).uri(created)).get();

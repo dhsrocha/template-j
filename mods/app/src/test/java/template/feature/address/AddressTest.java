@@ -1,5 +1,6 @@
 package template.feature.address;
 
+import com.google.gson.reflect.TypeToken;
 import io.javalin.plugin.openapi.annotations.HttpMethod;
 import java.util.Map;
 import java.util.Random;
@@ -14,12 +15,15 @@ import org.junit.jupiter.api.Test;
 import template.Application.Feat;
 import template.Client;
 import template.Support.IntegrationTest;
+import template.feature.user.User;
 
 @IntegrationTest(Feat.ADDRESS)
 @DisplayName("Address feature test suite using integration test strategy.")
 final class AddressTest {
 
   private static final Client<Address> CLIENT = Client.create(Address.class);
+  private static final TypeToken<Map<UUID, User>> TYPE = new TypeToken<>() {
+  };
   private static final Address VALID_STUB = stub(1).findAny().orElseThrow();
   private static final Map<String, String> INVALID_STUB =
       Map.of("type", "",
@@ -43,7 +47,7 @@ final class AddressTest {
     Assertions.assertEquals(201, resp.statusCode());
     val found = CLIENT
         .request(req -> req.method(HttpMethod.GET).uri(resp.body()))
-        .thenSerializeTo(Address.class);
+        .thenTurnInto(Address.class);
     Assertions.assertEquals(VALID_STUB, found);
   }
 
@@ -62,7 +66,7 @@ final class AddressTest {
         .toArray(String[]::new);
     val pick = ids[new Random().nextInt(ids.length)];
     val criteria = CLIENT.request(req -> req.method(HttpMethod.GET).uri(pick))
-                         .thenSerializeTo(Address.class);
+                         .thenTurnInto(Address.class);
     // Act
     val filtered = CLIENT.filter(criteria).thenMap();
     // Assert
@@ -85,12 +89,11 @@ final class AddressTest {
     val found = CLIENT
         .request(req -> req.method(HttpMethod.GET).params(Map.of("limit", "15",
                                                                  "skip", "5")))
-        .thenSerializeTo(Map.class);
+        .thenTurnInto(Map.class);
     // Assert
     Assertions.assertEquals(15, found.size());
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   @DisplayName(""
       + "GIVEN three created resources "
@@ -100,14 +103,13 @@ final class AddressTest {
     // Arrange
     val ids = stub(3)
         .map(a -> CLIENT.request(req -> req.method(HttpMethod.POST).body(a)))
-        .map(req -> req.thenSerializeTo(UUID.class))
+        .map(req -> req.thenTurnInto(UUID.class))
         .sorted().toArray(UUID[]::new);
     // Act
-    val found = (Map<String, ?>) CLIENT
-        .request(req -> req.method(HttpMethod.GET)).thenSerializeTo(Map.class);
+    val found = CLIENT
+        .request(req -> req.method(HttpMethod.GET)).thenTurnInto(TYPE);
     // Assert
-    val arr = found.keySet().stream().map(UUID::fromString).sorted()
-                   .toArray(UUID[]::new);
+    val arr = found.keySet().stream().sorted().toArray(UUID[]::new);
     Assertions.assertArrayEquals(ids, arr);
   }
 
@@ -120,7 +122,7 @@ final class AddressTest {
     // Arrange
     val created = CLIENT
         .request(req -> req.method(HttpMethod.POST).body(VALID_STUB))
-        .thenSerializeTo(UUID.class);
+        .thenTurnInto(UUID.class);
     val toUpdate = VALID_STUB.toBuilder()
                              .place("otherPlace")
                              .number("otherNumber")
@@ -131,7 +133,7 @@ final class AddressTest {
     // Assert
     Assertions.assertEquals(204, isUpdated.statusCode());
     val found = CLIENT.request(req -> req.method(HttpMethod.GET).uri(created))
-                      .thenSerializeTo(Address.class);
+                      .thenTurnInto(Address.class);
     Assertions.assertEquals(toUpdate, found);
   }
 
@@ -144,7 +146,7 @@ final class AddressTest {
     // Arrange
     val created = CLIENT
         .request(req -> req.method(HttpMethod.POST).body(VALID_STUB))
-        .thenSerializeTo(UUID.class);
+        .thenTurnInto(UUID.class);
     // Act
     val isDeleted = CLIENT
         .request(req -> req.method(HttpMethod.DELETE).uri(created)).get();
