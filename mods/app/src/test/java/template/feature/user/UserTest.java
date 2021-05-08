@@ -65,7 +65,7 @@ final class UserTest {
 
   @Test
   @DisplayName(""
-      + "GIVEN 30 user resources created"
+      + "GIVEN 30 user resources created "
       + "AND parameters to skip 5 and limit 15 resources "
       + "WHEN perform user retrieve operation "
       + "THEN return from the 6th resource to the 20th one.")
@@ -149,7 +149,7 @@ final class UserTest {
   @Test
   @DisplayName(""
       + "GIVEN invalid request "
-      + "WHEN performing user creation operation "
+      + "WHEN perform user creation operation "
       + "THEN return 422 as HTTP status code.")
   final void givenInvalidRequest_whenCreating_thenReturn422asStatus() {
     // Act

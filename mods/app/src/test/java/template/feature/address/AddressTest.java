@@ -33,7 +33,7 @@ final class AddressTest {
   @Test
   @DisplayName(""
       + "GIVEN valid resource to persist "
-      + "WHEN performing address create operation "
+      + "WHEN perform address create operation "
       + "THEN should be able to find resource.")
   final void givenValidResource_whenCreating_thenShouldAbleToFindResource() {
     // Act
@@ -71,7 +71,7 @@ final class AddressTest {
 
   @Test
   @DisplayName(""
-      + "GIVEN 30 address resources created"
+      + "GIVEN 30 address resources created "
       + "AND parameters to skip 5 and limit 15 resources "
       + "WHEN perform user retrieve operation "
       + "THEN return from the 6th resource to the 20th one.")
@@ -114,7 +114,7 @@ final class AddressTest {
   @Test
   @DisplayName(""
       + "GIVEN a created resource "
-      + "WHEN performing address update operation "
+      + "WHEN perform address update operation "
       + "THEN return true.")
   final void givenCreatedResource_whenUpdating_thenReturnTrue() {
     // Arrange
@@ -138,7 +138,7 @@ final class AddressTest {
   @Test
   @DisplayName(""
       + "GIVEN a created resource "
-      + "WHEN performing address delete operation "
+      + "WHEN perform address delete operation "
       + "THEN return true.")
   final void givenCreatedResource_whenDeleting_thenReturnTrue() {
     // Arrange
@@ -158,7 +158,7 @@ final class AddressTest {
   @Test
   @DisplayName(""
       + "GIVEN invalid request "
-      + "WHEN performing address creation "
+      + "WHEN perform address creation "
       + "THEN return 422 as HTTP status code.")
   final void givenInvalidRequest_whenCreating_thenReturn422asStatus() {
     // Act
