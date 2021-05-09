@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import template.base.Checks;
@@ -22,6 +23,7 @@ import template.feature.address.Address;
  *
  * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */
+@Schema
 @lombok.Value
 public class User implements Domain<User> {
 

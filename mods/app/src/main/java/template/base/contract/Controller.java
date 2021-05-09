@@ -5,10 +5,15 @@ import static template.base.contract.Params.ROOT_ID;
 import io.javalin.apibuilder.CrudHandler;
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
+import io.swagger.v3.oas.annotations.Operation;
 import java.util.Comparator;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.function.Supplier;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.PATCH;
+import javax.ws.rs.POST;
 import lombok.val;
 import template.base.Exceptions;
 import template.base.contract.Router.Path;
@@ -37,7 +42,9 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
    *
    * @param ctx Application's context.
    */
+  @POST
   @Override
+  @Operation
   default void create(final @lombok.NonNull Context ctx) {
     val body = Exceptions.EMPTY_BODY.trapIn(() -> ctx.bodyAsClass(ref()));
     ctx.status(201);
@@ -51,7 +58,9 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
    * @param ctx Application's context.
    * @param id  Identity key which it must correspond to an existing resource.
    */
+  @GET
   @Override
+  @Operation
   default void getOne(final @lombok.NonNull Context ctx,
                       final @lombok.NonNull String id) {
     val uuid = Exceptions.INVALID_ID.trapIn(() -> UUID.fromString(id));
@@ -71,7 +80,9 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
    *
    * @param ctx Application's context.
    */
+  @GET
   @Override
+  @Operation
   default void getAll(final @lombok.NonNull Context ctx) {
     val skip = Params.SKIP.valFrom(ctx, Integer::parseInt)
                           .filter(i -> i > 0).orElse(0);
@@ -90,7 +101,9 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
    * @param ctx Application's context.
    * @param id  Identity key which it must correspond to an existing resource.
    */
+  @PATCH
   @Override
+  @Operation
   default void update(final @lombok.NonNull Context ctx,
                       final @lombok.NonNull String id) {
     val uuid = Exceptions.INVALID_ID.trapIn(() -> UUID.fromString(id));
@@ -105,7 +118,9 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
    * @param ctx Application's context.
    * @param id  Identity key which it must correspond to an existing resource.
    */
+  @DELETE
   @Override
+  @Operation
   default void delete(final @lombok.NonNull Context ctx,
                       final @lombok.NonNull String id) {
     val uuid = Exceptions.INVALID_ID.trapIn(() -> UUID.fromString(id));

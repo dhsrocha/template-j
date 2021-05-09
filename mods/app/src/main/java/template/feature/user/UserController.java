@@ -1,5 +1,11 @@
 package template.feature.user;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.tags.Tags;
 import java.util.UUID;
 import template.base.contract.CacheManager;
 import template.base.contract.Controller;
@@ -12,6 +18,8 @@ import template.feature.address.Address;
  *
  * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */
+@Tags(@Tag(name = "User"))
+@Schema(title = "User Controller")
 final class UserController extends Service.Cached<User, UUID>
     implements Controller<User> {
 
@@ -21,6 +29,21 @@ final class UserController extends Service.Cached<User, UUID>
     super(cache, repo);
   }
 
+  @Operation()
+  @ApiResponses(value = {
+      @ApiResponse(
+          responseCode = "200",
+          description = "Successfully updated schema"),
+      @ApiResponse(
+          responseCode = "404",
+          description = "Schema not found"),
+      @ApiResponse(
+          responseCode = "400",
+          description = "Missing or invalid request body"),
+      @ApiResponse(
+          responseCode = "500",
+          description = "Internal error")
+  })
   @Override
   public Class<User> ref() {
     return User.class;

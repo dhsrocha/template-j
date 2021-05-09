@@ -19,6 +19,9 @@ module template.app {
   requires com.zaxxer.hikari;
   requires org.postgresql.jdbc;
   requires transitive java.sql;
+  // Open API
+  requires io.swagger.v3.oas.annotations;
+  requires transitive java.ws.rs;
 
   // Open for testing
   opens template;

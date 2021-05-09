@@ -51,6 +51,7 @@
     <version.lombok>1.18.20</version.lombok>
     <version.dagger>2.36</version.dagger>
     <version.mapstruct>1.4.2.Final</version.mapstruct>
+    <version.swagger>2.1.9</version.swagger>
     <version.plugin.test>3.0.0-M5</version.plugin.test>
 
     <exec.mainClass>
@@ -485,6 +486,22 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
+      <!-- OpenApi -->
+      <dependency>
+        <groupId>io.swagger.core.v3</groupId>
+        <artifactId>swagger-annotations</artifactId>
+        <version>${version.swagger}</version>
+      </dependency>
+      <dependency>
+        <groupId>javax.ws.rs</groupId>
+        <artifactId>javax.ws.rs-api</artifactId>
+        <version>2.1.1</version>
+      </dependency>
+      <dependency>
+        <groupId>javax.servlet</groupId>
+        <artifactId>javax.servlet-api</artifactId>
+        <version>4.0.1</version>
+      </dependency>
       <!-- Application -->
       <dependency>
         <groupId>com.google.auto.service</groupId>
@@ -596,6 +613,21 @@
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
       <version>${version.lombok}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.swagger.core.v3</groupId>
+      <artifactId>swagger-annotations</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>javax.ws.rs</groupId>
+      <artifactId>javax.ws.rs-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -726,6 +758,27 @@
                 <!---->
               </executions>
             </plugin>
+              <plugin>
+                  <groupId>io.swagger.core.v3</groupId>
+                  <artifactId>swagger-maven-plugin</artifactId>
+                  <version>${version.swagger}</version>
+                  <configuration>
+                      <outputFileName>${project.artifactId}</outputFileName>
+                      <outputPath>${project.build.directory}/open-api</outputPath>
+                      <outputFormat>YAML</outputFormat>
+                      <resourcePackages>
+                          <package>template.feature.user</package>
+                      </resourcePackages>
+                  </configuration>
+                  <executions>
+                      <execution>
+                          <phase>compile</phase>
+                          <goals>
+                              <goal>resolve</goal>
+                          </goals>
+                      </execution>
+                  </executions>
+              </plugin>
           </plugins>
         </pluginManagement>
         <resources>
