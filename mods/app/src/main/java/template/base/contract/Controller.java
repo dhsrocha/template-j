@@ -9,7 +9,6 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import lombok.val;
 import template.base.Exceptions;
-import template.base.contract.Router.Path;
 import template.base.stereotype.Domain;
 
 /**
@@ -22,11 +21,13 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
                                                          Service<D, UUID>,
                                                          Router.Path<D> {
 
-  @Override
-  default String path() {
-    return Path.super.path() + "/:id";
-  }
-
+  /**
+   * Creates a resource into a domain context.
+   * <br/>
+   * <b>Requirements:</b>
+   *
+   * @param ctx Application's context.
+   */
   @Override
   default void create(final @lombok.NonNull Context ctx) {
     val d = Domain.validate(ctx.bodyAsClass(ref()));
@@ -34,6 +35,13 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
     ctx.result(create(d).toString());
   }
 
+  /**
+   * Retrieves a resource in a domain context identified by provided identity
+   * parameter.
+   *
+   * @param id  Resource identity. It must exist.
+   * @param ctx Application's context.
+   */
   @Override
   default void getOne(final @lombok.NonNull Context ctx,
                       final @lombok.NonNull String id) {
@@ -41,18 +49,40 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
     ctx.result(Params.MAPPER.toJson(getOne(uuid)));
   }
 
+  /**
+   * Retrieves all resources from a domain context. Query parameters can
+   * optionally be sent for filtering purposes.
+   * <br/>
+   * Requirements:
+   * <ul>
+   *   <li>Filter query must correspond to domain's attributes;</li>
+   *   <li>Query parameter {@code limit} must be positive and higher than
+   *   {@code skip}.</li>
+   * </ul>
+   *
+   * @param ctx Application's context.
+   */
   @Override
   default void getAll(final @lombok.NonNull Context ctx) {
-    val skip = Params.SKIP.valFrom(ctx, Integer::parseInt).orElse(0);
-    val limit = Params.LIMIT.valFrom(ctx, Integer::parseInt).orElse(30);
+    val skip = Params.SKIP.valFrom(ctx, Integer::parseInt)
+                          .filter(i -> i > 0).orElse(0);
+    val limit = Params.LIMIT.valFrom(ctx, Integer::parseInt)
+                            .filter(i -> i > 0).orElse(30);
     val filter = Params.FQ.parsedFrom(ctx, ref())
-                          .map(this::filter).orElseGet(() -> x -> Boolean.TRUE);
+                          .map(this::filter).orElseGet(Params::noFilter);
+    Exceptions.ILLEGAL_ARGUMENT.throwIf(Params.MSG, () -> skip > limit);
     val sourced = getBy(filter, skip, limit);
     val sorted = new TreeMap<UUID, D>(Comparator.comparing(sourced::get));
     sorted.putAll(sourced);
     ctx.result(Params.MAPPER.toJson(sorted));
   }
 
+  /**
+   * Updates a resource in a domain context.
+   *
+   * @param id  Resource identity. It must exist.
+   * @param ctx Application's context.
+   */
   @Override
   default void update(final @lombok.NonNull Context ctx,
                       final @lombok.NonNull String id) {
@@ -61,6 +91,12 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
     ctx.status(update(uuid, d) ? 204 : 404);
   }
 
+  /**
+   * Deletes a resource in a domain context.
+   *
+   * @param id  Resource identity. It must exist.
+   * @param ctx Application's context.
+   */
   @Override
   default void delete(final @lombok.NonNull Context ctx,
                       final @lombok.NonNull String id) {

@@ -5,6 +5,7 @@ import io.javalin.http.Context;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import lombok.val;
 import template.base.Exceptions;
 
@@ -27,6 +28,7 @@ enum Params {
    */
   LIMIT,
   ;
+  static final String MSG = "Skip parameter is higher than limit parameter.";
   static final Gson MAPPER = new Gson();
 
   /**
@@ -57,5 +59,15 @@ enum Params {
   <T> Optional<T> valFrom(final @lombok.NonNull Context ctx,
                           final @lombok.NonNull Function<String, T> fun) {
     return Optional.ofNullable(ctx.queryParam(name().toLowerCase())).map(fun);
+  }
+
+  /**
+   * Default Predicate which always returns true.
+   *
+   * @param <T> Any inferred type which is request from typing erasure.
+   * @return An predicate which is returns true.
+   */
+  static <T> Predicate<T> noFilter() {
+    return t -> Boolean.TRUE;
   }
 }

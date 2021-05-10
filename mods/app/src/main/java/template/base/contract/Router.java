@@ -20,13 +20,19 @@ public interface Router extends EndpointGroup {
   interface Path<T> extends Referable<T> {
 
     /**
+     * Path variable identity that is handled by {@link template.Application
+     * current web container}.
+     */
+    String PATH_ID = "/:id";
+
+    /**
      * Provides a standard path based on provided {@link #ref() type reference}.
      *
      * @return The path.
      * @see #ref()
      */
     default String path() {
-      return ref().getSimpleName().toLowerCase();
+      return ref().getSimpleName().toLowerCase() + PATH_ID;
     }
   }
 }
