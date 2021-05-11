@@ -93,8 +93,11 @@ public interface Support {
       val suite = ctx.getTestInstance().orElseThrow().getClass()
                      .getAnnotation(IntegrationTest.class);
       val feats = Optional
-          .of(suite.activated()).filter(l -> l.length > 0)
-          .or(() -> Optional.of(suite.value()).filter(l -> l.length > 0))
+          .ofNullable(suite).map(IntegrationTest::activated)
+          .filter(l -> l.length > 0)
+          .or(() -> Optional.ofNullable(suite)
+                            .map(IntegrationTest::value)
+                            .filter(l -> l.length > 0))
           .orElseGet(Feat::values);
       REF.set(Bootstrap.bootstrap(
           Props.MODE.is(Mode.TEST),

@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.javalin.plugin.openapi.annotations.HttpMethod;
 import java.io.Serializable;
-import java.lang.reflect.Type;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.http.HttpClient;
