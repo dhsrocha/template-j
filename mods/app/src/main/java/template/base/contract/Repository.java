@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
-import lombok.Value;
 import lombok.val;
 import org.ehcache.Cache;
 import template.base.stereotype.Domain;
@@ -108,11 +107,12 @@ public interface Repository<D extends Domain<D>, I> {
    * @param <I> A type to be used as an the domain indexer.
    * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
    */
-  @Value
-  class CachedDelegate<D extends Domain<D>, I> implements Repository<D, I> {
+  @AllArgsConstructor(access = AccessLevel.PRIVATE)
+  final class CachedDelegate<D extends Domain<D>, I>
+      implements Repository<D, I> {
 
-    Cache<I, D> cache;
-    Repository<D, I> repo;
+    private final Cache<I, D> cache;
+    private final Repository<D, I> repo;
 
     @Override
     public Optional<D> getOne(final @NonNull I id) {
