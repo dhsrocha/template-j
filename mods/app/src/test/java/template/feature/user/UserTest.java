@@ -91,11 +91,9 @@ final class UserTest {
           .map(Supplier::get)
           .forEachOrdered(r -> Assertions.assertEquals(201, r.statusCode()));
       // Act
-      val found = CLIENT
-          .request(
-              req -> req.method(HttpMethod.GET).params(Map.of("limit", "15",
-                                                              "skip", "5")))
-          .thenTurnInto(TYPE);
+      val found = CLIENT.request(req -> req
+          .method(HttpMethod.GET).params(Map.of("limit", "15", "skip", "5")))
+                        .thenTurnInto(TYPE);
       // Assert
       Assertions.assertEquals(15, found.size());
     }

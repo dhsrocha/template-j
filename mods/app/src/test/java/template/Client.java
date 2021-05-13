@@ -161,6 +161,8 @@ public interface Client<T> {
     HttpClient client = HttpClient
         .newBuilder().version(HttpClient.Version.HTTP_1_1)
         .connectTimeout(Duration.ofSeconds(1)).build();
+    TypeToken<Map<UUID, T>> type = new TypeToken<>() {
+    };
 
     URI base;
     Request.RequestBuilder req;
@@ -205,35 +207,29 @@ public interface Client<T> {
     // Then steps
 
     @Override
-    @lombok.SneakyThrows
     public <U> U thenTurnInto(final @lombok.NonNull Class<U> ref) {
-      val u = MAPPER.fromJson(get().body(), ref);
-      Exceptions.ILLEGAL_ARGUMENT.throwIf(() -> null == u);
-      return u;
+      return Exceptions.ILLEGAL_ARGUMENT
+          .trapIn(() -> MAPPER.fromJson(get().body(), ref));
     }
 
     @Override
-    @lombok.SneakyThrows
     public <U> U thenTurnInto(final @lombok.NonNull TypeToken<U> ref) {
-      final U u = MAPPER.fromJson(get().body(), ref.getType());
-      Exceptions.ILLEGAL_ARGUMENT.throwIf(() -> null == u);
-      return u;
+      return Exceptions.ILLEGAL_ARGUMENT
+          .trapIn(() -> MAPPER.fromJson(get().body(), ref.getType()));
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public Map<UUID, T> thenMap() {
-      return (Map<UUID, T>) thenTurnInto(Map.class);
+      return thenTurnInto(type);
     }
 
     private static String paramsOf(final @lombok.NonNull String sep,
                                    final @lombok.NonNull Map<?, ?> map) {
-      return map
-          .entrySet()
-          .stream()
-          .map(e -> e.getKey() + "=" + e.getValue())
-          .map(String::valueOf)
-          .collect(Collectors.joining(sep));
+      return map.entrySet()
+                .stream()
+                .map(e -> e.getKey() + "=" + e.getValue())
+                .map(String::valueOf)
+                .collect(Collectors.joining(sep));
     }
   }
 
