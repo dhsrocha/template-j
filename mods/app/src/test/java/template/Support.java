@@ -10,6 +10,9 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import lombok.val;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LoggerContext;
 import org.junit.jupiter.api.extension.AfterTestExecutionCallback;
 import org.junit.jupiter.api.extension.BeforeTestExecutionCallback;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -78,12 +81,30 @@ public interface Support {
   }
 
   /**
+   * Sets logging level on current implementation. Meant to turn logging off
+   * when loading up systems for integration testing.
+   *
+   * @param level Level to update.
+   * @return Current level before updating.
+   */
+  private static Level setLevel(final @lombok.NonNull Level level) {
+    val ctxLog = (LoggerContext) LogManager.getContext(Boolean.FALSE);
+    val cfg = ctxLog.getConfiguration()
+                    .getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
+    val current = cfg.getLevel();
+    cfg.setLevel(level);
+    ctxLog.updateLoggers();
+    return current;
+  }
+
+  /**
    * JUnit extension to start up {@link Bootstrap application's bootstrap}.
    *
    * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
    */
   final class AppExtension implements BeforeTestExecutionCallback,
                                       AfterTestExecutionCallback {
+    private static final Level CURRENT = setLevel(Level.ERROR);
     private static final AtomicReference<Application.Server> REF =
         new AtomicReference<>();
 
@@ -99,6 +120,7 @@ public interface Support {
                             .map(IntegrationTest::value)
                             .filter(l -> l.length > 0))
           .orElseGet(Feat::values);
+      setLevel(Level.OFF);
       REF.set(Bootstrap.bootstrap(
           Props.MODE.is(Mode.TEST),
           Props.PORT.is(Support.PORT),
@@ -108,6 +130,7 @@ public interface Support {
     @Override
     public void afterTestExecution(final ExtensionContext ctx) {
       REF.get().stop();
+      setLevel(CURRENT);
     }
   }
 }
