@@ -73,23 +73,41 @@ public interface Client<T> {
   /**
    * Filters up a domain-based GET endpoint based on its attributes.
    *
-   * @param filter Filtering criteria based on a domains' attributes.
+   * @param fq Filtering criteria based on domain's attributes.
    * @return Client instance with a prompted request.
-   * @see #filter(Object, Map)
+   * @see #retrieve(Object, Map)
    */
-  default ThenFilter<T> filter(final @lombok.NonNull T filter) {
-    return filter(filter, new HashMap<>());
+  default ThenFilter<T> retrieve(final @lombok.NonNull T fq) {
+    return retrieve(fq, new HashMap<>());
   }
 
   /**
    * Filters up a domain-based GET endpoint based on its attributes.
    *
-   * @param filter Filtering criteria based on a domains' attributes.
+   * @return Client instance with a prompted request.
+   * @see #retrieve(Object, Map)
+   */
+  default ThenFilter<T> retrieve() {
+    return retrieve(new HashMap<>());
+  }
+
+  /**
+   * Filters up a domain-based GET endpoint based on its attributes.
+   *
    * @param params Request parameters.
    * @return Client instance with a prompted request.
    */
-  ThenFilter<T> filter(final @lombok.NonNull T filter,
-                       final @lombok.NonNull Map<String, String> params);
+  ThenFilter<T> retrieve(final @lombok.NonNull Map<String, String> params);
+
+  /**
+   * Filters up a domain-based GET endpoint based on its attributes.
+   *
+   * @param filter Filtering criteria based on domain's attributes.
+   * @param params Request parameters.
+   * @return Client instance with a prompted request.
+   */
+  ThenFilter<T> retrieve(final @lombok.NonNull T filter,
+                         final @lombok.NonNull Map<String, String> params);
 
   /**
    * Step for serializing operations an a client with a prompted request.
@@ -104,15 +122,6 @@ public interface Client<T> {
      * @return The serialized instance.
      */
     <R> R thenTurnInto(final @lombok.NonNull Class<R> ref);
-
-    /**
-     * Post step for serializing content coming from HTTP response.
-     *
-     * @param ref Type reference to be used on serialization.
-     * @param <R> A type to serialize to.
-     * @return The serialized instance.
-     */
-    <R> R thenTurnInto(final @lombok.NonNull TypeToken<R> ref);
   }
 
   /**
@@ -161,7 +170,7 @@ public interface Client<T> {
     HttpClient client = HttpClient
         .newBuilder().version(HttpClient.Version.HTTP_1_1)
         .connectTimeout(Duration.ofSeconds(1)).build();
-    TypeToken<Map<UUID, T>> type = new TypeToken<>() {
+    TypeToken<Map<UUID, T>> toMap = new TypeToken<>() {
     };
 
     URI base;
@@ -197,10 +206,15 @@ public interface Client<T> {
     // Specialized requests
 
     @Override
-    public ThenFilter<T> filter(final @lombok.NonNull T filter,
-                                final @lombok.NonNull Map<String, String> params) {
+    public ThenFilter<T> retrieve(final @lombok.NonNull T filter,
+                                  final @lombok.NonNull Map<String, String> params) {
       val filters = MAPPER.fromJson(MAPPER.toJson(filter), Map.class);
       params.put("fq", paramsOf(",", filters));
+      return new Impl<>(base, req.method(HttpMethod.GET).params(params));
+    }
+
+    @Override
+    public ThenFilter<T> retrieve(final @lombok.NonNull Map<String, String> params) {
       return new Impl<>(base, req.method(HttpMethod.GET).params(params));
     }
 
@@ -213,14 +227,9 @@ public interface Client<T> {
     }
 
     @Override
-    public <U> U thenTurnInto(final @lombok.NonNull TypeToken<U> ref) {
-      return Exceptions.ILLEGAL_ARGUMENT
-          .trapIn(() -> MAPPER.fromJson(get().body(), ref.getType()));
-    }
-
-    @Override
     public Map<UUID, T> thenMap() {
-      return thenTurnInto(type);
+      return Exceptions.ILLEGAL_ARGUMENT
+          .trapIn(() -> MAPPER.fromJson(get().body(), toMap.getType()));
     }
 
     private static String paramsOf(final @lombok.NonNull String sep,

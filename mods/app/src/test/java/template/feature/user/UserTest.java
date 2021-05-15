@@ -2,7 +2,6 @@ package template.feature.user;
 
 import static template.feature.StubSupport.userStub;
 
-import com.google.gson.reflect.TypeToken;
 import io.javalin.plugin.openapi.annotations.HttpMethod;
 import java.util.Map;
 import java.util.Random;
@@ -22,8 +21,6 @@ import template.Support.IntegrationTest;
 final class UserTest {
 
   private static final Client<User> CLIENT = Client.create(User.class);
-  private static final TypeToken<Map<UUID, User>> TYPE = new TypeToken<>() {
-  };
   private static final User VALID_STUB = userStub(1).findAny().orElseThrow();
   private static final Map<String, String> INVALID_STUB = Map
       .of("age", "0", "name", "some", "email", "non-email");
@@ -73,7 +70,7 @@ final class UserTest {
       val criteria = CLIENT.request(req -> req.method(HttpMethod.GET).uri(pick))
                            .thenTurnInto(User.class);
       // Act
-      val filtered = CLIENT.filter(criteria).thenMap();
+      val filtered = CLIENT.retrieve(criteria).thenMap();
       // Assert
       Assertions.assertEquals(1, filtered.size());
     }
@@ -91,9 +88,7 @@ final class UserTest {
           .map(Supplier::get)
           .forEachOrdered(r -> Assertions.assertEquals(201, r.statusCode()));
       // Act
-      val found = CLIENT.request(req -> req
-          .method(HttpMethod.GET).params(Map.of("limit", "15", "skip", "5")))
-                        .thenTurnInto(TYPE);
+      val found = CLIENT.retrieve(Map.of("limit", "15", "skip", "5")).thenMap();
       // Assert
       Assertions.assertEquals(15, found.size());
     }
@@ -110,8 +105,7 @@ final class UserTest {
           .map(req -> req.thenTurnInto(UUID.class))
           .sorted().toArray(UUID[]::new);
       // Act
-      val found = CLIENT.request(req -> req.method(HttpMethod.GET))
-                        .thenTurnInto(TYPE);
+      val found = CLIENT.retrieve().thenMap();
       // Assert
       val arr = found.keySet().stream().sorted().toArray(UUID[]::new);
       Assertions.assertArrayEquals(ids, arr);
@@ -199,8 +193,7 @@ final class UserTest {
       // Arrange
       val params = Map.of("fq", "xp");
       // Act
-      val resp = CLIENT
-          .request(req -> req.method(HttpMethod.GET).params(params)).get();
+      val resp = CLIENT.retrieve(params).get();
       // Assert
       Assertions.assertEquals(400, resp.statusCode());
     }

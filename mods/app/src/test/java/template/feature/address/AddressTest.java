@@ -2,7 +2,6 @@ package template.feature.address;
 
 import static template.feature.StubSupport.addressStub;
 
-import com.google.gson.reflect.TypeToken;
 import io.javalin.plugin.openapi.annotations.HttpMethod;
 import java.util.Map;
 import java.util.Random;
@@ -16,15 +15,12 @@ import org.junit.jupiter.api.Test;
 import template.Application.Feat;
 import template.Client;
 import template.Support.IntegrationTest;
-import template.feature.user.User;
 
 @SuppressWarnings("ClassCanBeStatic")
 @DisplayName("Address feature test suite using integration test strategy.")
 final class AddressTest {
 
   private static final Client<Address> CLIENT = Client.create(Address.class);
-  private static final TypeToken<Map<UUID, User>> TYPE = new TypeToken<>() {
-  };
   private static final Address VALID_STUB = addressStub(1).findAny()
                                                           .orElseThrow();
   private static final Map<String, String> INVALID_STUB =
@@ -81,7 +77,7 @@ final class AddressTest {
       val criteria = CLIENT.request(req -> req.method(HttpMethod.GET).uri(pick))
                            .thenTurnInto(Address.class);
       // Act
-      val filtered = CLIENT.filter(criteria).thenMap();
+      val filtered = CLIENT.retrieve(criteria).thenMap();
       // Assert
       Assertions.assertEquals(1, filtered.size());
     }
@@ -99,9 +95,7 @@ final class AddressTest {
           .map(Supplier::get)
           .forEachOrdered(r -> Assertions.assertEquals(201, r.statusCode()));
       // Act
-      val found = CLIENT.request(req -> req
-          .method(HttpMethod.GET).params(Map.of("limit", "15", "skip", "5")))
-                        .thenTurnInto(TYPE);
+      val found = CLIENT.retrieve(Map.of("limit", "15", "skip", "5")).thenMap();
       // Assert
       Assertions.assertEquals(15, found.size());
     }
@@ -118,8 +112,7 @@ final class AddressTest {
           .map(req -> req.thenTurnInto(UUID.class))
           .sorted().toArray(UUID[]::new);
       // Act
-      val found = CLIENT
-          .request(req -> req.method(HttpMethod.GET)).thenTurnInto(TYPE);
+      val found = CLIENT.retrieve().thenMap();
       // Assert
       val arr = found.keySet().stream().sorted().toArray(UUID[]::new);
       Assertions.assertArrayEquals(ids, arr);
@@ -210,8 +203,7 @@ final class AddressTest {
       // Arrange
       val params = Map.of("fq", "xp");
       // Act
-      val resp = CLIENT
-          .request(req -> req.method(HttpMethod.GET).params(params)).get();
+      val resp = CLIENT.retrieve(params).get();
       // Assert
       Assertions.assertEquals(400, resp.statusCode());
     }
