@@ -20,7 +20,6 @@
   </description>
 
   <properties>
-    <version.docker.java>3.2.7</version.docker.java>
     <exec.mainClass>template.Main</exec.mainClass>
   </properties>
 
@@ -32,7 +31,6 @@
     <dependency>
       <groupId>com.github.docker-java</groupId>
       <artifactId>docker-java</artifactId>
-      <version>${version.docker.java}</version>
       <exclusions>
         <exclusion>
           <groupId>com.github.docker-java</groupId>
@@ -47,7 +45,6 @@
     <dependency>
       <groupId>com.github.docker-java</groupId>
       <artifactId>docker-java-transport-zerodep</artifactId>
-      <version>${version.docker.java}</version>
     </dependency>
   </dependencies>
 

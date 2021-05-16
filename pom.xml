@@ -48,6 +48,7 @@
     <version.dagger>2.35.1</version.dagger>
     <version.javalin>3.13.6</version.javalin>
     <version.mapstruct>1.4.2.Final</version.mapstruct>
+    <version.docker.java>3.2.8</version.docker.java>
 
     <version.plugin.test>3.0.0-M5</version.plugin.test>
 
@@ -488,6 +489,27 @@
           </exclusion>
         </exclusions>
       </dependency>
+      <!-- Docker -->
+      <dependency>
+        <groupId>com.github.docker-java</groupId>
+        <artifactId>docker-java</artifactId>
+        <version>${version.docker.java}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>com.github.docker-java</groupId>
+            <artifactId>docker-java-transport-netty</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.github.docker-java</groupId>
+            <artifactId>docker-java-transport-jersey</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>com.github.docker-java</groupId>
+        <artifactId>docker-java-transport-zerodep</artifactId>
+        <version>${version.docker.java}</version>
+      </dependency>
       <!---->
     </dependencies>
   </dependencyManagement>
@@ -523,7 +545,7 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-junit-jupiter</artifactId>
-      <version>3.9.0</version>
+      <version>3.10.0</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -638,6 +660,12 @@
             </executions>
           </plugin>
         </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>update</id>
+      <build>
+        <defaultGoal>versions:display-dependency-updates</defaultGoal>
       </build>
     </profile>
   </profiles>
