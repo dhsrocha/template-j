@@ -33,8 +33,8 @@ public interface Service<T, I> {
   }
 
   /**
-   * Default abstraction, meant to be openly extendable. Natively supports
-   * caching.
+   * Abstraction which natively supports caching capabilities. Meant to be
+   * openly extendable.
    *
    * @param <D> {@link Domain} type to be handled among the operations.
    * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>

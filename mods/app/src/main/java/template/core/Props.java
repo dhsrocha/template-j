@@ -39,17 +39,17 @@ public enum Props {
    * Serialize input entries according to the enumerated items.
    *
    * @param args Key-value entries written in {@code k=v} or {@code k:v} under
-   *             {@link Props pre-defined keys}. Any string that does not
-   *             follow that pattern is going to be discarded. Main purpose is
-   *             to be used in test context.
+   *             {@link Props pre-defined keys}. Any string that does not follow
+   *             that pattern is going to be discarded. Main purpose is to be
+   *             used in test context.
    * @return Map of properties with the following values:
    *     <ul>
    *       <li>Corresponding captured value;</li>
    *       <li>Input from system/command-line; or</li>
    *       <li>Pre-defined values.</li>
    *     </ul>
-   * @throws IllegalArgumentException if number of arguments is grater than
-   *                                  the enum {@link #values()}.
+   * @throws IllegalArgumentException if number of arguments is grater than the
+   *                                  enum {@link #values()}.
    */
   public static Map<Props, String> from(final String... args) {
     if (args.length > VALUES.length) {

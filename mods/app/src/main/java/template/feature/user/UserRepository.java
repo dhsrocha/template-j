@@ -5,7 +5,7 @@ import template.base.contract.Repository;
 import template.base.stereotype.Entity;
 
 /**
- * User feature repository implementation.
+ * {@link User} feature repository implementation.
  *
  * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */

@@ -8,7 +8,7 @@ import template.Support;
 import template.Support.IntegrationTest;
 
 /**
- * Application's test case.
+ * Application's test suite.
  *
  * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */

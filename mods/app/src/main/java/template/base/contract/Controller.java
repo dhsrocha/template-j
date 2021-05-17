@@ -22,9 +22,15 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
                                                          Router.Path<D> {
 
   /**
-   * Creates a resource into a domain context.
+   * Creates a resource into a {@link D domain} context.
    * <br/>
    * <b>Requirements:</b>
+   * <ul>
+   *   <li>Request body must not be empty;</li>
+   *   <li>Request body must contain related attributes as JSON properties
+   *   and corresponding value according to domain's each indexed
+   *   {@link Domain.Invariant}.</li>
+   * </ul>
    *
    * @param ctx Application's context.
    */
@@ -39,8 +45,8 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
    * Retrieves a resource in a domain context identified by provided identity
    * parameter.
    *
-   * @param id  Resource identity. It must exist.
    * @param ctx Application's context.
+   * @param id  Identity key which it must correspond to an existing resource.
    */
   @Override
   default void getOne(final @lombok.NonNull Context ctx,
@@ -80,8 +86,8 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
   /**
    * Updates a resource in a domain context.
    *
-   * @param id  Resource identity. It must exist.
    * @param ctx Application's context.
+   * @param id  Identity key which it must correspond to an existing resource.
    */
   @Override
   default void update(final @lombok.NonNull Context ctx,
@@ -95,8 +101,8 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
   /**
    * Deletes a resource in a domain context.
    *
-   * @param id  Resource identity. It must exist.
    * @param ctx Application's context.
+   * @param id  Identity key which it must correspond to an existing resource.
    */
   @Override
   default void delete(final @lombok.NonNull Context ctx,
@@ -115,6 +121,12 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
                               Supplier<T>,
                               Router.Path<T> {
 
+    /**
+     * Treats return from {@link #get()} in its serialized form as the response
+     * body.
+     *
+     * @param ctx Application's context.
+     */
     @Override
     default void handle(final @lombok.NonNull Context ctx) {
       ctx.result(Params.MAPPER.toJson(get()));

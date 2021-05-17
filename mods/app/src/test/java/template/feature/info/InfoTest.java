@@ -13,7 +13,7 @@ import template.Support.IntegrationTest;
 import template.core.Props;
 
 /**
- * Test suite for application information endpoint.
+ * {@link Info information} endpoint's test suite.
  *
  * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */
@@ -21,11 +21,6 @@ import template.core.Props;
 @DisplayName("Test suite for application information endpoint.")
 class InfoTest {
 
-  /**
-   * WHEN retrieve from default exposed endpoint
-   * THEN return HTTP 200 as status
-   * AND application information object as body."
-   */
   @Test
   @DisplayName(""
       + "WHEN retrieve from default exposed endpoint "

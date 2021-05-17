@@ -17,7 +17,7 @@ import template.base.contract.Router;
 import template.base.stereotype.Domain;
 
 /**
- * Domain which represents class an address.
+ * {@link Domain} which represents class an address.
  *
  * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */

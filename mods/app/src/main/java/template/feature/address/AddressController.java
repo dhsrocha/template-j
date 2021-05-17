@@ -9,11 +9,11 @@ import template.base.contract.Repository;
 import template.base.contract.Service;
 
 /**
- * Address feature controller implementation.
+ * {@link Address} feature controller implementation.
  *
  * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */
-class AddressController extends Service.Cached<Address, UUID>
+final class AddressController extends Service.Cached<Address, UUID>
     implements Controller<Address> {
 
   @javax.inject.Inject

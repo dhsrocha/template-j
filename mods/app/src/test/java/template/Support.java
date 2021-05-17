@@ -31,7 +31,7 @@ public interface Support {
 
   /**
    * Activates {@link Bootstrap#bootstrap(String...)} to test endpoints under
-   * <b>integration testing strategy</b>. Must be used along with
+   * <b>integration testing strategy</b>. Should preferably be used along with
    * {@link Client}.
    *
    * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
@@ -41,9 +41,9 @@ public interface Support {
   @Retention(RetentionPolicy.RUNTIME)
   @interface IntegrationTest {
     /**
-     * Features to activate on application startup. Default value means
-     * loading up {@link Feat#values() all features available}. Values added
-     * to {@link #activated()} method have higher topmost priority.
+     * Features to activate on application startup. Default value means loading
+     * up {@link Feat#values() all features available}. Values added to
+     * {@link #activated()} method have higher topmost priority.
      *
      * @return Feature entries.
      * @see #activated()
@@ -51,9 +51,9 @@ public interface Support {
     Feat[] value() default {};
 
     /**
-     * Features to activate on application startup. Default value means
-     * loading up {@link Feat#values() all features available}. Values added
-     * here have higher topmost priority.
+     * Features to activate on application startup. Default value means loading
+     * up {@link Feat#values() all features available}. Values added here have
+     * higher topmost priority.
      *
      * @return Feature entries.
      */

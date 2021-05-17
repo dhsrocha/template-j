@@ -14,8 +14,8 @@ import template.base.stereotype.Domain;
 import template.base.stereotype.Entity;
 
 /**
- * Ensembles business concerns and database handling. Meant to follow a
- * regular Repository design pattern.
+ * Ensembles business concerns and database handling. Meant to follow a regular
+ * <i>Repository</i> design pattern.
  *
  * @param <D> {@link Domain} type to be handled among the operations.
  * @param <I> A type to be used as an the domain indexer.
@@ -35,8 +35,8 @@ public interface Repository<D extends Domain<D>, I> {
   boolean delete(final @NonNull I id);
 
   /**
-   * An {@link Repository} specialization to allow implementation combine
-   * with caching capabilities.
+   * An {@link Repository} specialization to allow implementation combine with
+   * caching capabilities.
    *
    * @param <D> {@link Domain} type to be handled among the operations.
    * @param <I> A type to be used as an the domain indexer.

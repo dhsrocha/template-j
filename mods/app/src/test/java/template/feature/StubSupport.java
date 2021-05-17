@@ -9,7 +9,7 @@ import template.feature.address.Address;
 import template.feature.user.User;
 
 /**
- * Support class for providing {@link Domain}-related stubs objects.
+ * Supporting class to provide {@link Domain}-related stubs objects.
  *
  * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */

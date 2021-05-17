@@ -49,6 +49,8 @@ public enum Exceptions implements Supplier<RuntimeException> {
    * @param conditions Indicates an undesirable conditions to trigger the
    *                   supplied exception.
    * @throws HttpResponseException The supplied exception instance.
+   * @see #throwIf(String, BooleanSupplier...)
+   * @see #throwIf(BooleanSupplier...)
    */
   public static void throwIf(final @NonNull Supplier<RuntimeException> ex,
                              final @NonNull BooleanSupplier... conditions) {
@@ -68,6 +70,7 @@ public enum Exceptions implements Supplier<RuntimeException> {
    *                   supplied exception.
    * @throws HttpResponseException The exception indexed by the provided item.
    * @see #throwIf(String, BooleanSupplier...)
+   * @see #throwIf(Supplier, BooleanSupplier...)
    */
   public final void throwIf(final @NonNull BooleanSupplier... conditions) {
     throwIf(name(), conditions);
@@ -84,6 +87,7 @@ public enum Exceptions implements Supplier<RuntimeException> {
    *                   supplied exception.
    * @throws HttpResponseException The indexed one by the provided item.
    * @see #throwIf(Supplier, BooleanSupplier...)
+   * @see #throwIf(BooleanSupplier...)
    */
   public final void throwIf(final @NonNull String message,
                             final @NonNull BooleanSupplier... conditions) {

@@ -28,7 +28,8 @@ import template.base.Exceptions;
 import template.base.stereotype.Domain;
 
 /**
- * Performs requests to the instance started up by {@link IntegrationTest}.
+ * Performs requests to the application's instance started up by
+ * {@link IntegrationTest}.
  *
  * @param <T> Inferred type to drive which the instance should request from.
  * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
@@ -47,12 +48,12 @@ public interface Client<T> {
 
   /**
    * Instantiates an HTTP client with base URL listening to the same port the
-   * server started instance is binding to and also pointing out to the
-   * provided {@link Domain}'s expected endpoint.
+   * server started instance is binding to and also pointing out to the provided
+   * {@link Domain}'s expected endpoint.
    *
    * @param <D> Inferred type to drive which the instance should request from.
-   * @param ref {@link Domain} type to be used conventionally as the
-   *            feature route.
+   * @param ref {@link Domain} type to be used conventionally as the feature
+   *            routing.
    * @return Instance with the adapted base URL.
    */
   static <D extends Domain<D>> Client<D> create(
@@ -64,7 +65,7 @@ public interface Client<T> {
   /**
    * Prepares a request to be triggered afterwards.
    *
-   * @param req Request configuration.
+   * @param req {@link Request} configuration.
    * @return Client instance with a prompted request.
    */
   ThenSerialize request(
@@ -73,7 +74,8 @@ public interface Client<T> {
   /**
    * Filters up a domain-based GET endpoint based on its attributes.
    *
-   * @param fq Filtering criteria based on domain's attributes.
+   * @param fq Filtering query, based on domain's attributes to be used as
+   *           matching criteria.
    * @return Client instance with a prompted request.
    * @see #retrieve(Object, Map)
    */
@@ -102,11 +104,13 @@ public interface Client<T> {
   /**
    * Filters up a domain-based GET endpoint based on its attributes.
    *
-   * @param filter Filtering criteria based on domain's attributes.
-   * @param params Request parameters.
+   * @param fq     Filtering query, based on domain's attributes to be used as
+   *               matching criteria.
+   * @param params Non-conventional parameters to be attached to the {@code
+   *               Request} URI.
    * @return Client instance with a prompted request.
    */
-  ThenFilter<T> retrieve(final @lombok.NonNull T filter,
+  ThenFilter<T> retrieve(final @lombok.NonNull T fq,
                          final @lombok.NonNull Map<String, String> params);
 
   /**
@@ -206,15 +210,16 @@ public interface Client<T> {
     // Specialized requests
 
     @Override
-    public ThenFilter<T> retrieve(final @lombok.NonNull T filter,
+    public ThenFilter<T> retrieve(final @lombok.NonNull T fq,
                                   final @lombok.NonNull Map<String, String> params) {
-      val filters = MAPPER.fromJson(MAPPER.toJson(filter), Map.class);
+      val filters = MAPPER.fromJson(MAPPER.toJson(fq), Map.class);
       params.put("fq", paramsOf(",", filters));
       return new Impl<>(base, req.method(HttpMethod.GET).params(params));
     }
 
     @Override
-    public ThenFilter<T> retrieve(final @lombok.NonNull Map<String, String> params) {
+    public ThenFilter<T> retrieve(
+        final @lombok.NonNull Map<String, String> params) {
       return new Impl<>(base, req.method(HttpMethod.GET).params(params));
     }
 

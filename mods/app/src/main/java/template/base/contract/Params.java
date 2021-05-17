@@ -10,7 +10,7 @@ import lombok.val;
 import template.base.Exceptions;
 
 /**
- * Application's query parameters.
+ * Application's query parameter parser.
  *
  * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */

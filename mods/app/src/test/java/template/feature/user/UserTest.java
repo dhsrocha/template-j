@@ -19,6 +19,11 @@ import template.Application.Feat;
 import template.Client;
 import template.Support.IntegrationTest;
 
+/**
+ * {@link User} feature's test suite.
+ *
+ * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
+ */
 @SuppressWarnings("ClassCanBeStatic")
 @DisplayName("User feature test suite using integration test strategy.")
 final class UserTest {

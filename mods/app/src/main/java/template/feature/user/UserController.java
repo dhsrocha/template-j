@@ -8,7 +8,7 @@ import template.base.contract.Repository;
 import template.base.contract.Service;
 
 /**
- * User feature controller implementation.
+ * {@link User} feature controller implementation.
  *
  * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */

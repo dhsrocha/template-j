@@ -15,7 +15,7 @@ import template.base.Exceptions;
 public interface Bootstrap {
 
   /**
-   * Parses provided arguments and initiates application.
+   * Parses provided arguments and initiates application0s modules.
    *
    * @param args key-value entries treated by {@link Props#from(String...)}.
    * @see Application#main(String...)

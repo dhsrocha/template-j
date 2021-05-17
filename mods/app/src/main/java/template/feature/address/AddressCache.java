@@ -4,11 +4,11 @@ import java.util.UUID;
 import template.base.contract.CacheManager;
 
 /**
- * Address feature cache manager implementation.
+ * {@link Address} feature cache manager implementation.
  *
  * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */
-class AddressCache extends CacheManager.Default<Address, UUID> {
+final class AddressCache extends CacheManager.Default<Address, UUID> {
 
   @javax.inject.Inject
   AddressCache() {

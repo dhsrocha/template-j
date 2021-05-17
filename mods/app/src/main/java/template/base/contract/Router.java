@@ -5,7 +5,7 @@ import template.base.stereotype.Referable;
 
 /**
  * Maps application's routes. Main purpose is to isolate third party
- * dependency from the rest of the system.
+ * dependencies from the rest of the system.
  *
  * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */

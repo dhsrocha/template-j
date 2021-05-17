@@ -16,7 +16,7 @@ import template.base.stereotype.Referable;
  * Manager cache concerns for a given {@link Domain domain} scope.
  *
  * @param <D> {@link Domain} type to be handled among the operations.
- * @param <I> A type to be used as an the domain indexer.
+ * @param <I> A type to be used as an indexer.
  * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */
 public interface CacheManager<D extends Domain<D>, I> {
@@ -36,7 +36,7 @@ public interface CacheManager<D extends Domain<D>, I> {
    * capabilities.
    *
    * @param <D> {@link Domain} type to be handled among the operations.
-   * @param <I> A type to be used as an the domain indexer.
+   * @param <I> A type to be used as an indexer.
    * @param <R> Meant to return the abstract which is being combined to.
    * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
    */
