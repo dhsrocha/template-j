@@ -9,7 +9,7 @@ import java.util.function.Supplier;
 import lombok.val;
 import template.Application;
 import template.Application.Mode;
-import template.base.contract.Builder;
+import template.base.contract.Buildable;
 import template.base.stereotype.Domain.Violation;
 import template.core.Web.Mod;
 
@@ -75,7 +75,7 @@ interface Web extends Supplier<Application.Server> {
    * @see <a href="https://dagger.dev/dev-guide/">Technical reference</a>
    */
   @dagger.Component.Builder
-  interface Build extends Builder.Part1<Build, Web, Mode>,
-                          Builder.Dep1<Build, Web, Routes.Build> {
+  interface Build extends Buildable.Part1<Build, Web, Mode>,
+                          Buildable.Dep1<Build, Web, Routes.Build> {
   }
 }

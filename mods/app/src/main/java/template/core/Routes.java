@@ -7,7 +7,7 @@ import java.util.function.Supplier;
 import template.Application;
 import template.Application.Feat;
 import template.Application.Mode;
-import template.base.contract.Builder;
+import template.base.contract.Buildable;
 import template.base.contract.Controller;
 import template.base.contract.Router;
 import template.core.Routes.FeatureScope;
@@ -78,7 +78,7 @@ interface Routes extends Supplier<Router> {
    * @see <a href="https://dagger.dev/dev-guide/">Technical reference</a>
    */
   @dagger.Component.Builder
-  interface Build extends Builder.Part1<Build, Routes, Application.Mode>,
-                          Builder.Part2<Build, Routes, Application.Feat[]> {
+  interface Build extends Buildable.Part1<Build, Routes, Application.Mode>,
+                          Buildable.Part2<Build, Routes, Application.Feat[]> {
   }
 }

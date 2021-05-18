@@ -1,12 +1,13 @@
 package template.base.contract;
 
 /**
- * General abstraction for implementing Builder Design Pattern.
+ * The general abstraction for implementing Builder Design Pattern, indicates
+ * that the implementation is able to be built.
  *
  * @param <B> The type meant to be built.
  * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */
-public interface Builder<B> {
+public interface Buildable<B> {
 
   /**
    * Finishes the building chain.
@@ -16,36 +17,36 @@ public interface Builder<B> {
   B build();
 
   /**
-   * Utility interface for implementing {@link Builder}'s component's first
+   * Utility interface for implementing {@link Buildable}'s component's first
    * injectable.
    *
    * @author <a href="mailto:dhsrocha.dev@gmail.com">>Diego Rocha</a>
-   * @see Builder.Part2
+   * @see Buildable.Part2
    */
-  interface Part1<P extends Part1<P, B, C>, B, C> extends Builder<B> {
+  interface Part1<P extends Part1<P, B, C>, B, C> extends Buildable<B> {
     @dagger.BindsInstance
     P part1(final @lombok.NonNull C c);
   }
 
   /**
-   * Utility interface for implementing {@link Builder}'s component's second
+   * Utility interface for implementing {@link Buildable}'s component's second
    * injectable.
    *
    * @author <a href="mailto:dhsrocha.dev@gmail.com">>Diego Rocha</a>
-   * @see Builder.Part1
+   * @see Buildable.Part1
    */
-  interface Part2<P extends Part2<P, B, C>, B, C> extends Builder<B> {
+  interface Part2<P extends Part2<P, B, C>, B, C> extends Buildable<B> {
     @dagger.BindsInstance
     P part2(final @lombok.NonNull C c);
   }
 
   /**
-   * Utility interface for implementing {@link Builder}'s component's first
+   * Utility interface for implementing {@link Buildable}'s component's first
    * dependency.
    *
    * @author <a href="mailto:dhsrocha.dev@gmail.com">>Diego Rocha</a>
    */
-  interface Dep1<D extends Dep1<D, B, C>, B, C> extends Builder<B> {
+  interface Dep1<D extends Dep1<D, B, C>, B, C> extends Buildable<B> {
     D dep1(final @lombok.NonNull C c);
   }
 }

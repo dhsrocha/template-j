@@ -9,7 +9,7 @@ import java.util.UUID;
 import java.util.function.Predicate;
 import lombok.AccessLevel;
 import template.base.Checks;
-import template.base.contract.Builder;
+import template.base.contract.Buildable;
 import template.base.contract.CacheManager;
 import template.base.contract.Controller;
 import template.base.contract.Repository;
@@ -25,7 +25,7 @@ import template.base.stereotype.Domain;
 @lombok.Builder(toBuilder = true)
 @lombok.AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Address implements Domain<Address>,
-                                Builder<Address> {
+                                Buildable<Address> {
 
   /**
    * {@link Address} business rules.
