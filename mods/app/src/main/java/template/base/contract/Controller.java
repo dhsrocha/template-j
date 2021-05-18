@@ -30,9 +30,9 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
    */
   @Override
   default void create(final @lombok.NonNull Context ctx) {
-    val d = Domain.validate(ctx.bodyAsClass(ref()));
+    val body = Exceptions.EMPTY_BODY.trapIn(() -> ctx.bodyAsClass(ref()));
     ctx.status(201);
-    ctx.result(create(d).toString());
+    ctx.result(create(Domain.validate(body)).toString());
   }
 
   /**
@@ -45,7 +45,7 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
   @Override
   default void getOne(final @lombok.NonNull Context ctx,
                       final @lombok.NonNull String id) {
-    val uuid = Exceptions.ILLEGAL_ARGUMENT.trapIn(() -> UUID.fromString(id));
+    val uuid = Exceptions.INVALID_ID.trapIn(() -> UUID.fromString(id));
     ctx.result(Params.MAPPER.toJson(getOne(uuid)));
   }
 
@@ -86,7 +86,8 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
   @Override
   default void update(final @lombok.NonNull Context ctx,
                       final @lombok.NonNull String id) {
-    val uuid = Exceptions.ILLEGAL_ARGUMENT.trapIn(() -> UUID.fromString(id));
+    val uuid = Exceptions.INVALID_ID.trapIn(() -> UUID.fromString(id));
+    Exceptions.EMPTY_BODY.throwIf(() -> ctx.body().isBlank());
     val d = Domain.validate(ctx.bodyAsClass(ref()));
     ctx.status(update(uuid, d) ? 204 : 404);
   }
@@ -100,7 +101,7 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
   @Override
   default void delete(final @lombok.NonNull Context ctx,
                       final @lombok.NonNull String id) {
-    val uuid = Exceptions.ILLEGAL_ARGUMENT.trapIn(() -> UUID.fromString(id));
+    val uuid = Exceptions.INVALID_ID.trapIn(() -> UUID.fromString(id));
     ctx.status(delete(uuid) ? 204 : 404);
   }
 

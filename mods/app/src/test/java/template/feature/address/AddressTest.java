@@ -7,11 +7,14 @@ import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 import java.util.function.Supplier;
+import lombok.NonNull;
 import lombok.val;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import template.Application.Feat;
 import template.Client;
 import template.Support.IntegrationTest;
@@ -204,6 +207,22 @@ final class AddressTest {
       val params = Map.of("fq", "xp");
       // Act
       val resp = CLIENT.retrieve(params).get();
+      // Assert
+      Assertions.assertEquals(400, resp.statusCode());
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = HttpMethod.class, names = {"POST", "PATCH"})
+    @DisplayName(""
+        + "GIVEN empty request body "
+        + "WHEN perform address create or update operation "
+        + "THEN return 400 as HTTP status code.")
+    final void givenEmptyBody_whenCreatingUpdating_thenReturn400asStatus(
+        final @NonNull HttpMethod m) {
+      // Arrange
+      val fake = HttpMethod.PATCH == m ? UUID.randomUUID().toString() : "";
+      // Act
+      val resp = CLIENT.request(req -> req.method(m).uri(fake)).get();
       // Assert
       Assertions.assertEquals(400, resp.statusCode());
     }

@@ -25,6 +25,14 @@ public enum Exceptions implements Supplier<RuntimeException> {
    */
   ILLEGAL_ARGUMENT(BadRequestResponse::new),
   /**
+   * Indicates an empty body is found in a request or response.
+   */
+  EMPTY_BODY(BadRequestResponse::new),
+  /**
+   * Indicates an invalid identity is provided.
+   */
+  INVALID_ID(BadRequestResponse::new),
+  /**
    * Indicates a resource that has not been found.
    */
   RESOURCE_NOT_FOUND(NotFoundResponse::new),
