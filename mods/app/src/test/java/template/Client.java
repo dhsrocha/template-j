@@ -20,7 +20,6 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.val;
 import org.eclipse.jetty.http.MimeTypes;
 import template.Support.IntegrationTest;
@@ -227,14 +226,17 @@ public interface Client<T> {
 
     @Override
     public <U> U thenTurnInto(final @lombok.NonNull Class<U> ref) {
-      return Exceptions.ILLEGAL_ARGUMENT
-          .trapIn(() -> MAPPER.fromJson(get().body(), ref));
+      val b = get().body();
+      Exceptions.EMPTY_BODY.throwIf(() -> null == b || b.isBlank());
+      return Exceptions.ILLEGAL_ARGUMENT.trapIn(() -> MAPPER.fromJson(b, ref));
     }
 
     @Override
     public Map<UUID, T> thenMap() {
+      val b = get().body();
+      Exceptions.EMPTY_BODY.throwIf(() -> null == b || b.isBlank());
       return Exceptions.ILLEGAL_ARGUMENT
-          .trapIn(() -> MAPPER.fromJson(get().body(), toMap.getType()));
+          .trapIn(() -> MAPPER.fromJson(b, toMap.getType()));
     }
 
     private static String paramsOf(final @lombok.NonNull String sep,
@@ -252,7 +254,7 @@ public interface Client<T> {
    *
    * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
    */
-  @Builder
+  @lombok.Builder
   @lombok.AllArgsConstructor(access = AccessLevel.PRIVATE)
   class Request {
     /**
