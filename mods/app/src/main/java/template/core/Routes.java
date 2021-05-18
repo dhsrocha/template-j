@@ -10,12 +10,12 @@ import template.Application.Mode;
 import template.base.contract.Buildable;
 import template.base.contract.Controller;
 import template.base.contract.Router;
-import template.core.Routes.FeatureScope;
 import template.core.Routes.Mod;
+import template.core.Routes.Scope;
 import template.feature.address.Address;
 import template.feature.info.Info;
 import template.feature.user.User;
-import template.orm.EntityManager;
+import template.orm.DataAccess;
 
 /**
  * Component for exposing application's ReST resources. Ultimately, assembles
@@ -23,19 +23,20 @@ import template.orm.EntityManager;
  *
  * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */
-@FeatureScope
+@Scope
+@DataAccess.Scope
 @dagger.Component(modules = Mod.class)
 interface Routes extends Supplier<Router> {
 
   /**
-   * Type for scoping instance injection from systemic layer.
+   * Meant to scope elements for {@link Routes routing concerns}.
    *
    * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
    * @see <a href="https://dagger.dev/dev-guide/">Technical reference</a>
    */
   @javax.inject.Scope
   @Target({ElementType.TYPE, ElementType.METHOD})
-  @interface FeatureScope {
+  @interface Scope {
   }
 
   /**
@@ -44,11 +45,11 @@ interface Routes extends Supplier<Router> {
    * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
    * @see <a href="https://dagger.dev/dev-guide/">Technical reference</a>
    */
-  @dagger.Module(includes = {EntityManager.class,
+  @dagger.Module(includes = {DataAccess.class,
                              Info.Mod.class, User.Mod.class, Address.Mod.class})
   interface Mod {
 
-    @FeatureScope
+    @Scope
     @dagger.Provides
     static Router routes(final @lombok.NonNull Application.Mode mode,
                          final @lombok.NonNull Application.Feat[] feats,
