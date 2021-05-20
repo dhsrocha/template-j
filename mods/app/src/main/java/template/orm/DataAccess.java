@@ -28,7 +28,7 @@ public final class DataAccess {
    */
   @Documented
   @javax.inject.Scope
-  @Target(ElementType.TYPE)
+  @Target({ElementType.TYPE, ElementType.METHOD})
   public @interface Scope {
   }
 
