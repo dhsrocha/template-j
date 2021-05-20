@@ -73,8 +73,8 @@ public interface Repository<D extends Domain<D>, I> {
     public final Map<UUID, T> getBy(final @NonNull Predicate<T> filter,
                                     final int skip, final int limit) {
       return store
-          .getStore()
-          .entrySet().stream().filter(e -> filter.test(e.getValue()))
+          .getStore().entrySet().stream()
+          .filter(e -> filter.test(e.getValue()))
           .skip(skip).limit(limit)
           .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }

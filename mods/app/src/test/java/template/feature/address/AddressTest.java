@@ -14,6 +14,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
 import template.Application.Feat;
 import template.Client;
@@ -50,7 +51,7 @@ final class AddressTest {
         + "GIVEN valid resource to persist "
         + "WHEN perform address create operation "
         + "THEN should be able to find resource.")
-    final void givenValidResource_whenCreating_thenShouldAbleToFindResource() {
+    final void givenValidResource_whenCreate_thenShouldAbleToFindResource() {
       // Act
       val resp = CLIENT
           .request(req -> req.method(HttpMethod.POST).body(VALID_STUB)).get();
@@ -74,7 +75,7 @@ final class AddressTest {
         + "AND a request body as filtering criterion "
         + "WHEN perform address retrieve operation "
         + "THEN return resources with matching attributes from request body.")
-    final void given3created_andFilteringCriterion_whenRetrieving_thenReturnMatching() {
+    final void given3created_andFilteringCriterion_whenRetrieve_thenReturnMatching() {
       // Arrange
       val ids = addressStub(3)
           .map(u -> CLIENT.request(
@@ -90,22 +91,24 @@ final class AddressTest {
       Assertions.assertEquals(1, filtered.size());
     }
 
-    @Test
+    @ParameterizedTest
+    @CsvSource({"limit, 5, 5", "skip, 5, 10"})
     @DisplayName(""
-        + "GIVEN 30 address resources created "
+        + "GIVEN 15 address resources created "
         + "AND parameters to skip 5 and limit 15 resources "
         + "WHEN perform user retrieve operation "
-        + "THEN return from the 6th resource to the 20th one.")
-    final void given30Created_andParamsSkip5and10limit_whenRetrieving_thenReturn6thTo20th() {
+        + "THEN return expected parameter.")
+    final void given15Created_andSkipLimitParams_whenRetrieve_thenReturnExpected(
+        final String key, final String val, final int expected) {
       // Arrange
-      addressStub(30)
+      addressStub(15)
           .map(a -> CLIENT.request(req -> req.method(HttpMethod.POST).body(a)))
           .map(Supplier::get)
           .forEachOrdered(r -> Assertions.assertEquals(201, r.statusCode()));
       // Act
-      val found = CLIENT.retrieve(Map.of("limit", "15", "skip", "5")).thenMap();
+      val found = CLIENT.retrieve(Map.of(key, val)).thenMap();
       // Assert
-      Assertions.assertEquals(15, found.size());
+      Assertions.assertEquals(expected, found.size());
     }
 
     @Test
@@ -113,7 +116,7 @@ final class AddressTest {
         + "GIVEN three created resources "
         + "WHEN perform address retrieve operation "
         + "THEN return all resources created.")
-    final void given3createdResources_whenRetrieving_thenReturnAllResourcesCreated() {
+    final void given3createdResources_whenRetrieve_thenReturnAllResourcesCreated() {
       // Arrange
       val ids = addressStub(3)
           .map(a -> CLIENT.request(req -> req.method(HttpMethod.POST).body(a)))
@@ -137,7 +140,7 @@ final class AddressTest {
         + "GIVEN a created resource "
         + "WHEN perform address update operation "
         + "THEN return true.")
-    final void givenCreatedResource_whenUpdating_thenReturnTrue() {
+    final void givenCreatedResource_whenUpdate_thenReturnTrue() {
       // Arrange
       val created = CLIENT
           .request(req -> req.method(HttpMethod.POST).body(VALID_STUB))
@@ -168,7 +171,7 @@ final class AddressTest {
         + "GIVEN a created resource "
         + "WHEN perform address delete operation "
         + "THEN return true.")
-    final void givenCreatedResource_whenDeleting_thenReturnTrue() {
+    final void givenCreatedResource_whenDelete_thenReturnTrue() {
       // Arrange
       val created = CLIENT
           .request(req -> req.method(HttpMethod.POST).body(VALID_STUB))
@@ -194,7 +197,7 @@ final class AddressTest {
         + "GIVEN invalid request "
         + "WHEN perform address creation "
         + "THEN return 422 as HTTP status code.")
-    final void givenInvalidRequest_whenCreating_thenReturn422asStatus() {
+    final void givenInvalidRequest_whenCreate_thenReturn422asStatus() {
       // Act
       val resp = CLIENT
           .request(req -> req.method(HttpMethod.POST).body(INVALID_STUB)).get();
@@ -207,7 +210,7 @@ final class AddressTest {
         + "GIVEN invalid filter query "
         + "WHEN perform user retrieve operation "
         + "THEN return 400 as HTTP status code.")
-    final void givenInvalidFilterQuery_whenRetrieving_thenReturn400asStatus() {
+    final void givenInvalidFilterQuery_whenRetrieve_thenReturn400asStatus() {
       // Arrange
       val params = Map.of("fq", "xp");
       // Act
@@ -222,7 +225,7 @@ final class AddressTest {
         + "GIVEN empty request body "
         + "WHEN perform address create or update operation "
         + "THEN return 400 as HTTP status code.")
-    final void givenEmptyBody_whenCreatingUpdating_thenReturn400asStatus(
+    final void givenEmptyBody_whenCreatingUpdate_thenReturn400asStatus(
         final @NonNull HttpMethod m) {
       // Arrange
       val fake = HttpMethod.PATCH == m ? UUID.randomUUID().toString() : "";

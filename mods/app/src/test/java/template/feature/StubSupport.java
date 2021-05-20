@@ -37,17 +37,16 @@ public final class StubSupport {
    * @return Stream of distinct {@link Address} produced instances.
    */
   public static Stream<Address> addressStub(final int bound) {
-    return IntStream
-        .rangeClosed(1, bound)
-        .mapToObj(i -> Address.builder()
-                              .type(Address.Type.values()[i % Address.Type
-                                  .values().length])
-                              .place(String.valueOf(i))
-                              .number(String.valueOf(i))
-                              .neighbourhood(String.valueOf(i))
-                              .municipality(String.valueOf(i))
-                              .state(String.valueOf(i))
-                              .postalCode(String.valueOf(i))
-                              .build());
+    final var arr = Address.Type.values();
+    return IntStream.range(0, bound)
+                    .mapToObj(i -> Address.builder()
+                                          .type(arr[i % arr.length])
+                                          .place(String.valueOf(i))
+                                          .number(String.valueOf(i))
+                                          .neighbourhood(String.valueOf(i))
+                                          .municipality(String.valueOf(i))
+                                          .state(String.valueOf(i))
+                                          .postalCode(String.valueOf(i))
+                                          .build());
   }
 }
