@@ -74,9 +74,9 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
                           .filter(i -> i > 0).orElse(0);
     val limit = Params.LIMIT.valFrom(ctx, Integer::parseInt)
                             .filter(i -> i > 0).orElse(30);
+    Exceptions.ILLEGAL_ARGUMENT.throwIf(Params.MSG, () -> skip > limit);
     val filter = Params.FQ.parsedFrom(ctx, ref())
                           .map(this::filter).orElseGet(Params::noFilter);
-    Exceptions.ILLEGAL_ARGUMENT.throwIf(Params.MSG, () -> skip > limit);
     val sourced = getBy(filter, skip, limit);
     val sorted = new TreeMap<UUID, D>(Comparator.comparing(sourced::get));
     sorted.putAll(sourced);

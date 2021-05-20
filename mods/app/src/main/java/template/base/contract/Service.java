@@ -3,6 +3,8 @@ package template.base.contract;
 import java.util.Map;
 import java.util.function.Predicate;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import template.base.Exceptions;
 import template.base.stereotype.Domain;
 import template.base.stereotype.Referable;
@@ -11,35 +13,37 @@ import template.base.stereotype.Referable;
  * Describes general api for handling MVC operations. Meant to be used along
  * with {@link Controller} on ReST templates.
  *
- * @param <T> To be handled among the operations.
- * @param <I> To be used as an the domain indexer.
+ * @param <T> Resource handled by the implementing operations.
+ * @param <I> Represents the {@link T domain context}'s identity.
  * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */
 public interface Service<T, I> {
 
-  T getOne(final @lombok.NonNull I id);
+  T getOne(final @NonNull I id);
 
-  Map<I, T> getBy(final @lombok.NonNull Predicate<T> criteria,
+  Map<I, T> getBy(final @NonNull Predicate<T> criteria,
                   final int skip, final int limit);
 
-  I create(final @lombok.NonNull T t);
+  I create(final @NonNull T t);
 
-  boolean update(final @lombok.NonNull I id, final @lombok.NonNull T t);
+  boolean update(final @NonNull I id, final @NonNull T t);
 
-  boolean delete(final @lombok.NonNull I id);
+  boolean delete(final @NonNull I id);
 
-  default Predicate<T> filter(@lombok.NonNull final T t) {
+  default Predicate<T> filter(@NonNull final T t) {
     return Predicate.isEqual(t);
   }
+
+  // ::: Cached :::
 
   /**
    * Abstraction which natively supports caching capabilities. Meant to be
    * openly extendable.
    *
-   * @param <D> {@link Domain} type to be handled among the operations.
+   * @param <D> {@link Domain Resource} handled by the implementing operations.
    * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
    */
-  @lombok.AllArgsConstructor(access = AccessLevel.PROTECTED)
+  @AllArgsConstructor(access = AccessLevel.PROTECTED)
   abstract class Cached<D extends Domain<D>, I> implements Service<D, I>,
                                                            Referable<D> {
 
@@ -47,30 +51,30 @@ public interface Service<T, I> {
     private final Repository.Cached<D, I> repo;
 
     @Override
-    public D getOne(final @lombok.NonNull I id) {
+    public D getOne(final @NonNull I id) {
       return repo.with(cache.from(ref())).getOne(id)
                  .orElseThrow(Exceptions.RESOURCE_NOT_FOUND);
     }
 
     @Override
-    public Map<I, D> getBy(final @lombok.NonNull Predicate<D> criteria,
+    public Map<I, D> getBy(final @NonNull Predicate<D> criteria,
                            final int skip, final int limit) {
       return repo.with(cache.from(ref())).getBy(criteria, skip, limit);
     }
 
     @Override
-    public I create(final @lombok.NonNull D user) {
+    public I create(final @NonNull D user) {
       return repo.with(cache.from(ref())).create(user);
     }
 
     @Override
-    public boolean update(final @lombok.NonNull I id,
-                          final @lombok.NonNull D user) {
+    public boolean update(final @NonNull I id,
+                          final @NonNull D user) {
       return repo.with(cache.from(ref())).update(id, user);
     }
 
     @Override
-    public boolean delete(final @lombok.NonNull I id) {
+    public boolean delete(final @NonNull I id) {
       return repo.with(cache.from(ref())).delete(id);
     }
   }
