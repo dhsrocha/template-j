@@ -10,6 +10,7 @@ import template.Application.Feat;
 import template.Application.Mode;
 import template.base.contract.Buildable;
 import template.base.contract.Controller;
+import template.base.contract.Dao;
 import template.base.contract.Router;
 import template.core.Routes.Mod;
 import template.core.Routes.Scope;
@@ -26,6 +27,7 @@ import template.orm.DataAccess;
  */
 @Scope
 @DataAccess.Scope
+@Application.Scope
 @dagger.Component(modules = Mod.class)
 interface Routes extends Supplier<Router> {
 
@@ -87,6 +89,7 @@ interface Routes extends Supplier<Router> {
    */
   @dagger.Component.Builder
   interface Build extends Buildable.Part1<Build, Routes, Application.Mode>,
-                          Buildable.Part2<Build, Routes, Application.Feat[]> {
+                          Buildable.Part2<Build, Routes, Application.Feat[]>,
+                          Buildable.Part3<Build, Routes, Dao> {
   }
 }

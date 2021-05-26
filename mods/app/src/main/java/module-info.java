@@ -14,6 +14,11 @@ module template.app {
   requires io.javalin;
   requires com.google.gson;
   requires ehcache;
+  // Persistence
+  requires java.sql;
+  requires org.jooq;
+  requires com.zaxxer.hikari;
+  requires org.postgresql.jdbc;
 
   // Open for testing
   opens template;

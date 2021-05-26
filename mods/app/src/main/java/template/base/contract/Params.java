@@ -2,12 +2,9 @@ package template.base.contract;
 
 import com.google.gson.Gson;
 import io.javalin.http.Context;
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.function.Predicate;
-import lombok.val;
-import template.base.Exceptions;
+import template.base.Body;
 
 /**
  * Application's query parameter parser.
@@ -28,9 +25,10 @@ enum Params {
    */
   LIMIT,
   ;
+  private static final String EMPTY = "{}";
   static final String MSG = "Skip parameter is higher than limit parameter.";
-  static final Gson MAPPER = new Gson();
   static final String ROOT_ID = "root";
+  static final Gson MAPPER = new Gson();
 
   /**
    * Extracts a query parameter from {@link Context} and parses it. It should
@@ -41,12 +39,9 @@ enum Params {
    * @param <T> Value extracted and it should be returned.
    * @return Optionally extracted query parameter.
    */
-  <T> Optional<T> parsedFrom(final @lombok.NonNull Context ctx,
-                             final @lombok.NonNull Class<T> ref) {
-    return valFrom(ctx, Exceptions.ILLEGAL_ARGUMENT.trapIn(s -> {
-      val m = MAPPER.fromJson("{" + s + "}", Map.class);
-      return MAPPER.fromJson(Params.MAPPER.toJson(m), ref);
-    }));
+  <T> Body<T> bodyFrom(final @lombok.NonNull Context ctx,
+                       final @lombok.NonNull Class<T> ref) {
+    return Body.of(valFrom(ctx, s -> "{" + s + "}").orElse(EMPTY), ref);
   }
 
   /**
@@ -60,15 +55,5 @@ enum Params {
   <T> Optional<T> valFrom(final @lombok.NonNull Context ctx,
                           final @lombok.NonNull Function<String, T> fun) {
     return Optional.ofNullable(ctx.queryParam(name().toLowerCase())).map(fun);
-  }
-
-  /**
-   * Default Predicate which always returns true.
-   *
-   * @param <T> Any inferred type which is request from typing erasure.
-   * @return An predicate which is returns true.
-   */
-  static <T> Predicate<T> noFilter() {
-    return t -> Boolean.TRUE;
   }
 }

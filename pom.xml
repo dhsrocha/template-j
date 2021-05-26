@@ -417,6 +417,13 @@
         <scope>import</scope>
       </dependency>
       <dependency>
+        <groupId>org.jooq</groupId>
+        <artifactId>jooq-parent</artifactId>
+        <version>3.14.11</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
         <groupId>org.junit</groupId>
         <artifactId>junit-bom</artifactId>
         <version>5.8.0-M1</version>
@@ -526,9 +533,19 @@
         <version>2.6.0</version>
       </dependency>
       <dependency>
+        <groupId>org.postgresql</groupId>
+        <artifactId>postgresql</artifactId>
+        <version>42.2.20</version>
+      </dependency>
+      <dependency>
         <groupId>org.liquibase</groupId>
         <artifactId>liquibase-core</artifactId>
         <version>4.3.5</version>
+      </dependency>
+      <dependency>
+        <groupId>com.zaxxer</groupId>
+        <artifactId>HikariCP</artifactId>
+        <version>4.0.3</version>
       </dependency>
       <!---->
     </dependencies>
@@ -650,10 +667,18 @@
                   </goals>
                   <configuration>
                     <arguments>
-                      <argument>app.db.driver=${liquibase.driver}</argument>
-                      <argument>app.db.url=${liquibase.url}</argument>
-                      <argument>app.db.user=${liquibase.user}</argument>
-                      <argument>app.db.pwd=${liquibase.pwd}</argument>
+                      <argument>
+                        ${project.artifactId}.db.driver=${liquibase.driver}
+                      </argument>
+                      <argument>
+                        ${project.artifactId}.db.url=${liquibase.url}
+                      </argument>
+                      <argument>
+                        ${project.artifactId}.db.user=${liquibase.user}
+                      </argument>
+                      <argument>
+                        ${project.artifactId}.db.pwd=${liquibase.pwd}
+                      </argument>
                     </arguments>
                   </configuration>
                 </execution>

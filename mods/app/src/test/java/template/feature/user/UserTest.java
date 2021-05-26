@@ -71,10 +71,9 @@ final class UserTest {
     final void given3created_andFilteringCriterion_whenRetrieve_thenReturnMatching() {
       // Arrange
       val ids = userStub(3)
-          .map(u -> CLIENT.request(
-              req -> req.method(HttpMethod.POST).body(u)))
-          .map(req -> req.get().body())
-          .toArray(String[]::new);
+          .map(u -> CLIENT.request(req -> req.method(HttpMethod.POST).body(u)))
+          .map(req -> req.thenTurnInto(UUID.class))
+          .toArray(UUID[]::new);
       val pick = ids[new Random().nextInt(ids.length)];
       val criteria = CLIENT.request(req -> req.method(HttpMethod.GET).uri(pick))
                            .thenTurnInto(User.class);

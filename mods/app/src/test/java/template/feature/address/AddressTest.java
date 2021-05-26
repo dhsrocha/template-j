@@ -78,10 +78,9 @@ final class AddressTest {
     final void given3created_andFilteringCriterion_whenRetrieve_thenReturnMatching() {
       // Arrange
       val ids = addressStub(3)
-          .map(u -> CLIENT.request(
-              req -> req.method(HttpMethod.POST).body(u)))
-          .map(req -> req.get().body())
-          .toArray(String[]::new);
+          .map(u -> CLIENT.request(req -> req.method(HttpMethod.POST).body(u)))
+          .map(req -> req.thenTurnInto(UUID.class))
+          .toArray(UUID[]::new);
       val pick = ids[new Random().nextInt(ids.length)];
       val criteria = CLIENT.request(req -> req.method(HttpMethod.GET).uri(pick))
                            .thenTurnInto(Address.class);
@@ -146,8 +145,8 @@ final class AddressTest {
           .request(req -> req.method(HttpMethod.POST).body(VALID_STUB))
           .thenTurnInto(UUID.class);
       val toUpdate = VALID_STUB.toBuilder()
-                               .place("otherPlace")
-                               .number("otherNumber")
+                               .place("newPlace")
+                               .number("newNumber")
                                .build();
       // Act
       val isUpdated = CLIENT.request(

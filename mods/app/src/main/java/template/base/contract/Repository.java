@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.val;
 import org.ehcache.Cache;
+import template.base.Body;
 import template.base.Exceptions;
 import template.base.stereotype.Domain;
 import template.base.stereotype.Entity;
@@ -31,7 +32,7 @@ public interface Repository<D extends Domain<D>, I> {
 
   Optional<D> getOne(final @NonNull I id);
 
-  Map<I, D> getBy(final @NonNull Predicate<D> criteria,
+  Map<I, D> getBy(final @NonNull Body<D> criteria,
                   final int skip, final int limit);
 
   boolean update(final @NonNull I id, final @NonNull D d);
@@ -65,38 +66,33 @@ public interface Repository<D extends Domain<D>, I> {
   abstract class Default<T extends Domain<T>> implements Repository<T, UUID>,
                                                          Cached<T, UUID> {
 
-    protected final Entity<UUID, T> store;
+    protected final Dao dao;
+    private final Class<T> ref;
 
     @Override
     public final Optional<T> getOne(final @NonNull UUID id) {
-      return Optional.ofNullable(store.getStore().get(id));
+      return dao.from(ref).getOne(id);
     }
 
     @Override
-    public final Map<UUID, T> getBy(final @NonNull Predicate<T> filter,
+    public final Map<UUID, T> getBy(final @NonNull Body<T> criteria,
                                     final int skip, final int limit) {
-      return store
-          .getStore().entrySet().stream()
-          .filter(e -> filter.test(e.getValue()))
-          .skip(skip).limit(limit)
-          .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+      return dao.from(ref).getBy(criteria, skip, limit);
     }
 
     @Override
-    public final UUID create(final @NonNull T d) {
-      val id = UUID.randomUUID();
-      store.getStore().put(id, d);
-      return id;
+    public final UUID create(final @NonNull T t) {
+      return dao.from(ref).create(t);
     }
 
     @Override
     public final boolean update(final @NonNull UUID id, final @NonNull T t) {
-      return null != store.getStore().replace(id, t);
+      return dao.from(ref).update(id, t);
     }
 
     @Override
     public final boolean delete(final @NonNull UUID id) {
-      return null != store.getStore().remove(id);
+      return dao.from(ref).delete(id);
     }
 
     @Override
@@ -130,7 +126,7 @@ public interface Repository<D extends Domain<D>, I> {
     }
 
     @Override
-    public Map<I, D> getBy(final @NonNull Predicate<D> filter,
+    public Map<I, D> getBy(final @NonNull Body<D> filter,
                            final int skip, final int limit) {
       val store = repo.getBy(filter, skip, limit);
       cache.putAll(store);
@@ -260,7 +256,7 @@ public interface Repository<D extends Domain<D>, I> {
     }
 
     @Override
-    public Map<I, U> getBy(final @NonNull Predicate<U> criteria,
+    public Map<I, U> getBy(final @NonNull Body<U> criteria,
                            final int skip, final int limit) {
       return extent.getBy(criteria, skip, limit).entrySet().stream()
                    .filter(e -> joined.contains(e.getKey()))

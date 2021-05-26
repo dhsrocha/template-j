@@ -29,8 +29,14 @@ public interface Bootstrap {
     Exceptions.ILLEGAL_ARGUMENT.throwIf(m::isForbidden);
     val feats = Feat.from(props.get(Props.FEAT));
     val port = Integer.parseInt(props.get(Props.PORT));
-    val router = DaggerRoutes.builder().part1(m).part2(feats);
-    // TODO Depends on persistence module
+    val cfg = Persistence.Config.builder()
+                                .driver(props.get(Props.DB_DRIVER))
+                                .url(props.get(Props.DB_URL))
+                                .user(props.get(Props.DB_USER))
+                                .pwd(props.get(Props.DB_PWD))
+                                .build();
+    val dao = DaggerPersistence.builder().part1(m).part2(cfg).build().get();
+    val router = DaggerRoutes.builder().part1(m).part2(feats).part3(dao);
     val server = DaggerWeb.builder().part1(m).dep1(router).build().get();
     return server.start(port);
   }

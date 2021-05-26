@@ -1,7 +1,6 @@
 package template.feature.user;
 
 import java.util.UUID;
-import java.util.function.Predicate;
 import template.base.contract.CacheManager;
 import template.base.contract.Controller;
 import template.base.contract.Repository;
@@ -25,13 +24,6 @@ final class UserController extends Service.Cached<User, UUID>
   @Override
   public Class<User> ref() {
     return User.class;
-  }
-
-  @Override
-  public Predicate<User> filter(final @lombok.NonNull User c) {
-    return super.filter(c)
-                .or(u -> u.getAge() == c.getAge())
-                .or(u -> u.getName().equals(c.getName()));
   }
 
   /**

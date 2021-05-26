@@ -5,6 +5,7 @@ import java.util.function.Predicate;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
+import template.base.Body;
 import template.base.Exceptions;
 import template.base.stereotype.Domain;
 import template.base.stereotype.Referable;
@@ -21,7 +22,7 @@ public interface Service<T, I> {
 
   T getOne(final @NonNull I id);
 
-  Map<I, T> getBy(final @NonNull Predicate<T> criteria,
+  Map<I, T> getBy(final @NonNull Body<T> criteria,
                   final int skip, final int limit);
 
   I create(final @NonNull T t);
@@ -29,10 +30,6 @@ public interface Service<T, I> {
   boolean update(final @NonNull I id, final @NonNull T t);
 
   boolean delete(final @NonNull I id);
-
-  default Predicate<T> filter(@NonNull final T t) {
-    return Predicate.isEqual(t);
-  }
 
   // ::: Cached :::
 
@@ -57,7 +54,7 @@ public interface Service<T, I> {
     }
 
     @Override
-    public Map<I, D> getBy(final @NonNull Predicate<D> criteria,
+    public Map<I, D> getBy(final @NonNull Body<D> criteria,
                            final int skip, final int limit) {
       return repo.with(cache.from(ref())).getBy(criteria, skip, limit);
     }
@@ -93,7 +90,7 @@ public interface Service<T, I> {
   interface Composable<D, E, I> {
 
     Map<I, E> getByFrom(final @NonNull I root,
-                        final @NonNull Predicate<E> criteria,
+                        final @NonNull Body<E> criteria,
                         final int skip, final int limit);
 
     E getOneFrom(final @NonNull I root, final @NonNull I id);
@@ -103,8 +100,6 @@ public interface Service<T, I> {
     boolean link(final @NonNull I root, final @NonNull I id);
 
     boolean unlink(final @NonNull I root, final @NonNull I id);
-
-    Predicate<E> filter(final @NonNull E e);
 
     default Predicate<E> isValidBound(final @NonNull D d) {
       return e -> Boolean.TRUE;
@@ -130,7 +125,7 @@ public interface Service<T, I> {
 
     @Override
     public Map<I, E> getByFrom(final @NonNull I root,
-                               final @NonNull Predicate<E> criteria,
+                               final @NonNull Body<E> criteria,
                                final int skip, final int limit) {
       return base.compose(root, extent, this::isValidBound)
                  .getBy(criteria, skip, limit);
@@ -156,11 +151,6 @@ public interface Service<T, I> {
     @Override
     public boolean unlink(final @NonNull I root, final @NonNull I id) {
       return base.compose(root, extent, this::isValidBound).delete(id);
-    }
-
-    @Override
-    public Predicate<E> filter(final @NonNull E e) {
-      return extent.filter(e);
     }
   }
 }

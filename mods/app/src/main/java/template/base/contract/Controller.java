@@ -78,9 +78,7 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
     val limit = Params.LIMIT.valFrom(ctx, Integer::parseInt)
                             .filter(i -> i > 0).orElse(30);
     Exceptions.ILLEGAL_ARGUMENT.throwIf(Params.MSG, () -> skip > limit);
-    val filter = Params.FQ.parsedFrom(ctx, ref())
-                          .map(this::filter).orElseGet(Params::noFilter);
-    val sourced = getBy(filter, skip, limit);
+    val sourced = getBy(Params.FQ.bodyFrom(ctx, ref()), skip, limit);
     val sorted = new TreeMap<UUID, D>(Comparator.comparing(sourced::get));
     sorted.putAll(sourced);
     ctx.result(Params.MAPPER.toJson(sorted));
@@ -190,9 +188,8 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
       Exceptions.ILLEGAL_ARGUMENT.throwIf(Params.MSG, () -> skip > limit);
       val root = Exceptions.INVALID_ID
           .trapIn(() -> UUID.fromString(ctx.pathParam(ROOT_ID)));
-      val filter = Params.FQ.parsedFrom(ctx, extRef()).map(this::filter)
-                            .orElseGet(Params::noFilter);
-      ctx.result(Params.MAPPER.toJson(getByFrom(root, filter, skip, limit)));
+      val criteria = Params.FQ.bodyFrom(ctx, extRef());
+      ctx.result(Params.MAPPER.toJson(getByFrom(root, criteria, skip, limit)));
     }
 
     /**

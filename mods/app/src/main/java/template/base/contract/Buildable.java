@@ -22,6 +22,7 @@ public interface Buildable<B> {
    *
    * @author <a href="mailto:dhsrocha.dev@gmail.com">>Diego Rocha</a>
    * @see Buildable.Part2
+   * @see Buildable.Part3
    */
   interface Part1<P extends Part1<P, B, C>, B, C> extends Buildable<B> {
     @dagger.BindsInstance
@@ -34,10 +35,24 @@ public interface Buildable<B> {
    *
    * @author <a href="mailto:dhsrocha.dev@gmail.com">>Diego Rocha</a>
    * @see Buildable.Part1
+   * @see Buildable.Part2
    */
   interface Part2<P extends Part2<P, B, C>, B, C> extends Buildable<B> {
     @dagger.BindsInstance
     P part2(final @lombok.NonNull C c);
+  }
+
+  /**
+   * Utility interface for implementing {@link Buildable}'s component's second
+   * injectable.
+   *
+   * @author <a href="mailto:dhsrocha.dev@gmail.com">>Diego Rocha</a>
+   * @see Buildable.Part1
+   * @see Buildable.Part2
+   */
+  interface Part3<P extends Part3<P, B, C>, B, C> extends Buildable<B> {
+    @dagger.BindsInstance
+    P part3(final @lombok.NonNull C c);
   }
 
   /**

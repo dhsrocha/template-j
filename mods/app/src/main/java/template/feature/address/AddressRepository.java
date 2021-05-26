@@ -1,8 +1,7 @@
 package template.feature.address;
 
-import java.util.UUID;
+import template.base.contract.Dao;
 import template.base.contract.Repository;
-import template.base.stereotype.Entity;
 
 /**
  * {@link Address} feature repository implementation.
@@ -12,7 +11,7 @@ import template.base.stereotype.Entity;
 final class AddressRepository extends Repository.Default<Address> {
 
   @javax.inject.Inject
-  AddressRepository(final @lombok.NonNull Entity<UUID, Address> entity) {
-    super(entity);
+  AddressRepository(final @lombok.NonNull Dao dao) {
+    super(dao, Address.class);
   }
 }

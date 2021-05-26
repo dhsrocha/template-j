@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Pattern;
 import lombok.val;
 import template.Application.Feat;
@@ -55,7 +56,9 @@ public enum Props {
   ;
   private static final Props[] VALUES = values();
   private static final Pattern SPLIT = Pattern.compile("=");
-  private static final Path ROOT = Paths.get("").toAbsolutePath().getFileName();
+  private static final Path ROOT = Paths
+      .get(Objects.requireNonNull(Props.class.getResource("")).getPath())
+      .getParent().getParent().getParent().getParent().getFileName();
 
   private final String key;
   private final String defaultVal;

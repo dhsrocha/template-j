@@ -1,6 +1,7 @@
 package template.feature.user;
 
 import java.util.UUID;
+import template.base.contract.Dao;
 import template.base.contract.Repository;
 import template.base.stereotype.Entity;
 import template.feature.address.Address;
@@ -14,8 +15,8 @@ final class UserRepository extends Repository.Default<User>
     implements Repository.Cached<User, UUID> {
 
   @javax.inject.Inject
-  UserRepository(final @lombok.NonNull Entity<UUID, User> repo) {
-    super(repo);
+  UserRepository(final @lombok.NonNull Dao dao) {
+    super(dao, User.class);
   }
 
   /**
