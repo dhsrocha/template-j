@@ -37,9 +37,8 @@ final class UserController extends Service.Cached<User, UUID>
 
     @javax.inject.Inject
     WithAddress(
-        final @lombok.NonNull Repository.Composable<User, Address, UUID> base,
-        final @lombok.NonNull Service<Address, UUID> ext) {
-      super(base, ext);
+        final @lombok.NonNull Repository.Composable<User, Address, UUID> base) {
+      super(base);
     }
 
     @Override

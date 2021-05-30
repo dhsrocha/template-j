@@ -121,36 +121,33 @@ public interface Service<T, I> {
       implements Composable<D, E, I> {
 
     private final Repository.Composable<D, E, I> base;
-    private final Service<E, I> extent;
 
     @Override
     public Map<I, E> getByFrom(final @NonNull I root,
                                final @NonNull Body<E> criteria,
-                               final int skip, final int limit) {
-      return base.compose(root, extent, this::isValidBound)
-                 .getBy(criteria, skip, limit);
+                               final int s, final int l) {
+      return base.compose(root, this::isValidBound).getBy(criteria, s, l);
     }
 
     @Override
     public E getOneFrom(final @NonNull I root, final @NonNull I id) {
-      return base.compose(root, extent, this::isValidBound).getOne(id)
+      return base.compose(root, this::isValidBound).getOne(id)
                  .orElseThrow(Exceptions.RESOURCE_NOT_FOUND);
     }
 
     @Override
     public I createOn(final @NonNull I root, final @NonNull E e) {
-      return base.compose(root, extent, this::isValidBound).create(e);
+      return base.compose(root, this::isValidBound).create(e);
     }
 
     @Override
     public boolean link(final @NonNull I root, final @NonNull I id) {
-      return base.compose(root, extent, this::isValidBound)
-                 .update(id, extent.getOne(id));
+      return base.compose(root, this::isValidBound).link(id);
     }
 
     @Override
     public boolean unlink(final @NonNull I root, final @NonNull I id) {
-      return base.compose(root, extent, this::isValidBound).delete(id);
+      return base.compose(root, this::isValidBound).unlink(id);
     }
   }
 }

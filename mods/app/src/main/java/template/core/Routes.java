@@ -17,7 +17,6 @@ import template.core.Routes.Scope;
 import template.feature.address.Address;
 import template.feature.info.Info;
 import template.feature.user.User;
-import template.orm.DataAccess;
 
 /**
  * Component for exposing application's ReST resources. Ultimately, assembles
@@ -26,7 +25,6 @@ import template.orm.DataAccess;
  * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
  */
 @Scope
-@DataAccess.Scope
 @Application.Scope
 @dagger.Component(modules = Mod.class)
 interface Routes extends Supplier<Router> {
@@ -48,8 +46,7 @@ interface Routes extends Supplier<Router> {
    * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
    * @see <a href="https://dagger.dev/dev-guide/">Technical reference</a>
    */
-  @dagger.Module(includes = {DataAccess.class,
-                             Info.Mod.class, User.Mod.class, Address.Mod.class})
+  @dagger.Module(includes = {Info.Mod.class, User.Mod.class, Address.Mod.class})
   interface Mod {
 
     @Scope

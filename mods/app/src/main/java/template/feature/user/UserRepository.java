@@ -3,7 +3,6 @@ package template.feature.user;
 import java.util.UUID;
 import template.base.contract.Dao;
 import template.base.contract.Repository;
-import template.base.stereotype.Entity;
 import template.feature.address.Address;
 
 /**
@@ -30,12 +29,17 @@ final class UserRepository extends Repository.Default<User>
 
     @javax.inject.Inject
     WithAddress(final @lombok.NonNull Repository<User, UUID> repo,
-                final @lombok.NonNull Entity.WithJoin<UUID, User, Address> join) {
-      super(repo, join);
+                final @lombok.NonNull Dao dao) {
+      super(repo, dao);
     }
 
     @Override
-    public Class<Address> ref() {
+    public Class<User> ref() {
+      return User.class;
+    }
+
+    @Override
+    protected Class<Address> extRef() {
       return Address.class;
     }
   }

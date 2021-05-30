@@ -5,6 +5,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 import java.util.UUID;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import javax.sql.DataSource;
 import lombok.AccessLevel;
@@ -107,6 +108,16 @@ interface Persistence extends Supplier<Dao> {
         @lombok.SneakyThrows
         public <T> Mapper<T, UUID> from(final @lombok.NonNull Class<T> ref) {
           return Default.of(DSL.using(ds, d), ref);
+        }
+
+        @Override
+        @lombok.SneakyThrows
+        public <T, U> Mapper.Composed<U, UUID> from(
+            final @lombok.NonNull UUID root,
+            final @lombok.NonNull Class<T> ref,
+            final @lombok.NonNull Class<U> ext,
+            final @lombok.NonNull Predicate<U> canBind) {
+          return Composed.of(root, canBind, DSL.using(ds, d), ref, ext);
         }
       };
     }

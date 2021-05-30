@@ -2,11 +2,9 @@ package template.base.contract;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -14,8 +12,8 @@ import lombok.val;
 import org.ehcache.Cache;
 import template.base.Body;
 import template.base.Exceptions;
+import template.base.contract.Dao.Mapper;
 import template.base.stereotype.Domain;
-import template.base.stereotype.Entity;
 import template.base.stereotype.Referable;
 
 /**
@@ -165,12 +163,11 @@ public interface Repository<D extends Domain<D>, I> {
    * Repository specialization which handles resources from two different
    * {@link Domain domain contexts}.
    *
-   * @param <T> {@link Domain resource} which the association will be based on.
-   * @param <U> {@link Domain resource} handled by the implemented operations.
+   * @param <T> {@link Domain Resource} which the association will be based on.
+   * @param <U> {@link Domain Resource} handled by the implemented operations.
    * @param <I> Represents the {@link T root domain context}'s identity.
    * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
    * @see Composed
-   * @see CompositeDelegate
    */
   interface Composable<T extends Domain<T>, U extends Domain<U>, I> {
 
@@ -179,99 +176,42 @@ public interface Repository<D extends Domain<D>, I> {
      * {@link Domain domain context}, which the {@link I provided identity} is
      * related to.
      *
-     * @param id        Identity from root {@link T domain context's resource}.
-     *                  To be used on bound structures' join operations.
-     * @param composite {@link Service} instance which handles resources from
-     *                  projected domain context.
-     * @param isValid   Enforces business rule constraints between resources
-     *                  from two distinct domain contexts.
+     * @param root    Identity from root {@link T domain context's resource}. To
+     *                be used on bound structures' join operations.
+     * @param isValid Enforces business rule constraints between resources from
+     *                two distinct domain contexts.
      * @return The instance provided for the composition.
-     * @see CompositeDelegate
      */
-    Repository<U, I> compose(final @NonNull I id,
-                             final @NonNull Service<U, I> composite,
-                             final @NonNull Function<T, Predicate<U>> isValid);
+    Mapper.Composed<U, I> compose(final @NonNull I root,
+                                  final @NonNull Function<T, Predicate<U>> isValid);
   }
 
   /**
    * Default {@link Repository} abstraction with {@link Service} composing
    * capabilities. Meant to openly extendable.
    *
-   * @param <T> {@link Domain resource} which the association will be based on.
-   * @param <U> {@link Domain resource} handled by the following operations.
+   * @param <T> {@link Domain Resource} which the association will be based on.
+   * @param <U> {@link Domain Resource} handled by the following operations.
    * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
    * @see Composable
-   * @see CompositeDelegate
    */
   @AllArgsConstructor(access = AccessLevel.PROTECTED)
   abstract class Composed<T extends Domain<T>, U extends Domain<U>>
       implements Composable<T, U, UUID>,
-                 Referable<U> {
+                 Referable<T> {
 
     private final Repository<T, UUID> repo;
-    private final Entity.WithJoin<UUID, T, U> join;
+    private final Dao dao;
+
+    protected abstract Class<U> extRef();
 
     @Override
-    public Repository<U, UUID> compose(
+    public Mapper.Composed<U, UUID> compose(
         final @NonNull UUID root,
-        final @NonNull Service<U, UUID> svc,
-        final @NonNull Function<T, Predicate<U>> bind) {
-      val set = join.from(ref(), root);
-      return repo.getOne(root).map(bind)
-                 .map(p -> new CompositeDelegate<>(set, p, svc))
-                 .orElseThrow(Exceptions.RESOURCE_NOT_FOUND);
-    }
-  }
-
-  /**
-   * Delegate implementation based on resources related to an another
-   * {@link Domain domain context}, which the {@link I provided identity} is
-   * related to.
-   *
-   * @param <U> {@link Domain resource} handled by the implemented operations.
-   * @param <I> Represents the {@link U domain context}'s identity.
-   * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
-   * @see Composable
-   * @see Composed
-   */
-  @AllArgsConstructor(access = AccessLevel.PRIVATE)
-  final class CompositeDelegate<U extends Domain<U>, I>
-      implements Repository<U, I> {
-
-    private final Set<I> joined;
-    private final Predicate<U> isValid;
-    private final Service<U, I> extent;
-
-    @Override
-    public I create(final @NonNull U toCreate) {
-      Exceptions.UNPROCESSABLE_ENTITY.throwIf(() -> !isValid.test(toCreate));
-      val i = extent.create(toCreate);
-      Exceptions.CANNOT_BIND_UNBIND.throwIf(() -> !joined.add(i));
-      return i;
-    }
-
-    @Override
-    public Optional<U> getOne(final @NonNull I id) {
-      return Optional.of(id).filter(joined::contains).map(extent::getOne);
-    }
-
-    @Override
-    public Map<I, U> getBy(final @NonNull Body<U> criteria,
-                           final int skip, final int limit) {
-      return extent.getBy(criteria, skip, limit).entrySet().stream()
-                   .filter(e -> joined.contains(e.getKey()))
-                   .collect(Collectors.toMap(Map.Entry::getKey,
-                                             Map.Entry::getValue));
-    }
-
-    @Override
-    public boolean update(final @NonNull I id, final @NonNull U toUpdate) {
-      return isValid.test(extent.getOne(id)) && joined.add(id);
-    }
-
-    @Override
-    public boolean delete(final @NonNull I id) {
-      return isValid.test(extent.getOne(id)) && joined.remove(id);
+        final @NonNull Function<T, Predicate<U>> isValid) {
+      val p = repo.getOne(root).map(isValid)
+                  .orElseThrow(Exceptions.RESOURCE_NOT_FOUND);
+      return dao.from(root, ref(), extRef(), p);
     }
   }
 }
