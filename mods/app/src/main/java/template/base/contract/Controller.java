@@ -256,7 +256,8 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
       val root = Exceptions.INVALID_ID
           .trapIn(() -> UUID.fromString(ctx.pathParam(ROOT_ID)));
       val uuid = Exceptions.INVALID_ID.trapIn(() -> UUID.fromString(id));
-      ctx.status(link(root, uuid) ? 204 : 422);
+      Exceptions.CANNOT_BIND_UNBIND.throwIf(() -> !link(root, uuid));
+      ctx.status(204);
     }
 
     /**
@@ -278,7 +279,8 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
       val root = Exceptions.INVALID_ID
           .trapIn(() -> UUID.fromString(ctx.pathParam(ROOT_ID)));
       val uuid = Exceptions.INVALID_ID.trapIn(() -> UUID.fromString(id));
-      ctx.status(unlink(root, uuid) ? 204 : 422);
+      Exceptions.CANNOT_BIND_UNBIND.throwIf(() -> !unlink(root, uuid));
+      ctx.status(204);
     }
   }
 }

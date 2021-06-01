@@ -42,6 +42,10 @@ public enum Exceptions implements Supplier<RuntimeException> {
    * systemic or business reasons.
    */
   UNPROCESSABLE_ENTITY(s -> new HttpResponseException(422, s, Map.of())),
+  /**
+   * Indicates that a resource cannot be bound or unbound.
+   */
+  CANNOT_BIND_UNBIND(s -> new HttpResponseException(409, s, Map.of())),
   ;
 
   private final Function<String, HttpResponseException> ex;

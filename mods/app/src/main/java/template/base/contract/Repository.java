@@ -250,7 +250,7 @@ public interface Repository<D extends Domain<D>, I> {
     public I create(final @NonNull U toCreate) {
       Exceptions.UNPROCESSABLE_ENTITY.throwIf(() -> !isValid.test(toCreate));
       val i = extent.create(toCreate);
-      Exceptions.UNPROCESSABLE_ENTITY.throwIf(() -> !joined.add(i));
+      Exceptions.CANNOT_BIND_UNBIND.throwIf(() -> !joined.add(i));
       return i;
     }
 
