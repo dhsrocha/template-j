@@ -15,6 +15,7 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -236,35 +237,34 @@ public interface Client<T> {
     }
 
     @Override
-    public ThenFilter<T> retrieve(
-        final @lombok.NonNull Map<String, String> params) {
-      return new Impl<>(base, req.method(HttpMethod.GET).params(params));
+    public ThenFilter<T> retrieve(final @lombok.NonNull Map<String, String> p) {
+      return new Impl<>(base, req.method(HttpMethod.GET).params(p));
     }
 
     // Then steps
 
     @Override
     public <U> U thenTurnInto(final @lombok.NonNull Class<U> ref) {
-      val b = get().body();
-      Exceptions.EMPTY_BODY.throwIf(() -> null == b || b.isBlank());
-      return Exceptions.ILLEGAL_ARGUMENT.trapIn(() -> MAPPER.fromJson(b, ref));
+      return Optional.of(get()).filter(r -> 404 != r.statusCode())
+                     .map(HttpResponse::body).filter(s -> !s.isBlank())
+                     .map(Exceptions.UNPROCESSABLE_ENTITY
+                              .trapIn(b -> MAPPER.fromJson(b, ref)))
+                     .orElseThrow(Exceptions.NOT_FOUND);
     }
 
     @Override
     public Map<UUID, T> thenMap() {
-      val b = get().body();
-      Exceptions.EMPTY_BODY.throwIf(() -> null == b || b.isBlank());
-      return Exceptions.ILLEGAL_ARGUMENT
-          .trapIn(() -> MAPPER.fromJson(b, toMap.getType()));
+      val ss = Optional.of(get()).filter(r -> 404 != r.statusCode())
+                      .map(HttpResponse::body).filter(s -> !s.isBlank())
+                      .orElseThrow(Exceptions.NOT_FOUND);
+      return Exceptions.UNPROCESSABLE_ENTITY.trapIn(() -> MAPPER
+          .fromJson(ss, toMap.getType()));
     }
 
     private static String paramsOf(final @lombok.NonNull String sep,
                                    final @lombok.NonNull Map<?, ?> map) {
-      return map.entrySet()
-                .stream()
-                .map(e -> e.getKey() + "=" + e.getValue())
-                .map(String::valueOf)
-                .collect(Collectors.joining(sep));
+      return map.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue())
+                .map(String::valueOf).collect(Collectors.joining(sep));
     }
   }
 

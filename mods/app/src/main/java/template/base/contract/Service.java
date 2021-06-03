@@ -8,7 +8,6 @@ import lombok.NonNull;
 import template.base.Body;
 import template.base.Exceptions;
 import template.base.stereotype.Domain;
-import template.base.stereotype.Referable;
 
 /**
  * Describes general api for handling MVC operations. Meant to be used along
@@ -20,10 +19,10 @@ import template.base.stereotype.Referable;
  */
 public interface Service<T, I> {
 
-  T getOne(final @NonNull I id);
+  T get(final @NonNull I id);
 
-  Map<I, T> getBy(final @NonNull Body<T> criteria,
-                  final int skip, final int limit);
+  Map<I, T> get(final @NonNull Body<T> criteria,
+                final int skip, final int limit);
 
   I create(final @NonNull T t);
 
@@ -41,38 +40,36 @@ public interface Service<T, I> {
    * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
    */
   @AllArgsConstructor(access = AccessLevel.PROTECTED)
-  abstract class Cached<D extends Domain<D>, I> implements Service<D, I>,
-                                                           Referable<D> {
+  abstract class Cached<D extends Domain<D>, I> implements Service<D, I> {
 
     private final CacheManager<D, I> cache;
     private final Repository.Cached<D, I> repo;
 
     @Override
-    public D getOne(final @NonNull I id) {
-      return repo.with(cache.from(ref())).getOne(id)
-                 .orElseThrow(Exceptions.RESOURCE_NOT_FOUND);
+    public D get(final @NonNull I id) {
+      return repo.with(cache).get(id).orElseThrow(Exceptions.NOT_FOUND);
     }
 
     @Override
-    public Map<I, D> getBy(final @NonNull Body<D> criteria,
-                           final int skip, final int limit) {
-      return repo.with(cache.from(ref())).getBy(criteria, skip, limit);
+    public Map<I, D> get(final @NonNull Body<D> criteria,
+                         final int skip, final int limit) {
+      return repo.with(cache).get(criteria, skip, limit);
     }
 
     @Override
     public I create(final @NonNull D user) {
-      return repo.with(cache.from(ref())).create(user);
+      return repo.with(cache).create(user);
     }
 
     @Override
     public boolean update(final @NonNull I id,
                           final @NonNull D user) {
-      return repo.with(cache.from(ref())).update(id, user);
+      return repo.with(cache).update(id, user);
     }
 
     @Override
     public boolean delete(final @NonNull I id) {
-      return repo.with(cache.from(ref())).delete(id);
+      return repo.with(cache).delete(id);
     }
   }
 
@@ -89,11 +86,11 @@ public interface Service<T, I> {
    */
   interface Composable<D, E, I> {
 
-    Map<I, E> getByFrom(final @NonNull I root,
-                        final @NonNull Body<E> criteria,
-                        final int skip, final int limit);
+    Map<I, E> getFrom(final @NonNull I root,
+                      final @NonNull Body<E> criteria,
+                      final int skip, final int limit);
 
-    E getOneFrom(final @NonNull I root, final @NonNull I id);
+    E getFrom(final @NonNull I root, final @NonNull I id);
 
     I createOn(final @NonNull I root, final @NonNull E e);
 
@@ -123,16 +120,16 @@ public interface Service<T, I> {
     private final Repository.Composable<D, E, I> base;
 
     @Override
-    public Map<I, E> getByFrom(final @NonNull I root,
-                               final @NonNull Body<E> criteria,
-                               final int s, final int l) {
-      return base.compose(root, this::isValidBound).getBy(criteria, s, l);
+    public Map<I, E> getFrom(final @NonNull I root,
+                             final @NonNull Body<E> criteria,
+                             final int s, final int l) {
+      return base.compose(root, this::isValidBound).get(criteria, s, l);
     }
 
     @Override
-    public E getOneFrom(final @NonNull I root, final @NonNull I id) {
-      return base.compose(root, this::isValidBound).getOne(id)
-                 .orElseThrow(Exceptions.RESOURCE_NOT_FOUND);
+    public E getFrom(final @NonNull I root, final @NonNull I id) {
+      return base.compose(root, this::isValidBound).get(id)
+                 .orElseThrow(Exceptions.NOT_FOUND);
     }
 
     @Override

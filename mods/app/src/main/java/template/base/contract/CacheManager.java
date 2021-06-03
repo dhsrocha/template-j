@@ -37,12 +37,19 @@ public interface CacheManager<D extends Domain<D>, I> {
    *
    * @param <D> {@link Domain} type to be handled among the operations.
    * @param <I> A type to be used as an indexer.
-   * @param <R> Meant to return the abstract which is being combined to.
+   * @param <R> Meant to return the abstraction which is being combined to.
    * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
    */
   interface WithCache<D extends Domain<D>, I, R> {
 
-    R with(final @NonNull Cache<I, D> cache);
+    /**
+     * Allows other implementations' concerns combines themselves with the
+     * caching ones.
+     *
+     * @param cache Cache manager prepared for a given domain context.
+     * @return The abstraction which is being combined to.
+     */
+    R with(final @NonNull CacheManager<D, I> cache);
   }
 
   /**

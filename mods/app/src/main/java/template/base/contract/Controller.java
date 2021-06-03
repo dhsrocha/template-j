@@ -55,7 +55,7 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
   default void getOne(final @lombok.NonNull Context ctx,
                       final @lombok.NonNull String id) {
     val uuid = Exceptions.INVALID_ID.trapIn(() -> UUID.fromString(id));
-    ctx.result(Params.MAPPER.toJson(getOne(uuid)));
+    ctx.result(Params.MAPPER.toJson(get(uuid)));
   }
 
   /**
@@ -78,7 +78,7 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
     val limit = Params.LIMIT.valFrom(ctx, Integer::parseInt)
                             .filter(i -> i > 0).orElse(30);
     Exceptions.ILLEGAL_ARGUMENT.throwIf(Params.MSG, () -> skip > limit);
-    val sourced = getBy(Params.FQ.bodyFrom(ctx, ref()), skip, limit);
+    val sourced = get(Params.FQ.bodyFrom(ctx, ref()), skip, limit);
     val sorted = new TreeMap<UUID, D>(Comparator.comparing(sourced::get));
     sorted.putAll(sourced);
     ctx.result(Params.MAPPER.toJson(sorted));
@@ -189,7 +189,7 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
       val root = Exceptions.INVALID_ID
           .trapIn(() -> UUID.fromString(ctx.pathParam(ROOT_ID)));
       val criteria = Params.FQ.bodyFrom(ctx, extRef());
-      ctx.result(Params.MAPPER.toJson(getByFrom(root, criteria, skip, limit)));
+      ctx.result(Params.MAPPER.toJson(getFrom(root, criteria, skip, limit)));
     }
 
     /**
@@ -211,7 +211,7 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
       val root = Exceptions.INVALID_ID
           .trapIn(() -> UUID.fromString(ctx.pathParam(ROOT_ID)));
       val uuid = Exceptions.INVALID_ID.trapIn(() -> UUID.fromString(id));
-      ctx.result(Params.MAPPER.toJson(getOneFrom(root, uuid)));
+      ctx.result(Params.MAPPER.toJson(getFrom(root, uuid)));
     }
 
     /**

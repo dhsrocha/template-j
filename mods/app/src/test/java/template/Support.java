@@ -303,7 +303,7 @@ public interface Support {
                       .map(IntegrationTest::migrationPath)
                       .filter(Predicate.not(String::isBlank))
                       .map(p -> Paths.get("src", "main", "resources", p))
-                      .orElseThrow(Exceptions.RESOURCE_NOT_FOUND);
+                      .orElseThrow(Exceptions.NOT_FOUND);
         return new Migrator(path);
       }
 

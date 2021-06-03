@@ -14,7 +14,7 @@ import template.base.contract.Router;
 @Value(staticConstructor = "of")
 public class Info {
 
-  Map<String, String> map;
+  Map<String, String> feats;
 
   /**
    * Type for binding package-private implementations to public interfaces.

@@ -36,7 +36,7 @@ public enum Exceptions implements Supplier<RuntimeException> {
   /**
    * Indicates a resource that has not been found.
    */
-  RESOURCE_NOT_FOUND(NotFoundResponse::new),
+  NOT_FOUND(NotFoundResponse::new),
   /**
    * Indicates a resource that is not able to processed correctly whether for
    * systemic or business reasons.

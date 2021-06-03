@@ -60,10 +60,10 @@ public interface Dao {
    */
   interface Mapper<T, I> {
 
-    Optional<T> getOne(final @lombok.NonNull I i);
+    Optional<T> get(final @lombok.NonNull I i);
 
-    Map<I, T> getBy(final @lombok.NonNull Body<T> criteria,
-                    final int skip, final int limit);
+    Map<I, T> get(final @lombok.NonNull Body<T> criteria,
+                  final int skip, final int limit);
 
     I create(final @lombok.NonNull T t);
 
@@ -81,10 +81,10 @@ public interface Dao {
      */
     interface Composed<U, I> {
 
-      Optional<U> getOne(final @lombok.NonNull I i);
+      Optional<U> get(final @lombok.NonNull I i);
 
-      Map<I, U> getBy(final @lombok.NonNull Body<U> criteria,
-                      final int skip, final int limit);
+      Map<I, U> get(final @lombok.NonNull Body<U> criteria,
+                    final int skip, final int limit);
 
       I create(final @lombok.NonNull U u);
 
@@ -109,15 +109,15 @@ public interface Dao {
     Class<T> ref;
 
     @Override
-    public Optional<T> getOne(final @lombok.NonNull UUID uuid) {
+    public Optional<T> get(final @lombok.NonNull UUID uuid) {
       return ctx.select().from(DSL.table(ref.getSimpleName()))
                 .where(DSL.field(ID).eq(uuid)).fetchOptional()
                 .map(r -> Body.of(r.intoMap(), ref).toType());
     }
 
     @Override
-    public Map<UUID, T> getBy(final @lombok.NonNull Body<T> criteria,
-                              final int s, final int l) {
+    public Map<UUID, T> get(final @lombok.NonNull Body<T> criteria,
+                            final int s, final int l) {
       return ctx
           .select().from(DSL.table(ref.getSimpleName()))
           .where(criteria(criteria))
@@ -174,15 +174,15 @@ public interface Dao {
     Class<U> ext;
 
     @Override
-    public Optional<U> getOne(final @lombok.NonNull UUID uuid) {
+    public Optional<U> get(final @lombok.NonNull UUID uuid) {
       return ctx.select().from(joined(base, ext))
                 .where(DSL.field(ID).eq(uuid)).fetchOptional()
                 .map(r -> Body.of(r.intoMap(), ext).toType());
     }
 
     @Override
-    public Map<UUID, U> getBy(final @lombok.NonNull Body<U> criteria,
-                              final int s, final int l) {
+    public Map<UUID, U> get(final @lombok.NonNull Body<U> criteria,
+                            final int s, final int l) {
       return ctx
           .select().from(joined(base, ext)).where(criteria(criteria))
           .stream().skip(s).limit(l).map(Record::intoMap).map(m -> {
@@ -205,8 +205,7 @@ public interface Dao {
 
     @Override
     public boolean link(final @lombok.NonNull UUID id) {
-      val u = Dao.getOne(ctx, ext, id)
-                 .orElseThrow(Exceptions.RESOURCE_NOT_FOUND);
+      val u = Dao.getOne(ctx, ext, id).orElseThrow(Exceptions.NOT_FOUND);
       Exceptions.UNPROCESSABLE_ENTITY.throwIf(() -> !canBind.test(u));
       val v = Map.of(DSL.field(nameOf(base) + '_' + ID), root,
                      DSL.field(nameOf(ext) + '_' + ID), id);

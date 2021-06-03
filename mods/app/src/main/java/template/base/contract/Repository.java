@@ -28,10 +28,10 @@ public interface Repository<D extends Domain<D>, I> {
 
   I create(final @NonNull D d);
 
-  Optional<D> getOne(final @NonNull I id);
+  Optional<D> get(final @NonNull I id);
 
-  Map<I, D> getBy(final @NonNull Body<D> criteria,
-                  final int skip, final int limit);
+  Map<I, D> get(final @NonNull Body<D> criteria,
+                final int skip, final int limit);
 
   boolean update(final @NonNull I id, final @NonNull D d);
 
@@ -68,14 +68,14 @@ public interface Repository<D extends Domain<D>, I> {
     private final Class<T> ref;
 
     @Override
-    public final Optional<T> getOne(final @NonNull UUID id) {
-      return dao.from(ref).getOne(id);
+    public final Optional<T> get(final @NonNull UUID id) {
+      return dao.from(ref).get(id);
     }
 
     @Override
-    public final Map<UUID, T> getBy(final @NonNull Body<T> criteria,
-                                    final int skip, final int limit) {
-      return dao.from(ref).getBy(criteria, skip, limit);
+    public final Map<UUID, T> get(final @NonNull Body<T> criteria,
+                                  final int skip, final int limit) {
+      return dao.from(ref).get(criteria, skip, limit);
     }
 
     @Override
@@ -94,8 +94,8 @@ public interface Repository<D extends Domain<D>, I> {
     }
 
     @Override
-    public final Repository<T, UUID> with(final @NonNull Cache<UUID, T> cache) {
-      return new CachedDelegate<>(cache, this);
+    public Repository<T, UUID> with(final @NonNull CacheManager<T, UUID> c) {
+      return new CachedDelegate<>(c.from(ref), this);
     }
   }
 
@@ -115,18 +115,18 @@ public interface Repository<D extends Domain<D>, I> {
     private final Repository<D, I> repo;
 
     @Override
-    public Optional<D> getOne(final @NonNull I id) {
+    public Optional<D> get(final @NonNull I id) {
       return Optional.ofNullable(cache.get(id))
-                     .or(() -> repo.getOne(id).map(d -> {
+                     .or(() -> repo.get(id).map(d -> {
                        cache.put(id, d);
                        return d;
                      }));
     }
 
     @Override
-    public Map<I, D> getBy(final @NonNull Body<D> filter,
-                           final int skip, final int limit) {
-      val store = repo.getBy(filter, skip, limit);
+    public Map<I, D> get(final @NonNull Body<D> criteria,
+                         final int skip, final int limit) {
+      val store = repo.get(criteria, skip, limit);
       cache.putAll(store);
       return store;
     }
@@ -209,8 +209,7 @@ public interface Repository<D extends Domain<D>, I> {
     public Mapper.Composed<U, UUID> compose(
         final @NonNull UUID root,
         final @NonNull Function<T, Predicate<U>> isValid) {
-      val p = repo.getOne(root).map(isValid)
-                  .orElseThrow(Exceptions.RESOURCE_NOT_FOUND);
+      val p = repo.get(root).map(isValid).orElseThrow(Exceptions.NOT_FOUND);
       return dao.from(root, ref(), extRef(), p);
     }
   }
