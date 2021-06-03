@@ -56,7 +56,7 @@ final class UserAddressTest {
         + "AND try to perform same previous operation "
         + "AND try to to find resource supposedly bound "
         + "THEN return 204 as status code "
-        + "AND return 409 as status code "
+        + "AND return 412 as status code "
         + "AND verify if (un)binding is done.")
     final void givenUserAddress_andLinked_whenLinkTwice_thenReturn204_andThen422asStatus(
         final String httpMethod, final int isLinkedStatus) {
@@ -79,7 +79,7 @@ final class UserAddressTest {
       // Assert
       Assertions.assertEquals(204, success.statusCode());
       Assertions.assertEquals("", success.body());
-      Assertions.assertEquals(409, failLink.statusCode());
+      Assertions.assertEquals(412, failLink.statusCode());
       Assertions.assertFalse(failLink.body().isBlank());
       Assertions.assertEquals(isLinkedStatus, tryFind.statusCode());
     }
@@ -109,7 +109,7 @@ final class UserAddressTest {
       Assertions.assertEquals(201, resp.get().statusCode());
       val failed = cli.request(req -> req.method(HttpMethod.PATCH)
                                          .uri(created)).get();
-      Assertions.assertEquals(409, failed.statusCode());
+      Assertions.assertEquals(412, failed.statusCode());
     }
 
     @Test

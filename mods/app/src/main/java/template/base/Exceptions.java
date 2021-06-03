@@ -45,7 +45,7 @@ public enum Exceptions implements Supplier<RuntimeException> {
   /**
    * Indicates that a resource cannot be bound or unbound.
    */
-  CANNOT_BIND_UNBIND(s -> new HttpResponseException(409, s, Map.of())),
+  CANNOT_BIND_UNBIND(s -> new HttpResponseException(412, s, Map.of())),
   ;
 
   private final Function<String, HttpResponseException> ex;
