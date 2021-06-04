@@ -214,7 +214,7 @@
         <plugin>
           <groupId>org.liquibase</groupId>
           <artifactId>liquibase-maven-plugin</artifactId>
-          <version>4.3.2</version>
+          <version>4.3.5</version>
         </plugin>
         <!-- Static Analysis -->
         <plugin>
