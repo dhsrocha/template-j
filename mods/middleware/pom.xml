@@ -6,8 +6,8 @@
 
   <parent>
     <groupId>dhsrocha</groupId>
-    <artifactId>template-maven-javalin</artifactId>
-    <version>0.1.0</version>
+    <artifactId>template-j</artifactId>
+    <version>0.5.0</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
 
