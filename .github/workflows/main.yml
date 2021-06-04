@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        java: [ '14' ]
+        os: [ 'ubuntu-latest' ]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2.3.4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: 'zulu'
+
+      - name: print Java version
+        run: java -version
+
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v2.1.6
+        with:
+          path: ~/sonar
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Cache Maven packages
+        uses: actions/cache@v2.1.6
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: print GitHub Actor
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+        run: echo "$GITHUB_ACTOR"
+
+      - name: Build
+        run: ./mvnw -e -B --no-transfer-progress clean verify --file pom.xml
+
+      - name: Sonar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: ./mvnw -e -B -Pquality --file pom.xml
