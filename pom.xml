@@ -58,6 +58,9 @@
 
     <exec.goals.run>clean compile test exec:java</exec.goals.run>
 
+    <coverage.reports.dir>${project.build.directory}/coverage-reports
+    </coverage.reports.dir>
+
     <!-- https://maven.apache.org/plugins/maven-checkstyle-plugin/check-mojo.html-->
     <checkstyle.config.location>google_checks.xml</checkstyle.config.location>
     <checkstyle.header.file>${project.basedir}/LICENSE</checkstyle.header.file>
@@ -177,7 +180,7 @@
         </plugin>
         <plugin>
           <artifactId>maven-javadoc-plugin</artifactId>
-          <version>3.2.0</version>
+          <version>3.3.0</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
@@ -214,7 +217,7 @@
         <plugin>
           <groupId>org.liquibase</groupId>
           <artifactId>liquibase-maven-plugin</artifactId>
-          <version>4.3.2</version>
+          <version>4.3.5</version>
         </plugin>
         <!-- Static Analysis -->
         <plugin>
@@ -223,12 +226,17 @@
         </plugin>
         <plugin>
           <artifactId>maven-checkstyle-plugin</artifactId>
-          <version>3.1.1</version>
+          <version>3.1.2</version>
         </plugin>
         <plugin>
           <groupId>com.github.spotbugs</groupId>
           <artifactId>spotbugs-maven-plugin</artifactId>
-          <version>4.1.3</version>
+          <version>4.2.3</version>
+        </plugin>
+        <plugin>
+          <groupId>org.sonarsource.scanner.maven</groupId>
+          <artifactId>sonar-maven-plugin</artifactId>
+          <version>3.9.0.2155</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -308,20 +316,30 @@
       <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
         <version>${version.plugin.test}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <version>0.8.6</version>
+        <version>0.8.7</version>
         <executions>
           <execution>
+            <id>jacoco-init</id>
+            <phase>test-compile</phase>
             <goals>
               <goal>prepare-agent</goal>
             </goals>
           </execution>
           <execution>
-            <id>report</id>
-            <phase>test</phase>
+            <id>jacoco-site</id>
+            <phase>verify</phase>
             <goals>
               <goal>report</goal>
             </goals>
@@ -616,7 +634,8 @@
         <!-- Migrator -->
         <liquibase.changeLogFile>db-changelog.xml</liquibase.changeLogFile>
         <liquibase.driver>org.hsqldb.jdbcDriver</liquibase.driver>
-        <liquibase.url>jdbc:hsqldb:${project.build.directory}/liquibase/db</liquibase.url>
+        <liquibase.url>jdbc:hsqldb:${project.build.directory}/liquibase/db
+        </liquibase.url>
         <liquibase.contexts>!test</liquibase.contexts>
         <liquibase.user>sa</liquibase.user>
         <liquibase.pwd/>
@@ -789,12 +808,41 @@
         </plugins>
       </build>
     </profile>
+    <!---->
+    <profile>
+      <id>quality</id>
+      <properties>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+        <sonar.organization>${project.groupId}</sonar.organization>
+        <sonar.projectKey>
+          ${project.groupId}_${project.artifactId}
+        </sonar.projectKey>
+        <!---->
+        <sonar.language>java</sonar.language>
+        <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
+        <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
+        <sonar.coverage.jacoco.xmlReportPaths>
+          ${project.build.directory}/site/jacoco/jacoco.xml
+        </sonar.coverage.jacoco.xmlReportPaths>
+      </properties>
+      <build>
+        <defaultGoal>clean verify sonar:sonar</defaultGoal>
+        <plugins>
+          <plugin>
+            <groupId>org.sonarsource.scanner.maven</groupId>
+            <artifactId>sonar-maven-plugin</artifactId>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <!---->
     <profile>
       <id>update</id>
       <build>
         <defaultGoal>versions:display-dependency-updates</defaultGoal>
       </build>
     </profile>
+    <!---->
   </profiles>
 
 </project>

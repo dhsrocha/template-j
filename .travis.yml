@@ -1,0 +1,22 @@
+arch: amd64
+
+language: java
+
+jdk:
+  - oraclejdk14
+
+git:
+  depth: false
+
+cache:
+  directories:
+    - "$HOME/.m2"
+
+addons:
+  sonarcloud:
+    organization: "dhsrocha"
+    token:
+      secure: "g6xSJGKMNAnq8lRp0KNPiZiol95Iv16YI68J65ortrQGSZnJSiBC9gJxTBPZ1AcRICqYfJESTR5ZV1UGDNSQtkV313R8DMvBnEs2Og5zP25qyuydRT/A7ispYSutLKdXZUP4898avASfDrTKg5x5eCiTcgI2rvuJ8IAzBiN/20rGeqway/J59uQT45cbbiEcX1O+dNdfqVTnnNlcBLp8BDq2rSXDhtlBB9FYKOnbZHf9yNYjXPn9uQwdvmkWU6N+k4NaA7QZ7OEbyPfPapkoTTT/ND/rVqpfLMrw8DzKRXigS/Cdopraivgi/eCqtmqRBuVYzEczb1yUQABL57HdY3s9R10cQi/FeIJe92XEqRZ7vreXhfTYJImy1o/ZeodyVnMidup/4YEjiQBmQHLvhc4YF+T59vvome6N1XvlH28vmT3iRB6hLUHt0/aBC903oSi5XGPOmDbz0AsZHQEbk7GzIgxSfNf99ba/FtSw3E+p4ghSsr1fw8X8HkVRyYQIQi6GMYqvs/uKGT8VS4iD3Lzbk3N+XKHUbHHwz+YdNjumy0Aj3LNrEqIypYGEBkfOU19N9HBairfRbLBI/L6BxzYrb/J5WHaklKTzFRQN4DfqdAmXLebBcl8TFnGwLsr9Eig9P40O6TrcolFWMkZ8Rg6ZSbHClbKNBZCsUReTCfI="
+
+script:
+  - "./mvnw -P'static-analysis,quality'"
