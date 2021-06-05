@@ -195,70 +195,50 @@ public interface Dao {
     public UUID create(final @lombok.NonNull U u) {
       Exceptions.UNPROCESSABLE_ENTITY.throwIf(() -> !canBind.test(u));
       return ctx.dsl().transactionResult(tx -> {
-        val base = Default.of(DSL.using(tx), ext);
-        val comp = Composed.of(root, canBind, DSL.using(tx), this.base, ext);
-        val id = base.create(u);
-        Exceptions.CANNOT_BIND_UNBIND.throwIf(() -> !comp.link(id));
+        val b = Default.of(DSL.using(tx), ext);
+        val c = Composed.of(root, canBind, DSL.using(tx), base, ext);
+        val id = b.create(u);
+        Exceptions.CANNOT_BIND_UNBIND.throwIf(() -> !c.link(id));
         return id;
       });
     }
 
     @Override
     public boolean link(final @lombok.NonNull UUID id) {
-      val u = Dao.getOne(ctx, ext, id).orElseThrow(Exceptions.NOT_FOUND);
+      val u = Default.of(ctx, ext).get(id).orElseThrow(Exceptions.NOT_FOUND);
       Exceptions.UNPROCESSABLE_ENTITY.throwIf(() -> !canBind.test(u));
       val v = Map.of(DSL.field(nameOf(base) + '_' + ID), root,
                      DSL.field(nameOf(ext) + '_' + ID), id);
-      return Exceptions.CANNOT_BIND_UNBIND.trapIn(() -> ctx
+      return 1 == Exceptions.CANNOT_BIND_UNBIND.trapIn(() -> ctx
           .insertInto(DSL.table(nameOf(base) + '_' + nameOf(ext)), v.keySet())
-          .values(v.values()).execute() == 1);
+          .values(v.values()).execute());
     }
 
     @Override
     public boolean unlink(final @lombok.NonNull UUID id) {
-      return Exceptions.CANNOT_BIND_UNBIND.trapIn(() -> ctx
+      return 1 == Exceptions.CANNOT_BIND_UNBIND.trapIn(() -> ctx
           .deleteFrom(DSL.table(nameOf(base) + '_' + nameOf(ext)))
           .where(DSL.field(nameOf(base) + '_' + ID).eq(root))
-          .and(DSL.field(nameOf(ext) + '_' + ID).eq(id))
-          .execute() == 1);
+          .and(DSL.field(nameOf(ext) + '_' + ID).eq(id)).execute());
+    }
+
+    /**
+     * Creates a JOOQ join table reference.
+     *
+     * @param base Root domain context reference.
+     * @param ext  Extension domain context reference.
+     * @return Table reference to be used {@link Mapper} methods.
+     */
+    private static Table<Record> joined(final @lombok.NonNull Class<?> base,
+                                        final @lombok.NonNull Class<?> ext) {
+      val join = nameOf(base) + '_' + nameOf(ext);
+      return DSL.table(nameOf(ext)).innerJoin(DSL.table(join))
+                .on(DSL.field(nameOf(ext) + '.' + ID).eq(
+                    DSL.field(join + '.' + nameOf(ext) + '_' + ID)));
     }
   }
 
   // ::: Support functions
-
-  /**
-   * Retrieves a singular entity from the persistence layer based on provide
-   * {@link DSLContext persisnce context}.
-   *
-   * @param ctx  Persistence context.
-   * @param ref  Type reference used for serialization purposes.
-   * @param uuid Identity which indexes an entity from a domain context.
-   * @param <T>  Resource from extension domain context handled by the
-   *             implementing operations.
-   * @return Potential entity retrieved.
-   */
-  private static <T> Optional<T> getOne(final @lombok.NonNull DSLContext ctx,
-                                        final @lombok.NonNull Class<T> ref,
-                                        final @lombok.NonNull UUID uuid) {
-    return ctx.select().from(DSL.table(ref.getSimpleName()))
-              .where(DSL.field(ID).eq(uuid)).fetchOptional()
-              .map(r -> Body.of(r.intoMap(), ref).toType());
-  }
-
-  /**
-   * Creates a JOOQ join table reference.
-   *
-   * @param base Root domain context reference.
-   * @param ext  Extension domain context reference.
-   * @return Table reference to be used {@link Mapper} methods.
-   */
-  private static Table<Record> joined(final @lombok.NonNull Class<?> base,
-                                      final @lombok.NonNull Class<?> ext) {
-    val join = nameOf(base) + '_' + nameOf(ext);
-    return DSL.table(nameOf(ext)).innerJoin(DSL.table(join))
-              .on(DSL.field(nameOf(ext) + '.' + ID).eq(
-                  DSL.field(join + '.' + nameOf(ext) + '_' + ID)));
-  }
 
   /**
    * Creates an {@code WHERE} set for JOOQ queries.

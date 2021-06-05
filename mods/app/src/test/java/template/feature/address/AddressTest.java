@@ -53,14 +53,15 @@ final class AddressTest {
         + "THEN should be able to find resource.")
     final void givenValidResource_whenCreate_thenShouldAbleToFindResource() {
       // Act
+      val valid = VALID_STUB;
       val resp = CLIENT
-          .request(req -> req.method(HttpMethod.POST).body(VALID_STUB)).get();
+          .request(req -> req.method(HttpMethod.POST).body(valid)).get();
       // Assert
       Assertions.assertEquals(201, resp.statusCode());
       val found = CLIENT
           .request(req -> req.method(HttpMethod.GET).uri(resp.body()))
           .thenTurnInto(Address.class);
-      Assertions.assertEquals(VALID_STUB, found);
+      Assertions.assertEquals(valid, found);
     }
   }
 

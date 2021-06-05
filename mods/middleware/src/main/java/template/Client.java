@@ -51,6 +51,7 @@ class Client {
   }
 
   void swarmMode(final int amount) {
+    log.trace("Workers: {}", amount);
     if (isDevMode) {
       if (isSwarmOn()) {
         host.leaveSwarmCmd().withForceEnabled(Boolean.TRUE).exec();

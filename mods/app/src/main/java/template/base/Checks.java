@@ -52,16 +52,20 @@ public enum Checks {
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
   private static final class Patterns {
 
+    private static final String SUB_DOMAIN = ""
+        + "^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@"
+        + "[a-z0-9][a-z0-9-]{0,61}[a-z0-9]?"
+        + "\\.[a-z0-9][a-z0-9-]{0,61}[a-z0-9]?"
+        + "(?:\\.[a-z0-9][a-z0-9-]{0,61}[a-z0-9])?"
+        + "$";
+
     /**
      * Email pattern specified by WHATWG.
      *
      * @see
-     * <a href=" https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address" />
+     * <a href="https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address" />
      */
     private static final Pattern EMAIL = Pattern.compile(
-        "^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9]"
-            + "(?:[a-z0-9-]{0,61}[a-z0-9])?(?:\\.[a-z0-9]"
-            + "(?:[a-z0-9-]{0,61}[a-z0-9])?)*$",
-        Pattern.CASE_INSENSITIVE);
+        SUB_DOMAIN, Pattern.CASE_INSENSITIVE);
   }
 }
