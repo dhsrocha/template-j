@@ -5,20 +5,20 @@ module template.app {
   // System
   requires lombok;
   requires org.slf4j;
-  // CDI
-  requires java.compiler;
-  requires javax.inject;
-  requires dagger;
-  // Application
-  requires java.net.http;
-  requires io.javalin;
   requires com.google.gson;
+  // CDI
+  requires dagger;
+  requires javax.inject;
+  requires transitive java.compiler;
+  // Application
   requires ehcache;
+  requires io.javalin;
+  requires transitive java.net.http;
   // Persistence
-  requires java.sql;
   requires org.jooq;
   requires com.zaxxer.hikari;
   requires org.postgresql.jdbc;
+  requires transitive java.sql;
 
   // Open for testing
   opens template;
