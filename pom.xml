@@ -237,6 +237,11 @@
           <artifactId>sonar-maven-plugin</artifactId>
           <version>3.9.0.2155</version>
         </plugin>
+        <plugin>
+          <groupId>org.owasp</groupId>
+          <artifactId>dependency-check-maven</artifactId>
+          <version>5.2.4</version>
+        </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
@@ -406,6 +411,18 @@
     <dependencies>
       <!-- BOM -->
       <dependency>
+        <groupId>com.google.errorprone</groupId>
+        <artifactId>error_prone_parent</artifactId>
+        <version>2.7.1</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.checkerframework</groupId>
+        <artifactId>checker</artifactId>
+        <version>3.14.0</version>
+      </dependency>
+        <dependency>
         <groupId>com.fasterxml.jackson</groupId>
         <artifactId>jackson-bom</artifactId>
         <version>2.12.3</version>
@@ -448,6 +465,11 @@
         <scope>import</scope>
       </dependency>
       <!-- Application -->
+      <dependency>
+        <groupId>com.google.auto.service</groupId>
+        <artifactId>auto-service</artifactId>
+        <version>1.0</version>
+      </dependency>
       <dependency>
         <groupId>org.mapstruct</groupId>
         <artifactId>mapstruct</artifactId>
@@ -779,6 +801,13 @@
                 </goals>
               </execution>
             </executions>
+            <dependencies>
+              <dependency>
+                <groupId>com.puppycrawl.tools</groupId>
+                <artifactId>checkstyle</artifactId>
+                <version>8.43</version>
+              </dependency>
+            </dependencies>
           </plugin>
           <plugin>
             <artifactId>maven-pmd-plugin</artifactId>
@@ -801,6 +830,25 @@
                 <goals>
                   <goal>check</goal>
                 </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.owasp</groupId>
+            <artifactId>dependency-check-maven</artifactId>
+            <executions>
+              <execution>
+                <phase>validate</phase>
+                <goals>
+                  <goal>check</goal>
+                </goals>
+                <configuration>
+                  <versionCheckEnabled>true</versionCheckEnabled>
+                  <failBuildOnCVSS>0</failBuildOnCVSS>
+                  <junitFailOnCVSS>0</junitFailOnCVSS>
+                  <failBuildOnAnyVulnerability>true</failBuildOnAnyVulnerability>
+                  <failOnError>true</failOnError>
+                </configuration>
               </execution>
             </executions>
           </plugin>

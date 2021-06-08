@@ -17,6 +17,12 @@ import template.core.Props;
  */
 public interface Application {
 
+  /**
+   * Meant to scope elements for {@link Application} core components.
+   *
+   * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
+   * @see <a href="https://dagger.dev/dev-guide/">Technical reference</a>
+   */
   @javax.inject.Scope
   @Target({ElementType.TYPE, ElementType.METHOD})
   @interface Scope {
@@ -72,6 +78,11 @@ public interface Application {
     private final boolean forbidden;
   }
 
+  /**
+   * Creates a server instance from the current solution for web server.
+   *
+   * @author <a href="mailto:dhsrocha.dev@gmail.com">Diego Rocha</a>
+   */
   interface Server {
 
     Server start(final int port);
