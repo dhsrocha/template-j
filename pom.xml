@@ -72,7 +72,6 @@
   </properties>
 
   <modules>
-    <module>mods/middleware</module>
     <module>mods/app</module>
   </modules>
 
