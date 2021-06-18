@@ -226,6 +226,13 @@
         <plugin>
           <artifactId>maven-checkstyle-plugin</artifactId>
           <version>3.1.2</version>
+          <dependencies>
+            <dependency>
+              <groupId>com.puppycrawl.tools</groupId>
+              <artifactId>checkstyle</artifactId>
+              <version>8.43</version>
+            </dependency>
+          </dependencies>
         </plugin>
         <plugin>
           <groupId>com.github.spotbugs</groupId>
@@ -422,7 +429,7 @@
         <artifactId>checker</artifactId>
         <version>3.14.0</version>
       </dependency>
-        <dependency>
+      <dependency>
         <groupId>com.fasterxml.jackson</groupId>
         <artifactId>jackson-bom</artifactId>
         <version>2.12.3</version>
@@ -801,13 +808,6 @@
                 </goals>
               </execution>
             </executions>
-            <dependencies>
-              <dependency>
-                <groupId>com.puppycrawl.tools</groupId>
-                <artifactId>checkstyle</artifactId>
-                <version>8.43</version>
-              </dependency>
-            </dependencies>
           </plugin>
           <plugin>
             <artifactId>maven-pmd-plugin</artifactId>
@@ -846,7 +846,8 @@
                   <versionCheckEnabled>true</versionCheckEnabled>
                   <failBuildOnCVSS>0</failBuildOnCVSS>
                   <junitFailOnCVSS>0</junitFailOnCVSS>
-                  <failBuildOnAnyVulnerability>true</failBuildOnAnyVulnerability>
+                  <failBuildOnAnyVulnerability>true
+                  </failBuildOnAnyVulnerability>
                   <failOnError>true</failOnError>
                 </configuration>
               </execution>
