@@ -9,10 +9,14 @@
   <version>0.5.0</version>
   <packaging>pom</packaging>
 
-  <name>Template project for Maven and Javalin</name>
-  <description>
-    Project template based on Maven and Javalin technology stack
-  </description>
+  <name>Template project.</name>
+  <description>General-purpose template Java project.</description>
+
+  <organization>
+    <name>${project.groupId}</name>
+  </organization>
+  <inceptionYear>2021</inceptionYear>
+
   <!-- TODO: Need to change accordingly -->
   <url>http://github.com/dhsrocha/template-maven-javalin</url>
   <licenses>
@@ -60,6 +64,8 @@
 
     <coverage.reports.dir>${project.build.directory}/coverage-reports
     </coverage.reports.dir>
+
+    <license.licenseName>apache_v2</license.licenseName>
 
     <!-- https://maven.apache.org/plugins/maven-checkstyle-plugin/check-mojo.html-->
     <checkstyle.config.location>google_checks.xml</checkstyle.config.location>
@@ -248,6 +254,11 @@
           <groupId>org.owasp</groupId>
           <artifactId>dependency-check-maven</artifactId>
           <version>5.2.4</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>license-maven-plugin</artifactId>
+          <version>2.0.0</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -834,6 +845,18 @@
             </executions>
           </plugin>
           <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>license-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <phase>validate</phase>
+                <goals>
+                  <goal>check-file-header</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
             <groupId>org.owasp</groupId>
             <artifactId>dependency-check-maven</artifactId>
             <executions>
@@ -846,7 +869,8 @@
                   <versionCheckEnabled>true</versionCheckEnabled>
                   <failBuildOnCVSS>0</failBuildOnCVSS>
                   <junitFailOnCVSS>0</junitFailOnCVSS>
-                  <failBuildOnAnyVulnerability>true
+                  <failBuildOnAnyVulnerability>
+                  true
                   </failBuildOnAnyVulnerability>
                   <failOnError>true</failOnError>
                 </configuration>
