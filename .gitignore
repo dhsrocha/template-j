@@ -253,3 +253,6 @@ gradle-app.setting
 **/build/
 
 # End of https://www.toptal.com/developers/gitignore/api/eclipse,intellij+all,code,java,maven,gradle,terraform
+
+## Python assets from deploying process
+Pipfile

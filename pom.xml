@@ -892,6 +892,50 @@
     </profile>
     <!---->
     <profile>
+      <id>deploy</id>
+      <properties>
+        <python.exec>python3</python.exec>
+      </properties>
+      <build>
+        <defaultGoal>
+          antrun:run@ansible
+        </defaultGoal>
+        <plugins>
+          <plugin>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <version>3.0.0</version>
+            <executions>
+              <execution>
+                <id>ansible</id>
+                <phase>none</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <target>
+                    <exec executable="python3">
+                      <arg line="-m ensurepip --upgrade"/>
+                    </exec>
+                    <exec executable="python3">
+                      <arg line="-m pip install --upgrade pip"/>
+                    </exec>
+                    <exec executable="python3">
+                      <arg line="-m pip install --user pipenv
+                                                --no-warn-script-location"/>
+                    </exec>
+                    <exec executable="python3">
+                      <arg line="-m pipenv install --dev --skip-lock ansible"/>
+                    </exec>
+                  </target>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <!---->
+    <profile>
       <id>update</id>
       <build>
         <defaultGoal>
