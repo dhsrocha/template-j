@@ -26,22 +26,22 @@ public interface Dao {
   String ID = "ID";
 
   /**
-   * Loads an mapping handler for a given database mapping type.
+   * Loads a mapping handler for a given database mapping type.
    *
-   * @param ref The type reference for serialization from and to.
+   * @param ref Resource's type reference for <i>from/to</i> serialization.
    * @param <T> Resource handled by the implementing operations.
    * @return Instance which operates on database mechanisms and concerns.
    */
   <T> Mapper<T, UUID> from(final @lombok.NonNull Class<T> ref);
 
   /**
-   * Loads an mapping handler for a given database mapping type.
+   * Loads a mapping handler for a given database mapping type.
    *
    * @param root    Identity which indexes an entity from the {@link T root
    *                domain} context.
-   * @param ref     The type reference for serialization from and to.
-   * @param extRef  The type reference for serialization from and to.
-   * @param canBind States is the two resources operates can be bound.
+   * @param ref     Resource's type reference for <i>from/to</i> serialization.
+   * @param extRef  Resource's type reference for <i>from/to</i> serialization.
+   * @param canBind States if the two resources can be bound themselves.
    * @param <T>     Resource which the association will be based on.
    * @param <U>     Resource handled by the following operations.
    * @return Instance which operates on database mechanisms and concerns.

@@ -26,7 +26,7 @@ class PersistenceTest {
 
   @Test
   @DisplayName(""
-      + "GIVEN null parameter"
+      + "GIVEN null parameter "
       + "WHEN instantiating config class "
       + "THEN expect NullPointerException thrown.")
   final void givenNullParameter_whenInstantiatingConfigClass_thenExpectNpeThrown() {
