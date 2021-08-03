@@ -110,7 +110,7 @@ public interface Dao {
 
     @Override
     public Optional<T> get(final @lombok.NonNull UUID uuid) {
-      return ctx.select().from(DSL.table(ref.getSimpleName()))
+      return ctx.select().from(DSL.table(nameOf(ref)))
                 .where(DSL.field(ID).eq(uuid)).fetchOptional()
                 .map(r -> Body.of(r.intoMap(), ref).toType());
     }
@@ -119,8 +119,8 @@ public interface Dao {
     public Map<UUID, T> get(final @lombok.NonNull Body<T> criteria,
                             final int s, final int l) {
       return ctx
-          .select().from(DSL.table(ref.getSimpleName()))
-          .where(criteria(criteria))
+          .select().from(DSL.table(nameOf(ref)))
+          .where(criteriaOf(criteria))
           .stream().skip(s).limit(l).map(Record::intoMap).map(m -> {
             val id = UUID.fromString(m.remove(ID).toString());
             return Map.entry(id, Body.of(m, ref).toType());
@@ -144,14 +144,13 @@ public interface Dao {
     @Override
     public boolean update(final @lombok.NonNull UUID id,
                           final @lombok.NonNull T t) {
-      return 1 == ctx.update(DSL.table(ref.getSimpleName().toUpperCase()))
-                     .set(Body.of(t).toMap())
+      return 1 == ctx.update(DSL.table(nameOf(ref))).set(Body.of(t).toMap())
                      .where(DSL.field(ID).eq(id)).execute();
     }
 
     @Override
     public boolean delete(final @lombok.NonNull UUID id) {
-      return 1 == ctx.delete(DSL.table(ref.getSimpleName().toUpperCase()))
+      return 1 == ctx.delete(DSL.table(nameOf(ref)))
                      .where(DSL.field(ID).eq(id)).execute();
     }
   }
@@ -184,7 +183,7 @@ public interface Dao {
     public Map<UUID, U> get(final @lombok.NonNull Body<U> criteria,
                             final int s, final int l) {
       return ctx
-          .select().from(joined(base, ext)).where(criteria(criteria))
+          .select().from(joined(base, ext)).where(criteriaOf(criteria))
           .stream().skip(s).limit(l).map(Record::intoMap).map(m -> {
             val id = UUID.fromString(m.remove(ID).toString());
             return Map.entry(id, Body.of(m, ext).toType());
@@ -233,12 +232,10 @@ public interface Dao {
                                         final @lombok.NonNull Class<?> ext) {
       val join = nameOf(base) + '_' + nameOf(ext);
       return DSL.table(nameOf(ext)).innerJoin(DSL.table(join))
-                .on(DSL.field(nameOf(ext) + '.' + ID).eq(
-                    DSL.field(join + '.' + nameOf(ext) + '_' + ID)));
+                .on(DSL.field(nameOf(ext) + '.' + ID)
+                       .eq(DSL.field(join + '.' + nameOf(ext) + '_' + ID)));
     }
   }
-
-  // ::: Support functions
 
   /**
    * Creates an {@code WHERE} set for JOOQ queries.
@@ -246,13 +243,19 @@ public interface Dao {
    * @param criteria Body to be parsed on.
    * @return Required parameters to be added on.
    */
-  private static Collection<Condition> criteria(
+  private static Collection<Condition> criteriaOf(
       final @lombok.NonNull Body<?> criteria) {
     return criteria.toMap().entrySet().stream().map(e -> DSL.condition(
         Operator.AND, DSL.field(DSL.name(e.getKey())).eq(e.getValue())))
                    .collect(Collectors.toSet());
   }
 
+  /**
+   * Standard way for tables and fields' names.
+   *
+   * @param ref Resource reference.
+   * @return Standard name.
+   */
   private static String nameOf(final @lombok.NonNull Class<?> ref) {
     return ref.getSimpleName().toUpperCase();
   }
