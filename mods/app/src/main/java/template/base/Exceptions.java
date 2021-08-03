@@ -130,15 +130,15 @@ public enum Exceptions implements Supplier<RuntimeException> {
    * provided scoped code and redirect (re-throw) it as the indexed one. It is
    * also a convenient way to write a try-catch block into an one-liner.
    *
-   * @param wrap Potentially throwing wrapped computation.
+   * @param toTrap Potentially exception throwing computation to trap in.
    * @throws HttpResponseException The indexed one by the provided item.
    * @see #trapIn(Function)
    * @see #trapIn(Callable)
    */
-  public final <E extends Exception> void trapIn(
-      final @NonNull CheckedRunnable<E> wrap) {
+  public final void trapIn(
+      final @NonNull CheckedRunnable<? extends Exception> toTrap) {
     try {
-      wrap.wrap();
+      toTrap.run();
     } catch (final Exception e) {
       log.error(e.getMessage(), e);
       throw get();
@@ -152,7 +152,7 @@ public enum Exceptions implements Supplier<RuntimeException> {
    *
    * @param <T> Type provided by the functor.
    * @param <R> Type of upcoming result from the provided parameter.
-   * @param fun Potentially throwing wrapped computation.
+   * @param fun Potentially exception throwing computation to trap in.
    * @return Functor result supplied in the provided parameter.
    * @throws HttpResponseException The indexed one by the provided item.
    * @see #trapIn(CheckedRunnable)
@@ -177,9 +177,15 @@ public enum Exceptions implements Supplier<RuntimeException> {
    * exception}.
    *
    * @param <E> Potential exception expected to be thrown.
+   * @see Runnable
    */
   @FunctionalInterface
   public interface CheckedRunnable<E extends Exception> {
-    void wrap() throws E;
+    /**
+     * The computation where the exception can occur.
+     *
+     * @throws E Potential exception.
+     */
+    void run() throws E;
   }
 }
