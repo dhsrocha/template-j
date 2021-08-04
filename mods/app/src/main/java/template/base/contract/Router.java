@@ -23,7 +23,7 @@ public interface Router extends EndpointGroup {
      * Path variable identity that is handled by {@link template.Application
      * current web container}.
      */
-    String PATH_ID = "/:id";
+    String PATH_ID = "/{id}";
 
     /**
      * Provides a standard path based on provided {@link #ref() type reference}.

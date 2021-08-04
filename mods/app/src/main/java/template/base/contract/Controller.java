@@ -164,8 +164,8 @@ public interface Controller<D extends Domain<D>> extends CrudHandler,
      */
     @Override
     default String path() {
-      return ref().getSimpleName().toLowerCase() + "/:" + ROOT_ID
-          + "/" + extRef().getSimpleName().toLowerCase() + Path.PATH_ID;
+      return ref().getSimpleName().toLowerCase() + "/{" + ROOT_ID + "}/"
+          + extRef().getSimpleName().toLowerCase() + Path.PATH_ID;
     }
 
     /**

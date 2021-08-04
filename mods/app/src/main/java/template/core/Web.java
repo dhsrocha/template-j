@@ -2,10 +2,15 @@ package template.core;
 
 import com.google.gson.Gson;
 import io.javalin.Javalin;
-import io.javalin.plugin.json.JavalinJson;
+import io.javalin.plugin.json.JsonMapper;
 import io.javalin.plugin.openapi.annotations.ContentType;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.function.Supplier;
+import lombok.NonNull;
 import lombok.val;
 import template.Application;
 import template.Application.Mode;
@@ -33,15 +38,37 @@ interface Web extends Supplier<Application.Server> {
   interface Mod {
     @dagger.Provides
     @Application.Scope
-    static Application.Server server(final @lombok.NonNull Mode mode,
-                                     final @lombok.NonNull Routes.Build routes) {
+    static Application.Server server(final @NonNull Mode mode,
+                                     final @NonNull Routes.Build routes) {
       val mapper = new Gson();
-      JavalinJson.setFromJsonMapper(mapper::fromJson);
-      JavalinJson.setToJsonMapper(mapper::toJson);
       val app = Javalin.create(cfg -> {
         cfg.showJavalinBanner = mode == Mode.PRD;
         cfg.defaultContentType = ContentType.JSON;
         cfg.autogenerateEtags = Boolean.TRUE;
+        cfg.jsonMapper(new JsonMapper() {
+
+          @Override
+          public @NonNull String toJsonString(final @NonNull Object o) {
+            return mapper.toJson(o);
+          }
+
+          @Override
+          public @NonNull <T> T fromJsonString(final @NonNull String src,
+                                               final @NonNull Class<T> ref) {
+            return mapper.fromJson(src, ref);
+          }
+
+          @Override
+          public @NonNull InputStream toJsonStream(final @NonNull Object o) {
+            return new ByteArrayInputStream(toJsonString(o).getBytes());
+          }
+
+          @Override
+          public @NonNull <T> T fromJsonStream(final @NonNull InputStream src,
+                                               final @NonNull Class<T> ref) {
+            return mapper.fromJson(new InputStreamReader(src, StandardCharsets.UTF_8), ref);
+          }
+        });
       }).routes(routes.build().get());
       Runtime.getRuntime().addShutdownHook(new Thread(app::stop));
       app.exception(Violation.class, (e, c) -> {
