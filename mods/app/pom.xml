@@ -12,10 +12,11 @@
   </parent>
 
   <artifactId>app</artifactId>
-  <version>0.1.0</version>
 
   <name>Template Web Application</name>
-  <description>Web application template using Javalin as basis</description>
+  <description>Web application template using Javalin as basis.</description>
+
+  <inceptionYear>2021</inceptionYear>
 
   <properties>
     <exec.mainClass>template.Application</exec.mainClass>

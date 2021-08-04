@@ -9,7 +9,7 @@
   <version>0.5.0</version>
   <packaging>pom</packaging>
 
-  <name>Template project.</name>
+  <name>Template For Java Projects</name>
   <description>General-purpose template Java project.</description>
 
   <organization>
@@ -50,10 +50,7 @@
 
     <version.lombok>1.18.20</version.lombok>
     <version.dagger>2.36</version.dagger>
-    <version.javalin>3.13.10</version.javalin>
     <version.mapstruct>1.4.2.Final</version.mapstruct>
-    <version.docker.java>3.2.11</version.docker.java>
-
     <version.plugin.test>3.0.0-M5</version.plugin.test>
 
     <exec.mainClass>
@@ -438,7 +435,7 @@
       <dependency>
         <groupId>org.checkerframework</groupId>
         <artifactId>checker</artifactId>
-        <version>3.16.0</version>
+        <version>3.17.0</version>
       </dependency>
       <dependency>
         <groupId>com.fasterxml.jackson</groupId>
@@ -507,12 +504,12 @@
       <dependency>
         <groupId>org.ehcache</groupId>
         <artifactId>ehcache</artifactId>
-        <version>3.9.4</version>
+        <version>3.9.5</version>
       </dependency>
       <dependency>
         <groupId>io.javalin</groupId>
         <artifactId>javalin</artifactId>
-        <version>${version.javalin}</version>
+        <version>3.13.10</version>
         <exclusions>
           <exclusion>
             <groupId>com.fasterxml.jackson.module</groupId>
@@ -856,7 +853,7 @@
                   <failBuildOnCVSS>0</failBuildOnCVSS>
                   <junitFailOnCVSS>0</junitFailOnCVSS>
                   <failBuildOnAnyVulnerability>
-                  true
+                    true
                   </failBuildOnAnyVulnerability>
                   <failOnError>true</failOnError>
                 </configuration>
