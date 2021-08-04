@@ -49,7 +49,7 @@
     <sep>${path.separator}</sep>
 
     <version.lombok>1.18.20</version.lombok>
-    <version.dagger>2.36</version.dagger>
+    <version.dagger>2.37</version.dagger>
     <version.mapstruct>1.4.2.Final</version.mapstruct>
     <version.plugin.test>3.0.0-M5</version.plugin.test>
 
