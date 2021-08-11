@@ -18,6 +18,35 @@ import template.base.Exceptions;
 public interface Domain<D extends Domain<D>> extends Comparable<D> {
 
   /**
+   * Validate a domain object. Meant to be invoked in the corresponding factory
+   * method while is created.
+   *
+   * @param domain The {@link Domain} to validate.
+   * @param <D>    A type marked as {@link Domain}.
+   * @return The given domain parameter, after its validation processed.
+   * @throws IllegalStateException If provided {@link #invariants() invariant
+   *                               rule set} returns empty.
+   * @throws Violation             If any of provided {@link #invariants() rule
+   *                               set}'s contents fails.
+   */
+  static <D extends Domain<D>> D validate(final @lombok.NonNull D domain) {
+    Exceptions.ILLEGAL_ARGUMENT.throwIf(domain.invariants()::isEmpty);
+    val rules = domain.invariants().stream()
+                      .filter(e -> !e.getTest().test(domain))
+                      .collect(Collectors.<Invariant<?>>toUnmodifiableList());
+    Exceptions.throwIf(() -> new Violation(rules), () -> rules.size() != 0);
+    return domain;
+  }
+
+  /**
+   * Maps the rules that expects the marked {@link Domain domain type}'s
+   * desired state in its creation.
+   *
+   * @return A non-empty mapped set of {@link Invariant invariant rules}.
+   */
+  Set<Invariant<D>> invariants();
+
+  /**
    * Meant to preferably mark {@link Enum enums} which index domain invariants
    * provided by {@link Domain#invariants()}.
    *
@@ -45,34 +74,5 @@ public interface Domain<D extends Domain<D>> extends Comparable<D> {
   class Violation extends RuntimeException {
 
     private final transient Collection<Invariant<?>> invariants;
-  }
-
-  /**
-   * Maps the rules that expects the marked {@link Domain domain type}'s
-   * desired state in its creation.
-   *
-   * @return A non-empty mapped set of {@link Invariant invariant rules}.
-   */
-  Set<Invariant<D>> invariants();
-
-  /**
-   * Validate a domain object. Meant to be invoked in the corresponding factory
-   * method while is created.
-   *
-   * @param domain The {@link Domain} to validate.
-   * @param <D>    A type marked as {@link Domain}.
-   * @return The given domain parameter, after its validation processed.
-   * @throws IllegalStateException If provided {@link #invariants() invariant
-   *                               rule set} returns empty.
-   * @throws Violation             If any of provided {@link #invariants() rule
-   *                               set}'s contents fails.
-   */
-  static <D extends Domain<D>> D validate(final @lombok.NonNull D domain) {
-    Exceptions.ILLEGAL_ARGUMENT.throwIf(domain.invariants()::isEmpty);
-    val rules = domain.invariants().stream()
-                      .filter(e -> !e.getTest().test(domain))
-                      .collect(Collectors.<Invariant<?>>toUnmodifiableList());
-    Exceptions.throwIf(() -> new Violation(rules), () -> rules.size() != 0);
-    return domain;
   }
 }

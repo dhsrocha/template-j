@@ -98,7 +98,15 @@ public interface Service<T, I> {
 
     boolean unlink(final @NonNull I root, final @NonNull I id);
 
-    default Predicate<E> isValidBound(final @NonNull D d) {
+    /**
+     * Verifies availability for binding resources from two distinct
+     * {@link Domain domain contexts}, by evaluating potential state
+     * inconsistencies from both.
+     *
+     * @param toBind To input the resource handled by base operations.
+     * @return Predicate to apply on extension operations' handled resource.
+     */
+    default Predicate<E> isValidToBind(final @NonNull D toBind) {
       return e -> Boolean.TRUE;
     }
   }
@@ -123,28 +131,28 @@ public interface Service<T, I> {
     public Map<I, E> getFrom(final @NonNull I root,
                              final @NonNull Body<E> criteria,
                              final int s, final int l) {
-      return base.compose(root, this::isValidBound).get(criteria, s, l);
+      return base.compose(root, this::isValidToBind).get(criteria, s, l);
     }
 
     @Override
     public E getFrom(final @NonNull I root, final @NonNull I id) {
-      return base.compose(root, this::isValidBound).get(id)
+      return base.compose(root, this::isValidToBind).get(id)
                  .orElseThrow(Exceptions.NOT_FOUND);
     }
 
     @Override
     public I createOn(final @NonNull I root, final @NonNull E e) {
-      return base.compose(root, this::isValidBound).create(e);
+      return base.compose(root, this::isValidToBind).create(e);
     }
 
     @Override
     public boolean link(final @NonNull I root, final @NonNull I id) {
-      return base.compose(root, this::isValidBound).link(id);
+      return base.compose(root, this::isValidToBind).link(id);
     }
 
     @Override
     public boolean unlink(final @NonNull I root, final @NonNull I id) {
-      return base.compose(root, this::isValidBound).unlink(id);
+      return base.compose(root, this::isValidToBind).unlink(id);
     }
   }
 }
