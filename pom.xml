@@ -52,6 +52,7 @@
     <version.dagger>2.37</version.dagger>
     <version.mapstruct>1.4.2.Final</version.mapstruct>
     <version.plugin.test>3.0.0-M5</version.plugin.test>
+    <version.plugin.errorprone>2.4.0</version.plugin.errorprone>
 
     <exec.mainClass>
       ${project.groupId}.${project.artifactId}.Main
@@ -233,7 +234,7 @@
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>8.43</version>
+              <version>8.45.1</version>
             </dependency>
           </dependencies>
         </plugin>
@@ -322,7 +323,7 @@
             <path>
               <groupId>com.google.errorprone</groupId>
               <artifactId>error_prone_core</artifactId>
-              <version>2.4.0</version>
+              <version>${version.plugin.errorprone}</version>
             </path>
           </annotationProcessorPaths>
         </configuration>
@@ -428,7 +429,7 @@
       <dependency>
         <groupId>com.google.errorprone</groupId>
         <artifactId>error_prone_parent</artifactId>
-        <version>2.7.1</version>
+        <version>${version.plugin.errorprone}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -579,7 +580,7 @@
       <dependency>
         <groupId>org.liquibase</groupId>
         <artifactId>liquibase-core</artifactId>
-        <version>4.4.2</version>
+        <version>4.4.3</version>
       </dependency>
       <dependency>
         <groupId>com.zaxxer</groupId>
